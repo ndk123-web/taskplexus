@@ -25,6 +25,7 @@ func (s *Server) Start(port string) error {
 	mux.HandleFunc("GET /api/v1/todos/all-user-todos", s.todoHandler.GetTodos)
 	mux.HandleFunc("POST /api/v1/todos/create-todo", s.todoHandler.CreateTodo)
 	mux.HandleFunc("PUT /api/v1/todos/update-todo", s.todoHandler.UpdateTodo)
+	mux.HandleFunc("DELETE /api/v1/todos/delete-todo", s.todoHandler.DeleteTodo)
 	// added Global LoggingMiddleware Middleware
 	// mux return *ServeMux which implements Handler Interface
 	// first it checks the path

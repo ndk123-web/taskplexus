@@ -16,6 +16,7 @@ type TodoRepository interface {
 	GetAll(ctx context.Context) ([]model.Todo, error)
 	CreateTodo(ctx context.Context, todo model.Todo) (model.Todo, error)
 	UpdateTodo(ctx context.Context, todoId string, updatedTask string) (model.Todo, error)
+	DeleteTodo(ctx context.Context, todoId string) (bool, error)
 }
 
 type todoRepo struct {
@@ -91,6 +92,26 @@ func (r *todoRepo) UpdateTodo(ctx context.Context, todoId string, updatedTask st
 	}
 
 	return updatedTodo, nil
+}
+
+func (r *todoRepo) DeleteTodo(ctx context.Context, todoId string) (bool, error) {
+   
+    // string -> ObjectId 
+	oid, err := primitive.ObjectIDFromHex(todoId)
+	if err != nil {
+		return false, err
+	}
+
+	// filter with Object ID 
+	filter := bson.M{"_id": oid}
+    
+	// filter and delete Document 
+	_ , err2 := r.collection.DeleteOne(ctx,filter)
+    if err2 != nil {
+		return false,err
+	}
+    
+	return true , nil
 }
 
 // the return type is TodoRepository (Interface) its because

@@ -13,6 +13,7 @@ type TodoHandler interface {
 	GetTodos(w http.ResponseWriter, r *http.Request)
 	CreateTodo(w http.ResponseWriter, r *http.Request)
 	UpdateTodo(w http.ResponseWriter, r *http.Request)
+	DeleteTodo(w http.ResponseWriter, r *http.Request)
 }
 
 type todoHandler struct {
@@ -74,4 +75,27 @@ func (h *todoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(todo)
+}
+
+type deleteStruct struct {
+	ID string `json:"id"`
+}
+
+func (h *todoHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
+	var todoStruct deleteStruct
+	err := json.NewDecoder(r.Body).Decode(&todoStruct)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+	}
+
+	ok, err2 := h.service.DeleteTodo(context.Background(), todoStruct.ID)
+	if err2 != nil {
+		json.NewEncoder(w).Encode(map[string]string{"error": err2.Error()})
+	}
+
+	if !ok {
+		json.NewEncoder(w).Encode(map[string]string{"error": "Delete False"})
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"Success": "True"})
 }

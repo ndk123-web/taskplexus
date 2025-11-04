@@ -12,6 +12,7 @@ type TodoService interface {
 	GetTodos(ctx context.Context) ([]model.Todo, error)
 	CreateTodo(ctx context.Context, todo model.Todo) (model.Todo, error)
 	UpdateTodo(ctx context.Context, todoId string, updatedTask string) (model.Todo, error)
+	DeleteTodo(ctx context.Context, todoId string) (bool, error)
 }
 
 type todoService struct {
@@ -32,4 +33,8 @@ func (s *todoService) CreateTodo(ctx context.Context, todo model.Todo) (model.To
 
 func (s *todoService) UpdateTodo(ctx context.Context, todoId string, updatedTask string) (model.Todo, error) {
 	return s.repo.UpdateTodo(ctx, todoId, updatedTask)
+}
+
+func (s *todoService) DeleteTodo(ctx context.Context, todoId string) (bool, error) {
+	return s.repo.DeleteTodo(ctx, todoId)
 }
