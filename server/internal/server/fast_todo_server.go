@@ -22,8 +22,8 @@ func (s *Server) Start(port string) error {
 	// custom mux (not default mux)
 	// in short its custom router
 	mux := http.NewServeMux()
-	mux.HandleFunc("/todos", s.todoHandler.GetTodos)
-
+	mux.HandleFunc("GET /api/v1/todos/all-user-todos", s.todoHandler.GetTodos)
+	mux.HandleFunc("POST /api/v1/todos/create-todo", s.todoHandler.CreateTodo)
 	// added Global LoggingMiddleware Middleware
 	// mux return *ServeMux which implements Handler Interface
 	// first it checks the path
@@ -45,7 +45,6 @@ func (s *Server) Start(port string) error {
 
 	*/
 	wrappedMux := middleware.LoggingMiddleware(mux)
-
 	return http.ListenAndServe(port, wrappedMux)
 }
 

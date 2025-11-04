@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/ndk123-web/fast-todo/internal/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,6 +13,7 @@ import (
 // Any Struct Implementing GetAll can return this as interface
 type TodoRepository interface {
 	GetAll(ctx context.Context) ([]model.Todo, error)
+	CreateTodo(ctx context.Context, todo model.Todo) (model.Todo, error)
 }
 
 type todoRepo struct {
@@ -40,6 +42,18 @@ func (r *todoRepo) GetAll(ctx context.Context) ([]model.Todo, error) {
 	}
 
 	return todos, nil
+}
+
+func (r *todoRepo) CreateTodo(ctx context.Context, todo model.Todo) (model.Todo, error) {
+	if todo.Task == "" {
+		return model.Todo{}, errors.New("Task is Invalid / Empty")
+	}
+
+	_, err := r.collection.InsertOne(ctx, todo)
+	if err != nil {
+		return model.Todo{}, err
+	}
+	return todo, nil
 }
 
 // the return type is TodoRepository (Interface) its because
