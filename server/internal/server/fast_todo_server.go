@@ -9,11 +9,13 @@ import (
 
 type Server struct {
 	todoHandler handler.TodoHandler
+	userHandler handler.UserHandler
 }
 
-func NewServer(todoHandler handler.TodoHandler) *Server {
+func NewServer(todoHandler handler.TodoHandler, userHandler handler.UserHandler) *Server {
 	return &Server{
 		todoHandler: todoHandler,
+		userHandler: userHandler,
 	}
 }
 
@@ -26,6 +28,9 @@ func (s *Server) Start(port string) error {
 	mux.HandleFunc("POST /api/v1/todos/create-todo", s.todoHandler.CreateTodo)
 	mux.HandleFunc("PUT /api/v1/todos/update-todo", s.todoHandler.UpdateTodo)
 	mux.HandleFunc("DELETE /api/v1/todos/delete-todo", s.todoHandler.DeleteTodo)
+
+	// we need to add here JWT Middleware 
+	mux.HandleFunc("GET /api/v1/todos/get-user-todos", s.userHandler.GetUserTodos)
 	// added Global LoggingMiddleware Middleware
 	// mux return *ServeMux which implements Handler Interface
 	// first it checks the path

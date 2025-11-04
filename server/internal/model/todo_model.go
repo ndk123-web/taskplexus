@@ -7,6 +7,9 @@ type Todo struct {
 	ID   primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Task string             `bson:"task,omitempty" json:"task,omitempty"`
 
+	// This is Foreign Key / ref to User
+	UserId primitive.ObjectID `bson:"userId,omitempty" json:"userId,omitempty"`
+
 	// why not omitempty
 	// because if false then it wont show in json / bson response
 	Done bool `bson:"done" json:"done"`

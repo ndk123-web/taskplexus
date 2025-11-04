@@ -1,3 +1,4 @@
+// Package repository handles data access layer operations for todos
 package repository
 
 import (
@@ -10,8 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// Its Interface
-// Any Struct Implementing GetAll can return this as interface
 type TodoRepository interface {
 	GetAll(ctx context.Context) ([]model.Todo, error)
 	CreateTodo(ctx context.Context, todo model.Todo) (model.Todo, error)
@@ -19,10 +18,12 @@ type TodoRepository interface {
 	DeleteTodo(ctx context.Context, todoId string) (bool, error)
 }
 
+// todoRepo implements TodoRepository with MongoDB as the data store
 type todoRepo struct {
-	collection *mongo.Collection
+	collection *mongo.Collection // MongoDB collection for todos
 }
 
+// GetAll retrieves all todo items from the database
 func (r *todoRepo) GetAll(ctx context.Context) ([]model.Todo, error) {
 	cursor, err := r.collection.Find(ctx, bson.D{})
 
@@ -33,20 +34,24 @@ func (r *todoRepo) GetAll(ctx context.Context) ([]model.Todo, error) {
 	// in the end close the curson
 	defer cursor.Close(ctx)
 
+	// result will be here 
 	var todos []model.Todo
 
+	// loop over the response 
 	for cursor.Next(ctx) {
 		var todo model.Todo
 		if err := cursor.Decode(&todo); err != nil {
 			return nil, err
 		}
 
+		// append todos 
 		todos = append(todos, todo)
 	}
 
 	return todos, nil
 }
 
+// CreateTodo adds a new todo item to the database
 func (r *todoRepo) CreateTodo(ctx context.Context, todo model.Todo) (model.Todo, error) {
 	if todo.Task == "" {
 		return model.Todo{}, errors.New("Task is Invalid / Empty")
@@ -61,6 +66,7 @@ func (r *todoRepo) CreateTodo(ctx context.Context, todo model.Todo) (model.Todo,
 	return todo, nil
 }
 
+// UpdateTodo modifies an existing todo's task text
 func (r *todoRepo) UpdateTodo(ctx context.Context, todoId string, updatedTask string) (model.Todo, error) {
 	if todoId == "" {
 		return model.Todo{}, errors.New("Todo Id is Empty")
@@ -94,28 +100,29 @@ func (r *todoRepo) UpdateTodo(ctx context.Context, todoId string, updatedTask st
 	return updatedTodo, nil
 }
 
+// DeleteTodo removes a todo item by its ID
 func (r *todoRepo) DeleteTodo(ctx context.Context, todoId string) (bool, error) {
-   
-    // string -> ObjectId 
+
+	// string -> ObjectId
 	oid, err := primitive.ObjectIDFromHex(todoId)
 	if err != nil {
 		return false, err
 	}
 
-	// filter with Object ID 
+	// filter with Object ID
 	filter := bson.M{"_id": oid}
-    
-	// filter and delete Document 
-	_ , err2 := r.collection.DeleteOne(ctx,filter)
-    if err2 != nil {
-		return false,err
+
+	// filter and delete Document
+	_, err2 := r.collection.DeleteOne(ctx, filter)
+	if err2 != nil {
+		return false, err
 	}
-    
-	return true , nil
+
+	return true, nil
 }
 
-// the return type is TodoRepository (Interface) its because
-// the todoRepo actually is struct which is performing all the function inside the TodoRepsoitory Interface
+// NewTodoRepository creates and returns a new instance of TodoRepository
+// It initializes the MongoDB collection for todo operations
 func NewTodoRepository(col *mongo.Collection) TodoRepository {
 	return &todoRepo{
 		collection: col,

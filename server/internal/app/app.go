@@ -34,12 +34,17 @@ func Run() error {
 	log.Println("Connected to MongoDB Atlas")
 
 	// collection that we want 
-	collection := client.Database("golangdb").Collection("todos")
+	todoCollection := client.Database("golangdb").Collection("todos")
+	userCollection := client.Database("golangdb").Collection("users")
 
-	todoRepo := repository.NewTodoRepository(collection)
+	todoRepo := repository.NewTodoRepository(todoCollection)
 	todoService := service.NewTodoService(todoRepo)
 	todoHandler := handler.NewTodoHandler(todoService)
 
-	srv := server.NewServer(todoHandler)
+	userRepo := repository.NewUserRepository(todoCollection,userCollection)
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userService)
+
+	srv := server.NewServer(todoHandler,userHandler)
 	return srv.Start(cfg.Port)
 }
