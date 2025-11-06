@@ -467,9 +467,71 @@
 
 .todo-edit-form {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 12px;
   width: 100%;
+}
+
+.priority-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.priority-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.priority-options {
+  display: flex;
+  gap: 8px;
+}
+
+.priority-option {
+  padding: 6px 12px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.priority-option.priority-low {
+  color: #93c5fd;
+}
+
+.priority-option.priority-low.active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.priority-option.priority-medium {
+  color: #fcd34d;
+}
+
+.priority-option.priority-medium.active {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+.priority-option.priority-high {
+  color: #fca5a5;
+}
+
+.priority-option.priority-high.active {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.priority-option:hover {
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .todo-edit-input {

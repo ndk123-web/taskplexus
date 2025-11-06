@@ -34,11 +34,13 @@ const Dashboard = () => {
   ]);
 
   const [newTodo, setNewTodo] = useState('');
+  const [newTodoPriority, setNewTodoPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [showAddTodo, setShowAddTodo] = useState(false);
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [newGoal, setNewGoal] = useState({ title: '', target: '', category: '' });
   const [editingTodo, setEditingTodo] = useState<number | null>(null);
   const [editTodoText, setEditTodoText] = useState('');
+  const [editTodoPriority, setEditTodoPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [editingGoal, setEditingGoal] = useState<number | null>(null);
   const [editGoalData, setEditGoalData] = useState({ title: '', target: '', category: '' });
 
@@ -49,9 +51,10 @@ const Dashboard = () => {
         id: Date.now(), 
         text: newTodo, 
         completed: false, 
-        priority: 'medium' 
+        priority: newTodoPriority 
       }]);
       setNewTodo('');
+      setNewTodoPriority('medium');
       setShowAddTodo(false);
     }
   };
@@ -81,24 +84,27 @@ const Dashboard = () => {
     setTodos(todos.filter(todo => todo.id !== id));
   };
 
-  const startEditTodo = (id: number, text: string) => {
-    setEditingTodo(id);
-    setEditTodoText(text);
+  const startEditTodo = (todo: Todo) => {
+    setEditingTodo(todo.id);
+    setEditTodoText(todo.text);
+    setEditTodoPriority(todo.priority);
   };
 
   const saveEditTodo = () => {
     if (editingTodo && editTodoText.trim()) {
       setTodos(todos.map(todo => 
-        todo.id === editingTodo ? { ...todo, text: editTodoText } : todo
+        todo.id === editingTodo ? { ...todo, text: editTodoText, priority: editTodoPriority } : todo
       ));
       setEditingTodo(null);
       setEditTodoText('');
+      setEditTodoPriority('medium');
     }
   };
 
   const cancelEditTodo = () => {
     setEditingTodo(null);
     setEditTodoText('');
+    setEditTodoPriority('medium');
   };
 
   const deleteGoal = (id: number) => {
@@ -245,6 +251,32 @@ const Dashboard = () => {
                     className="add-input"
                     autoFocus
                   />
+                  <div className="priority-selector">
+                    <label className="priority-label">Priority:</label>
+                    <div className="priority-options">
+                      <button
+                        type="button"
+                        className={`priority-option ${newTodoPriority === 'low' ? 'active' : ''} priority-low`}
+                        onClick={() => setNewTodoPriority('low')}
+                      >
+                        Low
+                      </button>
+                      <button
+                        type="button"
+                        className={`priority-option ${newTodoPriority === 'medium' ? 'active' : ''} priority-medium`}
+                        onClick={() => setNewTodoPriority('medium')}
+                      >
+                        Medium
+                      </button>
+                      <button
+                        type="button"
+                        className={`priority-option ${newTodoPriority === 'high' ? 'active' : ''} priority-high`}
+                        onClick={() => setNewTodoPriority('high')}
+                      >
+                        High
+                      </button>
+                    </div>
+                  </div>
                   <div className="add-form-actions">
                     <button type="submit" className="submit-btn">Add Task</button>
                     <button 
@@ -270,6 +302,32 @@ const Dashboard = () => {
                           className="todo-edit-input"
                           autoFocus
                         />
+                        <div className="priority-selector">
+                          <label className="priority-label">Priority:</label>
+                          <div className="priority-options">
+                            <button
+                              type="button"
+                              className={`priority-option ${editTodoPriority === 'low' ? 'active' : ''} priority-low`}
+                              onClick={() => setEditTodoPriority('low')}
+                            >
+                              Low
+                            </button>
+                            <button
+                              type="button"
+                              className={`priority-option ${editTodoPriority === 'medium' ? 'active' : ''} priority-medium`}
+                              onClick={() => setEditTodoPriority('medium')}
+                            >
+                              Medium
+                            </button>
+                            <button
+                              type="button"
+                              className={`priority-option ${editTodoPriority === 'high' ? 'active' : ''} priority-high`}
+                              onClick={() => setEditTodoPriority('high')}
+                            >
+                              High
+                            </button>
+                          </div>
+                        </div>
                         <div className="todo-edit-actions">
                           <button 
                             className="todo-save-btn"
@@ -306,7 +364,7 @@ const Dashboard = () => {
                         <div className="todo-actions">
                           <button 
                             className="todo-edit"
-                            onClick={() => startEditTodo(todo.id, todo.text)}
+                            onClick={() => startEditTodo(todo)}
                           >
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.4188 1.44775 12.6667 1.44775C12.9145 1.44775 13.1599 1.49653 13.3886 1.59129C13.6174 1.68605 13.8249 1.82494 14 2.00004C14.1751 2.17513 14.314 2.38272 14.4088 2.61146C14.5036 2.84019 14.5523 3.08555 14.5523 3.33337C14.5523 3.58119 14.5036 3.82655 14.4088 4.05529C14.314 4.28402 14.1751 4.49161 14 4.66671L5 13.6667L1.33333 14.6667L2.33333 11L11.3333 2.00004Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
