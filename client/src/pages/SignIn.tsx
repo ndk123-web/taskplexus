@@ -1,17 +1,29 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import signInUserApi from '../api/signInUserApi';
+import type { signInResponse } from '../types/signType';
+import useUserStore from '../store/useUserInfo';
 import './SignIn.css';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  let { signinUser } = useUserStore();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle sign in logic here
-    console.log('Sign in:', { email, password });
+
+    try { 
+       const response: signInResponse = await signInUserApi({email,password})
+       console.log('Sign In Response:', response);
+
+       signinUser(response.response)
     navigate('/dashboard');
+    }
+    catch (error) {
+      console.error('Error during sign in:', error);
+    }
   };
 
   return (

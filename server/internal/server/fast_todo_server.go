@@ -44,7 +44,9 @@ func (s *Server) Start(port string) error {
 	// Goals Route
 	mux.HandleFunc("GET /api/v1/users/goals/get-user-goals", s.goalHandler.GetUserGoals)
 
-	wrappedMux := middleware.LoggingMiddleware(mux)
+	// it means cors -> log -> actual handler(mux)
+	// global logging and cors middleware
+	wrappedMux := middleware.LoggingMiddleware(middleware.CorsMiddleware(mux))
 	return http.ListenAndServe(port, wrappedMux)
 }
 

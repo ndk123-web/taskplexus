@@ -25,7 +25,7 @@ type getUserTodoStruct struct {
 	UserId string `json:"userId"`
 }
 
-// Get User Todos Handler 
+// Get User Todos Handler
 func (h *userHandler) GetUserTodos(w http.ResponseWriter, r *http.Request) {
 	var userStruct getUserTodoStruct
 
@@ -119,6 +119,8 @@ func (h *userHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{"response": response})
 }
 

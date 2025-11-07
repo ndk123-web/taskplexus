@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import useUserStore from '../store/useUserInfo';
 import './Dashboard.css';
 
 // Todo interface - defines structure for task items
@@ -24,7 +25,7 @@ interface Goal {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  
+  const {userInfo, signOutUser} = useUserStore();
   // Sidebar state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState('overview');
@@ -233,6 +234,7 @@ const Dashboard = () => {
 
   // Logout and redirect to home
   const handleLogout = () => {
+    signOutUser();
     navigate('/');
   };
 
@@ -324,8 +326,8 @@ const Dashboard = () => {
             <div className="user-profile-avatar">JD</div>
             {!sidebarCollapsed && (
               <div className="user-profile-info">
-                <div className="user-profile-name">John Doe</div>
-                <div className="user-profile-email">john@example.com</div>
+                <div className="user-profile-name">{userInfo?.name}</div>
+                <div className="user-profile-email">{userInfo?.email}</div>
               </div>
             )}
           </div>
