@@ -3,14 +3,17 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"net/http"
+	"github.com/golang-jwt/jwt"
 	"github.com/ndk123-web/fast-todo/internal/repository"
 	"github.com/ndk123-web/fast-todo/internal/service"
+	"net/http"
+	"time"
 )
 
 type UserHandler interface {
 	GetUserTodos(w http.ResponseWriter, r *http.Request)
 	SignUpUser(w http.ResponseWriter, r *http.Request)
+	RefreshToken(w http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {
@@ -62,6 +65,33 @@ func (h *userHandler) SignUpUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{"response": result})
+}
+
+func (h *userHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
+	refreshToken, err := r.Cookie("refresh_token")
+	if err != nil {
+		http.Error(w, "No refresh token", http.StatusUnauthorized)
+		return
+	}
+
+	claims := jwt.MapClaims{}
+	_, err = jwt.ParseWithClaims(refreshToken.Value, claims, func(t *jwt.Token) (interface{}, error) {
+		return []byte(service.JWTSECRET), nil
+	})
+
+	if err != nil {
+		http.Error(w, "Invalid refresh token", http.StatusUnauthorized)
+		return
+	}
+
+	// create new access token
+	newAccess := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": claims["email"],
+		"exp":   time.Now().Add(15 * time.Minute).Unix(),
+	})
+
+	tokenStr, _ := newAccess.SignedString([]byte(service.JWTSECRET))
+	json.NewEncoder(w).Encode(map[string]string{"accessToken": tokenStr})
 }
 
 func NewUserHandler(service service.UserService) UserHandler {
