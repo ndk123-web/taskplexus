@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserStruct struct {
@@ -18,8 +19,7 @@ type UserStruct struct {
 type UserRepository interface {
 	GetUserTodos(ctx context.Context, userId string) ([]model.Todo, error)
 	SignUpUser(ctx context.Context, email string, password string) (*SignUpResponse, error)
-	// login
-	// logout
+	SignInUser(ctx context.Context, email string, password string) (*SignUpResponse, error)
 }
 
 type userRepo struct {
@@ -68,8 +68,10 @@ func (r *userRepo) GetUserTodos(ctx context.Context, userId string) ([]model.Tod
 }
 
 type SignUpResponse struct {
-	Email string `json:"email"`
-	Token string `json:"token"`
+	Email        string `json:"email"`
+	AccessToken  string `json:"_accessToken"`
+	UserId       string `json:"userId"`
+	RefreshToken string `json:"_refreshToken"`
 }
 
 func (r *userRepo) SignUpUser(ctx context.Context, email string, password string) (*SignUpResponse, error) {
@@ -90,14 +92,58 @@ func (r *userRepo) SignUpUser(ctx context.Context, email string, password string
 	currentUser := UserStruct{Email: email, Password: password}
 
 	// we need to store the user in Mongodb
-	_, err := r.userColletion.InsertOne(ctx, currentUser)
+	inserted, err := r.userColletion.InsertOne(ctx, currentUser)
 	if err != nil {
 		return nil, err
 	}
 
+	// convert the objectId to string
+	oid := inserted.InsertedID.(primitive.ObjectID)
+	userId := oid.Hex()
+
 	return &SignUpResponse{
-		Email: email,
+		Email:  email,
+		UserId: userId,
 	}, nil
+}
+
+type SignInUserRequest struct {
+	Email          string             `json:"email" bson:"email"`
+	ID             primitive.ObjectID `json:"_id" bson:"_id"`
+	HashedPassword string             `json:"password" bson:"password"`
+}
+
+func (r *userRepo) SignInUser(ctx context.Context, email string, password string) (*SignUpResponse, error) {
+	// if user exist
+	// check password
+	// if yes then create jwt access and refresh token
+	// return that
+	filter := bson.M{"email": email}
+	res := r.userColletion.FindOne(ctx, filter)
+
+	var user SignInUserRequest
+	res.Decode(&user)
+
+	//password checking
+	ok, err := ValidatePassword(password, user.HashedPassword)
+	if !ok || err != nil {
+		return nil, err
+	}
+
+	userId := user.ID.Hex()
+
+	return &SignUpResponse{
+		Email:  email,
+		UserId: userId,
+	}, nil
+}
+
+func ValidatePassword(password string, hashedPassword string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func NewUserRepository(todoCol *mongo.Collection, userCol *mongo.Collection) UserRepository {

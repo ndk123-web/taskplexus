@@ -21,7 +21,7 @@ const SignIn = () => {
         <div className="signin-nav-content">
           <Link to="/" className="signin-nav-logo">
             <span className="signin-nav-logo-icon">⚡</span>
-            fast-todo
+            TaskPlexus
           </Link>
           <div className="signin-nav-links">
             <Link to="/" className="signin-nav-link">Home</Link>
@@ -39,7 +39,7 @@ const SignIn = () => {
               <h1 className="signin-hero-title">
                 Welcome Back to
                 <br />
-                <span className="signin-gradient-text">fast-todo</span>
+                <span className="signin-gradient-text">TaskPlexus</span>
               </h1>
               <p className="signin-hero-description">
                 Continue your productivity journey. Sign in to access your tasks and stay organized.

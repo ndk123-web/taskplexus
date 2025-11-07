@@ -178,7 +178,7 @@ const FlowchartView = () => {
         <div className="flowchart-header-content">
           <Link to="/" className="flowchart-logo">
             <span className="flowchart-logo-icon">⚡</span>
-            fast-todo
+            TaskPlexus
           </Link>
           
           <div className="flowchart-header-right">

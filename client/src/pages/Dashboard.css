@@ -160,6 +160,41 @@
   gap: 16px;
 }
 
+/* Layout Toggle Button */
+.layout-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.layout-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(102, 126, 234, 0.5);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+}
+
+.layout-toggle-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.layout-toggle-btn:hover svg {
+  transform: scale(1.1);
+}
+
 /* Flowchart View Button */
 .flowchart-view-btn {
   display: flex;
@@ -273,6 +308,12 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.section-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .section-title {
   font-size: 26px;
   font-weight: 800;
@@ -290,6 +331,11 @@
   color: rgba(255, 255, 255, 0.5);
   margin: 0;
   font-weight: 500;
+}
+
+.section-subtitle .item-count {
+  color: rgba(102, 126, 234, 0.7);
+  font-weight: 600;
 }
 
 .add-btn {
@@ -311,6 +357,37 @@
 .add-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Small Layout Toggle Button */
+.layout-toggle-sm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.layout-toggle-sm:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(102, 126, 234, 0.5);
+  color: white;
+  transform: scale(1.05);
+}
+
+.layout-toggle-sm svg {
+  transition: transform 0.3s ease;
+}
+
+.layout-toggle-sm:hover svg {
+  transform: rotate(5deg);
 }
 
 /* Add Forms */
@@ -409,6 +486,55 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 16px;
+  transition: all 0.3s ease;
+}
+
+/* List View - Single column layout */
+.todos-list.list-view {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.todos-list.list-view .todo-item {
+  max-width: 100%;
+}
+
+/* Show More/Less Button */
+.show-more-btn {
+  width: 100%;
+  padding: 14px 20px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.show-more-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(102, 126, 234, 0.4);
+  border-style: solid;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.show-more-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.show-more-btn:hover svg {
+  transform: translateY(2px);
 }
 
 .todo-item {
@@ -671,6 +797,17 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 16px;
+  transition: all 0.3s ease;
+}
+
+/* List View for Goals - Single column layout */
+.goals-list.list-view {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.goals-list.list-view .goal-card {
+  max-width: 100%;
 }
 
 .goal-card {

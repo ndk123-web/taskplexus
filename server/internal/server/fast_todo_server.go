@@ -10,12 +10,14 @@ import (
 type Server struct {
 	todoHandler handler.TodoHandler
 	userHandler handler.UserHandler
+	goalHandler handler.GoalHandler
 }
 
-func NewServer(todoHandler handler.TodoHandler, userHandler handler.UserHandler) *Server {
+func NewServer(todoHandler handler.TodoHandler, userHandler handler.UserHandler, goalHandler handler.GoalHandler) *Server {
 	return &Server{
 		todoHandler: todoHandler,
 		userHandler: userHandler,
+		goalHandler: goalHandler,
 	}
 }
 
@@ -34,10 +36,14 @@ func (s *Server) Start(port string) error {
 	// middleware for Get User Todos
 	mux.Handle("GET /api/v1/todos/get-user-todos", middleware.AuthMiddleware(http.HandlerFunc(s.userHandler.GetUserTodos)))
 	mux.HandleFunc("POST /api/v1/users/signup", s.userHandler.SignUpUser)
-	
-	// for the refresh token 
+	mux.HandleFunc("POST /api/v1/users/signin", s.userHandler.SignInUser)
+
+	// for the refresh token
 	mux.HandleFunc("POST /api/v1/user/refresh-token", s.userHandler.RefreshToken)
-	
+
+	// Goals Route
+	mux.HandleFunc("GET /api/v1/users/goals/get-user-goals", s.goalHandler.GetUserGoals)
+
 	wrappedMux := middleware.LoggingMiddleware(mux)
 	return http.ListenAndServe(port, wrappedMux)
 }

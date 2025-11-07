@@ -2,12 +2,12 @@ package service
 
 import (
 	"context"
-	"os"
-	"time"
-
-	"github.com/golang-jwt/jwt/v5"
+	"fmt"
 	"github.com/ndk123-web/fast-todo/internal/model"
 	"github.com/ndk123-web/fast-todo/internal/repository"
+	"github.com/ndk123-web/fast-todo/pkg/njwt"
+	"golang.org/x/crypto/bcrypt"
+	"os"
 )
 
 var JWTSECRET = []byte(os.Getenv("JWT_SECRET"))
@@ -15,6 +15,7 @@ var JWTSECRET = []byte(os.Getenv("JWT_SECRET"))
 type UserService interface {
 	GetUserTodos(ctx context.Context, userId string) ([]model.Todo, error)
 	SignUpUser(ctx context.Context, email string, password string) (*repository.SignUpResponse, error)
+	SignInUser(ctx context.Context, email string, password string) (*repository.SignUpResponse, error)
 }
 
 type userService struct {
@@ -26,31 +27,59 @@ func (s *userService) GetUserTodos(ctx context.Context, userId string) ([]model.
 }
 
 func (s *userService) SignUpUser(ctx context.Context, email string, password string) (*repository.SignUpResponse, error) {
-	response, err := s.repo.SignUpUser(ctx, email, password)
+
+	// bcrypt the password
+	hashedPassword, err := BcryptForPassword(password)
 	if err != nil {
 		return nil, err
 	}
 
-	// generate jwt token here
-	claims := jwt.MapClaims{
-		"email": email,
-		"exp":   time.Now().Add(24 * time.Hour).Unix(),
-	}
-
-	// give the algorithm and claims
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	// run the algo with cliam and return string , err
-	tokenString, err2 := token.SignedString(JWTSECRET)
-
-	if err2 != nil {
+	response, err := s.repo.SignUpUser(ctx, email, hashedPassword)
+	if err != nil {
 		return nil, err
 	}
 
-	// inject token with response
-	response.Token = tokenString
+	accessString, refreshString, err := njwt.CreateAccessAndRefreshToken(email)
+	if err != nil {
+		return nil, err
+	}
+	// inject tokens with response
+	response.AccessToken = accessString
+	response.RefreshToken = refreshString
 
 	return response, nil
+}
+
+func (s *userService) SignInUser(ctx context.Context, email string, password string) (*repository.SignUpResponse, error) {
+
+	// if response is all right then
+	response, err := s.repo.SignInUser(ctx, email, password)
+	if err != nil {
+		return nil, err
+	}
+
+	// get the accessToken and Refresh token
+	accessString, refreshString, err := njwt.CreateAccessAndRefreshToken(response.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	// inject access and refresh token to the response and send it to the handler
+	response.AccessToken = accessString
+	response.RefreshToken = refreshString
+
+	return response, nil
+}
+
+func BcryptForPassword(password string) (string, error) {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	fmt.Println("Hashed password:", string(hashed))
+
+	hashedString := string(hashed)
+	return hashedString, nil
 }
 
 func NewUserService(repo repository.UserRepository) UserService {

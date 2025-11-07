@@ -8,7 +8,7 @@ const Home = () => {
         <div className="nav-content">
           <h1 className="nav-logo">
             <span className="nav-logo-icon">⚡</span>
-            fast-todo
+            TaskPlexus
           </h1>
           <div className="nav-links">
             <Link to="/signin" className="nav-link">Sign In</Link>

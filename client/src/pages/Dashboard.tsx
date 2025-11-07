@@ -55,6 +55,18 @@ const Dashboard = () => {
   // States for editing goals
   const [editingGoal, setEditingGoal] = useState<number | null>(null);
   const [editGoalData, setEditGoalData] = useState({ title: '', target: '', category: '' });
+  
+  // Layout view state - grid or list
+  const [viewLayout, setViewLayout] = useState<'grid' | 'list'>('grid');
+  const [goalsViewLayout, setGoalsViewLayout] = useState<'grid' | 'list'>('grid');
+  
+  // Show more/less state
+  const [showAllTodos, setShowAllTodos] = useState(false);
+  const [showAllGoals, setShowAllGoals] = useState(false);
+  
+  // Display limits
+  const TODOS_DISPLAY_LIMIT = 6;
+  const GOALS_DISPLAY_LIMIT = 6;
 
   // Handle adding new todo with selected priority
   const handleAddTodo = (e: React.FormEvent) => {
@@ -201,7 +213,7 @@ const Dashboard = () => {
         <div className="dashboard-header-content">
           <Link to="/" className="dashboard-logo">
             <span className="dashboard-logo-icon">⚡</span>
-            fast-todo
+            TaskPlexus
           </Link>
           
           <div className="dashboard-header-right">
@@ -233,6 +245,32 @@ const Dashboard = () => {
               <p className="dashboard-subtitle">Here's what's happening with your tasks today.</p>
             </div>
             <div className="welcome-actions">
+              {/* Layout Toggle Button */}
+              <button 
+                className="layout-toggle-btn"
+                onClick={() => setViewLayout(viewLayout === 'grid' ? 'list' : 'grid')}
+                title={viewLayout === 'grid' ? 'Switch to List View' : 'Switch to Grid View'}
+              >
+                {viewLayout === 'grid' ? (
+                  <>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M3 4H17M3 10H17M3 16H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    List View
+                  </>
+                ) : (
+                  <>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M3 4H8V9H3V4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 4H17V9H12V4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M3 11H8V16H3V11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 11H17V16H12V11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Grid View
+                  </>
+                )}
+              </button>
+              
               {/* Flowchart View button */}
               <button 
                 className="flowchart-view-btn"
@@ -274,18 +312,44 @@ const Dashboard = () => {
               <div className="section-header">
                 <div>
                   <h2 className="section-title">Today's Tasks</h2>
-                  <p className="section-subtitle">{totalTodos - completedTodos} tasks remaining</p>
+                  <p className="section-subtitle">
+                    {totalTodos - completedTodos} tasks remaining
+                    {todos.length > TODOS_DISPLAY_LIMIT && (
+                      <span className="item-count"> • Showing {showAllTodos ? todos.length : Math.min(TODOS_DISPLAY_LIMIT, todos.length)} of {todos.length}</span>
+                    )}
+                  </p>
                 </div>
-                {/* Button to show add todo form */}
-                <button 
-                  className="add-btn"
-                  onClick={() => setShowAddTodo(!showAddTodo)}
-                >
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M10 4V16M4 10H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                  Add Task
-                </button>
+                <div className="section-header-actions">
+                  {/* Layout toggle for todos */}
+                  <button 
+                    className="layout-toggle-sm"
+                    onClick={() => setViewLayout(viewLayout === 'grid' ? 'list' : 'grid')}
+                    title={viewLayout === 'grid' ? 'List View' : 'Grid View'}
+                  >
+                    {viewLayout === 'grid' ? (
+                      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 4H17M3 10H17M3 16H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 4H8V9H3V4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M12 4H17V9H12V4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M3 11H8V16H3V11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M12 11H17V16H12V11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </button>
+                  {/* Button to show add todo form */}
+                  <button 
+                    className="add-btn"
+                    onClick={() => setShowAddTodo(!showAddTodo)}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M10 4V16M4 10H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                    Add Task
+                  </button>
+                </div>
               </div>
 
               {/* Add Todo Form - shows when "Add Task" is clicked */}
@@ -341,8 +405,8 @@ const Dashboard = () => {
               )}
 
               {/* Todos List - displays all todos */}
-              <div className="todos-list">
-                {todos.map(todo => (
+              <div className={`todos-list ${viewLayout === 'list' ? 'list-view' : ''}`}>
+                {(showAllTodos ? todos : todos.slice(0, TODOS_DISPLAY_LIMIT)).map(todo => (
                   <div key={todo.id} className={`todo-item ${todo.completed ? 'completed' : ''}`}>
                     {/* Edit mode - shows when pencil icon is clicked */}
                     {editingTodo === todo.id ? (
@@ -442,6 +506,30 @@ const Dashboard = () => {
                   </div>
                 ))}
               </div>
+              
+              {/* Show More/Less Button for Todos */}
+              {todos.length > TODOS_DISPLAY_LIMIT && (
+                <button 
+                  className="show-more-btn"
+                  onClick={() => setShowAllTodos(!showAllTodos)}
+                >
+                  {showAllTodos ? (
+                    <>
+                      Show Less
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M12 10L8 6L4 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </>
+                  ) : (
+                    <>
+                      Show More ({todos.length - TODOS_DISPLAY_LIMIT} more)
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
             {/* Goals Section */}
@@ -449,18 +537,44 @@ const Dashboard = () => {
               <div className="section-header">
                 <div>
                   <h2 className="section-title">Goals</h2>
-                  <p className="section-subtitle">Track your progress</p>
+                  <p className="section-subtitle">
+                    Track your progress
+                    {goals.length > GOALS_DISPLAY_LIMIT && (
+                      <span className="item-count"> • Showing {showAllGoals ? goals.length : Math.min(GOALS_DISPLAY_LIMIT, goals.length)} of {goals.length}</span>
+                    )}
+                  </p>
                 </div>
-                {/* Button to show add goal form */}
-                <button 
-                  className="add-btn"
-                  onClick={() => setShowAddGoal(!showAddGoal)}
-                >
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M10 4V16M4 10H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                  Add Goal
-                </button>
+                <div className="section-header-actions">
+                  {/* Layout toggle for goals */}
+                  <button 
+                    className="layout-toggle-sm"
+                    onClick={() => setGoalsViewLayout(goalsViewLayout === 'grid' ? 'list' : 'grid')}
+                    title={goalsViewLayout === 'grid' ? 'List View' : 'Grid View'}
+                  >
+                    {goalsViewLayout === 'grid' ? (
+                      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 4H17M3 10H17M3 16H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 4H8V9H3V4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M12 4H17V9H12V4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M3 11H8V16H3V11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M12 11H17V16H12V11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </button>
+                  {/* Button to show add goal form */}
+                  <button 
+                    className="add-btn"
+                    onClick={() => setShowAddGoal(!showAddGoal)}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M10 4V16M4 10H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                    Add Goal
+                  </button>
+                </div>
               </div>
 
               {/* Add Goal Form - shows when "Add Goal" is clicked */}
@@ -504,8 +618,8 @@ const Dashboard = () => {
               )}
 
               {/* Goals List - displays all goals */}
-              <div className="goals-list">
-                {goals.map(goal => {
+              <div className={`goals-list ${goalsViewLayout === 'list' ? 'list-view' : ''}`}>
+                {(showAllGoals ? goals : goals.slice(0, GOALS_DISPLAY_LIMIT)).map(goal => {
                   const percentage = Math.round((goal.progress / goal.target) * 100);
                   return (
                     <div key={goal.id} className="goal-card">
@@ -622,6 +736,30 @@ const Dashboard = () => {
                   );
                 })}
               </div>
+              
+              {/* Show More/Less Button for Goals */}
+              {goals.length > GOALS_DISPLAY_LIMIT && (
+                <button 
+                  className="show-more-btn"
+                  onClick={() => setShowAllGoals(!showAllGoals)}
+                >
+                  {showAllGoals ? (
+                    <>
+                      Show Less
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M12 10L8 6L4 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </>
+                  ) : (
+                    <>
+                      Show More ({goals.length - GOALS_DISPLAY_LIMIT} more)
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -14,6 +14,7 @@ type UserHandler interface {
 	GetUserTodos(w http.ResponseWriter, r *http.Request)
 	SignUpUser(w http.ResponseWriter, r *http.Request)
 	RefreshToken(w http.ResponseWriter, r *http.Request)
+	SignInUser(w http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {
@@ -95,6 +96,27 @@ func (h *userHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	tokenStr, _ := newAccess.SignedString([]byte(service.JWTSECRET))
 	json.NewEncoder(w).Encode(map[string]string{"accessToken": tokenStr})
+}
+
+
+func (h *userHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
+	var userDetails repository.UserStruct
+	if err := json.NewDecoder(r.Body).Decode(&userDetails); err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})
+		return
+	}
+
+	if userDetails.Email == "" || userDetails.Password == "" {
+		json.NewEncoder(w).Encode(map[string]string{"Error": "Email/Password Empty"})
+		return
+	}
+
+	response, err := h.service.SignInUser(context.Background(), userDetails.Email, userDetails.Password)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})
+		return
+	}
+	json.NewEncoder(w).Encode(map[string]any{"response": response})
 }
 
 func NewUserHandler(service service.UserService) UserHandler {

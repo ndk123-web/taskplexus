@@ -27,7 +27,7 @@ const SignUp = () => {
         <div className="signup-nav-content">
           <Link to="/" className="signup-nav-logo">
             <span className="signup-nav-logo-icon">⚡</span>
-            fast-todo
+            TaskPlexus
           </Link>
           <div className="signup-nav-links">
             <Link to="/" className="signup-nav-link">Home</Link>
@@ -44,7 +44,7 @@ const SignUp = () => {
             <div className="signup-card">
               <div className="signup-card-header">
                 <h2 className="signup-card-title">Create Account</h2>
-                <p className="signup-card-subtitle">Join fast-todo and start organizing your life</p>
+                <p className="signup-card-subtitle">Join TaskPlexus and start organizing your life</p>
               </div>
 
               <form className="signup-form" onSubmit={handleSubmit}>
@@ -131,10 +131,10 @@ const SignUp = () => {
               <h1 className="signup-hero-title">
                 Start Your Journey with
                 <br />
-                <span className="signup-gradient-text">fast-todo</span>
+                <span className="signup-gradient-text">TaskPlexus</span>
               </h1>
               <p className="signup-hero-description">
-                Join thousands of users who trust fast-todo to organize their tasks and boost productivity.
+                Join thousands of users who trust TaskPlexus to organize their tasks and boost productivity.
               </p>
               
               <div className="signup-benefits">
