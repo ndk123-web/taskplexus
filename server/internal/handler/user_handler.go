@@ -25,6 +25,7 @@ type getUserTodoStruct struct {
 	UserId string `json:"userId"`
 }
 
+// Get User Todos Handler 
 func (h *userHandler) GetUserTodos(w http.ResponseWriter, r *http.Request) {
 	var userStruct getUserTodoStruct
 
@@ -43,6 +44,7 @@ func (h *userHandler) GetUserTodos(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(userTodos)
 }
 
+// sign up user handler
 func (h *userHandler) SignUpUser(w http.ResponseWriter, r *http.Request) {
 	var bodyResponse repository.UserStruct
 	if err := json.NewDecoder(r.Body).Decode(&bodyResponse); err != nil {
@@ -68,6 +70,7 @@ func (h *userHandler) SignUpUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]any{"response": result})
 }
 
+// refresh token user handler
 func (h *userHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	refreshToken, err := r.Cookie("_refresh_token")
 	if err != nil {
@@ -98,7 +101,7 @@ func (h *userHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"accessToken": tokenStr})
 }
 
-
+// sign in user handler
 func (h *userHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 	var userDetails repository.UserStruct
 	if err := json.NewDecoder(r.Body).Decode(&userDetails); err != nil {
