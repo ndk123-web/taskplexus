@@ -1,15 +1,25 @@
-# ⚡ Fast Todo
+# ⚡ TaskPlexus
 
-A blazing-fast todo application built with **Go** backend and **React** frontend. This project is my journey into learning Go for backend development while building a simple yet performant full-stack application.
+A professional task management application built with **Go** backend and **React** frontend. TaskPlexus combines powerful backend performance with a modern, intuitive user interface for seamless task and goal tracking.
 
-## 🎯 Why "Fast" Todo?
+## 🎯 Why TaskPlexus?
 
-Because Go makes it **FAST**! ⚡
+**Fast. Professional. Powerful.** ⚡
 
 - **Go (Golang)** - Lightning-fast backend with goroutines
 - **MongoDB Atlas** - Cloud-based NoSQL database
-- **React + TypeScript** - Modern, type-safe frontend
+- **React + TypeScript** - Modern, type-safe frontend with professional UI
 - **Vite** - Super-fast build tool
+- **Advanced Features** - Task priorities, goal tracking, analytics, and flowchart visualization
+
+## ✨ Features
+
+- 📋 **Task Management** - Create, edit, delete tasks with priority levels (Low, Medium, High)
+- 🎯 **Goal Tracking** - Set goals with progress tracking and visual indicators
+- 📊 **Analytics Dashboard** - Interactive charts showing task completion trends
+- 🔄 **Flowchart View** - Visualize your tasks in an interactive canvas
+- 📈 **Progress Monitoring** - Real-time stats for Total, In Progress, Completed, and Not Started tasks
+- 🎨 **Professional UI** - Glass-morphism design with smooth animations
 
 ## 🚀 Tech Stack
 
@@ -22,15 +32,20 @@ Because Go makes it **FAST**! ⚡
 ### Frontend
 - **React 19** - UI library
 - **TypeScript** - Type safety
+- **React Router** - Navigation and routing
+- **React Flow** - Flowchart visualization
 - **Vite** - Build tool & dev server
 - **SWC** - Super-fast TypeScript/React compiler
 
 ## 📁 Project Structure
 
 ```
-fast-todo/
+taskplexus/
 ├── client/              # React frontend
 │   ├── src/
+│   │   ├── pages/      # Dashboard, SignIn, SignUp, Flowchart
+│   │   ├── assets/     # Images and static files
+│   │   └── main.tsx    # Entry point
 │   ├── public/
 │   └── package.json
 │
@@ -41,10 +56,11 @@ fast-todo/
     ├── internal/
     │   ├── app/         # Application initialization
     │   ├── config/      # Configuration
-    │   ├── handler/     # HTTP handlers
+    │   ├── handler/     # HTTP handlers (todos, users)
     │   ├── service/     # Business logic
     │   ├── repository/  # Database operations
     │   ├── model/       # Data models
+    │   ├── middleware/  # Auth, logging middleware
     │   └── server/      # HTTP server setup
     └── go.mod
 ```
@@ -57,6 +73,8 @@ Client Request
 Server (Routes)
     ↓
 Handler (HTTP Layer) - Handles requests/responses
+    ↓
+Middleware (Auth, Logging) - Request processing
     ↓
 Service (Business Logic) - Processing & validation
     ↓
@@ -127,10 +145,14 @@ This project is built while learning **Go for backend development**. Key concept
 - ✅ HTTP server with net/http
 - ✅ Error handling in Go
 - ✅ Context management
-- ✅ Environment configuration
+- ✅ Middleware implementation
+- ✅ Professional frontend design patterns
+- ✅ State management in React
+- ✅ Interactive data visualization
 
 ## 📝 API Endpoints
 
+### Todos
 ```
 GET    /todos          # Get all todos
 POST   /todos          # Create a new todo
@@ -138,15 +160,35 @@ PUT    /todos/:id      # Update a todo
 DELETE /todos/:id      # Delete a todo
 ```
 
+### Users
+```
+POST   /users/signup   # User registration
+POST   /users/login    # User authentication
+GET    /users/:id      # Get user profile
+```
+
+## 🎨 UI Features
+
+- **Professional Dashboard** - Comprehensive overview with stat cards
+- **Task Analytics** - Visual representation of task completion over time
+- **Recent Tasks** - Quick access to latest activities
+- **Interactive Flowchart** - Drag-and-drop task visualization
+- **Responsive Sidebar** - Collapsible navigation for better space management
+- **Glass-morphism Design** - Modern, professional aesthetic
+- **Smooth Animations** - Enhanced user experience with transitions
+
 ## 🔮 Future Enhancements
 
-- [ ] Add authentication & authorization
-- [ ] Implement middleware (CORS, logging, auth)
-- [ ] Add more CRUD operations
-- [ ] Use Chi/Gorilla Mux router
-- [ ] Add unit tests
-- [ ] Add Docker support
-- [ ] Deploy to cloud
+- [ ] Real-time collaboration features
+- [ ] Task categories and tags
+- [ ] Deadline notifications
+- [ ] Export/Import functionality
+- [ ] Dark/Light theme toggle
+- [ ] Mobile app (React Native)
+- [ ] Task dependencies in flowchart
+- [ ] Advanced analytics with filters
+- [ ] Docker support
+- [ ] Cloud deployment
 
 ## 📚 What I Learned
 
@@ -156,6 +198,9 @@ DELETE /todos/:id      # Delete a todo
 - **Interfaces in Go** - Flexible & testable code
 - **MongoDB with Go** - BSON, cursors, context
 - **Clean Architecture** - Maintainable code structure
+- **Professional UI/UX** - Modern design principles
+- **React Best Practices** - Component composition, hooks
+- **Interactive Visualizations** - Canvas-based rendering
 
 ## 🤝 Contributing
 
@@ -167,6 +212,6 @@ MIT License - Feel free to use this for learning!
 
 ---
 
-**Built with 💙 while learning Go**
+**Built with 💙 while learning Go and modern web development**
 
-*"The best way to learn is to build!"*
+*"The best way to learn is to build something amazing!"*
