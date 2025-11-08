@@ -563,7 +563,7 @@ const Dashboard = () => {
         
         <div className="sidebar-footer">
           <div className="user-profile">
-            <div className="user-profile-avatar">JD</div>
+            <div className="user-profile-avatar">✨</div>
             {!sidebarCollapsed && (
               <div className="user-profile-info">
                 <div className="user-profile-name">{userInfo?.fullName}</div>
