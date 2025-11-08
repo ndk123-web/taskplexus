@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useUserStore from '../store/useUserInfo';
+import useWorkspaceStore from '../store/useWorkspaceStore';
 import './Dashboard.css';
 
 // Todo interface - defines structure for task items
@@ -26,9 +27,24 @@ interface Goal {
 const Dashboard = () => {
   const navigate = useNavigate();
   const {userInfo, signOutUser} = useUserStore();
+  const { workspaces, currentWorkspace, addWorkspace, editWorkspace, deleteWorkspace, setCurrentWorkspace, initializeDefaultWorkspace } = useWorkspaceStore();
+  
   // Sidebar state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState('overview');
+  
+  // Workspace states
+  const [showWorkspaceMenu, setShowWorkspaceMenu] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
+  const [showAddWorkspace, setShowAddWorkspace] = useState(false);
+  const [newWorkspaceName, setNewWorkspaceName] = useState('');
+  const [editingWorkspaceId, setEditingWorkspaceId] = useState<string | null>(null);
+  const [editingWorkspaceName, setEditingWorkspaceName] = useState('');
+  
+  // Initialize default workspace on mount
+  useEffect(() => {
+    initializeDefaultWorkspace();
+  }, [initializeDefaultWorkspace]);
   
   // Demo todos with different priorities and statuses
   const [todos, setTodos] = useState<Todo[]>([
@@ -232,6 +248,50 @@ const Dashboard = () => {
     ));
   };
 
+  // Workspace handlers
+  const handleAddWorkspace = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newWorkspaceName.trim()) {
+      addWorkspace(newWorkspaceName.trim());
+      setNewWorkspaceName('');
+      setShowAddWorkspace(false);
+    }
+  };
+
+  const handleEditWorkspace = (id: string, currentName: string) => {
+    setEditingWorkspaceId(id);
+    setEditingWorkspaceName(currentName);
+    setShowWorkspaceMenu(null);
+  };
+
+  const handleSaveEditWorkspace = () => {
+    if (editingWorkspaceId && editingWorkspaceName.trim()) {
+      editWorkspace(editingWorkspaceId, editingWorkspaceName.trim());
+      setEditingWorkspaceId(null);
+      setEditingWorkspaceName('');
+    }
+  };
+
+  const handleDeleteWorkspace = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this workspace?')) {
+      deleteWorkspace(id);
+      setShowWorkspaceMenu(null);
+    }
+  };
+
+  const handleWorkspaceClick = (workspace: typeof workspaces[0]) => {
+    setCurrentWorkspace(workspace);
+  };
+
+  const handleMenuClick = (workspaceId: string, event: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setMenuPosition({
+      top: rect.top - 90, // Position above the button
+      left: rect.left - 140 + rect.width
+    });
+    setShowWorkspaceMenu(showWorkspaceMenu === workspaceId ? null : workspaceId);
+  };
+
   // Logout and redirect to home
   const handleLogout = () => {
     signOutUser();
@@ -319,14 +379,194 @@ const Dashboard = () => {
             </svg>
             {!sidebarCollapsed && <span>Flowchart</span>}
           </button>
+          
+          {/* Workspaces Section */}
+          {!sidebarCollapsed && (
+            <div className="sidebar-workspaces">
+              <div className="sidebar-workspaces-header">
+                <span className="sidebar-workspaces-title">Workspaces</span>
+                <button 
+                  className="workspace-add-btn"
+                  onClick={() => setShowAddWorkspace(true)}
+                  title="Add Workspace"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 3V13M3 8H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+              
+              {/* Add Workspace Form */}
+              {showAddWorkspace && (
+                <form className="workspace-add-form" onSubmit={handleAddWorkspace}>
+                  <input
+                    type="text"
+                    value={newWorkspaceName}
+                    onChange={(e) => setNewWorkspaceName(e.target.value)}
+                    placeholder="Workspace name"
+                    className="workspace-input"
+                    autoFocus
+                  />
+                  <div className="workspace-form-actions">
+                    <button type="submit" className="workspace-submit-btn">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M11.6667 3.5L5.25 9.91667L2.33333 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                    <button 
+                      type="button" 
+                      className="workspace-cancel-btn"
+                      onClick={() => {
+                        setShowAddWorkspace(false);
+                        setNewWorkspaceName('');
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M10.5 3.5L3.5 10.5M3.5 3.5L10.5 10.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                </form>
+              )}
+              
+              {/* Workspaces List */}
+              <div className="sidebar-workspaces-list">
+                {workspaces.map((workspace) => (
+                  <div 
+                    key={workspace.id}
+                    className={`workspace-item ${currentWorkspace?.id === workspace.id ? 'active' : ''}`}
+                  >
+                    {editingWorkspaceId === workspace.id ? (
+                      <div className="workspace-edit-form">
+                        <input
+                          type="text"
+                          value={editingWorkspaceName}
+                          onChange={(e) => setEditingWorkspaceName(e.target.value)}
+                          className="workspace-input"
+                          autoFocus
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleSaveEditWorkspace();
+                            } else if (e.key === 'Escape') {
+                              setEditingWorkspaceId(null);
+                              setEditingWorkspaceName('');
+                            }
+                          }}
+                        />
+                        <div className="workspace-edit-actions">
+                          <button 
+                            className="workspace-save-btn"
+                            onClick={handleSaveEditWorkspace}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                              <path d="M11.6667 3.5L5.25 9.91667L2.33333 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                          <button 
+                            className="workspace-cancel-btn"
+                            onClick={() => {
+                              setEditingWorkspaceId(null);
+                              setEditingWorkspaceName('');
+                            }}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                              <path d="M10.5 3.5L3.5 10.5M3.5 3.5L10.5 10.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          className="workspace-name"
+                          onClick={() => handleWorkspaceClick(workspace)}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M2 4.66667C2 4.31304 2.14048 3.97391 2.39052 3.72386C2.64057 3.47381 2.97971 3.33333 3.33333 3.33333H6L7.33333 5.33333H12.6667C13.0203 5.33333 13.3594 5.47381 13.6095 5.72386C13.8595 5.97391 14 6.31304 14 6.66667V11.3333C14 11.687 13.8595 12.0261 13.6095 12.2761C13.3594 12.5262 13.0203 12.6667 12.6667 12.6667H3.33333C2.97971 12.6667 2.64057 12.5262 2.39052 12.2761C2.14048 12.0261 2 11.687 2 11.3333V4.66667Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          <span className="workspace-name-text">{workspace.name}</span>
+                          {workspace.isDefault && <span className="workspace-badge">Default</span>}
+                        </button>
+                        {!workspace.isDefault && (
+                          <div className="workspace-menu">
+                            <button 
+                              className="workspace-menu-btn"
+                              onClick={(e) => handleMenuClick(workspace.id, e)}
+                            >
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <circle cx="8" cy="3" r="1" fill="currentColor"/>
+                                <circle cx="8" cy="8" r="1" fill="currentColor"/>
+                                <circle cx="8" cy="13" r="1" fill="currentColor"/>
+                              </svg>
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </nav>
+        
+        {/* Workspace Dropdown Menu Portal */}
+        {showWorkspaceMenu && menuPosition && (
+          <>
+            <div 
+              className="workspace-dropdown-overlay"
+              onClick={() => setShowWorkspaceMenu(null)}
+            />
+            <div 
+              className="workspace-dropdown"
+              style={{
+                position: 'fixed',
+                top: `${menuPosition.top}px`,
+                left: `${menuPosition.left}px`,
+              }}
+            >
+              {workspaces.find(w => w.id === showWorkspaceMenu) && (
+                <>
+                  <button 
+                    className="workspace-dropdown-item"
+                    onClick={() => {
+                      const workspace = workspaces.find(w => w.id === showWorkspaceMenu);
+                      if (workspace) {
+                        handleEditWorkspace(workspace.id, workspace.name);
+                      }
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path d="M10.2083 1.75004C10.3588 1.59958 10.5385 1.48061 10.7367 1.40024C10.9349 1.31986 11.1477 1.27954 11.3625 1.27954C11.5773 1.27954 11.7901 1.31986 11.9883 1.40024C12.1865 1.48061 12.3662 1.59958 12.5167 1.75004C12.6671 1.9005 12.7861 2.08019 12.8665 2.27839C12.9469 2.47659 12.9872 2.68938 12.9872 2.90421C12.9872 3.11903 12.9469 3.33182 12.8665 3.53002C12.7861 3.72822 12.6671 3.90791 12.5167 4.05837L4.66667 11.9084L1.75 12.6667L2.50833 9.75004L10.2083 1.75004Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Edit
+                  </button>
+                  <button 
+                    className="workspace-dropdown-item delete"
+                    onClick={() => {
+                      const workspace = workspaces.find(w => w.id === showWorkspaceMenu);
+                      if (workspace) {
+                        handleDeleteWorkspace(workspace.id);
+                      }
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path d="M1.75 3.5H12.25M11.0833 3.5V11.6667C11.0833 12.25 10.5 12.8333 9.91667 12.8333H4.08333C3.5 12.8333 2.91667 12.25 2.91667 11.6667V3.5M4.66667 3.5V2.33333C4.66667 1.75 5.25 1.16667 5.83333 1.16667H8.16667C8.75 1.16667 9.33333 1.75 9.33333 2.33333V3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Delete
+                  </button>
+                </>
+              )}
+            </div>
+          </>
+        )}
         
         <div className="sidebar-footer">
           <div className="user-profile">
             <div className="user-profile-avatar">JD</div>
             {!sidebarCollapsed && (
               <div className="user-profile-info">
-                <div className="user-profile-name">{userInfo?.name}</div>
+                <div className="user-profile-name">{userInfo?.fullName}</div>
                 <div className="user-profile-email">{userInfo?.email}</div>
               </div>
             )}
@@ -359,6 +599,19 @@ const Dashboard = () => {
                 {activeSection === 'tasks' && 'Tasks'}
                 {activeSection === 'goals' && 'Goals'}
               </span>
+            </div>
+          </div>
+          
+          {/* Current Workspace Display */}
+          <div className="dashboard-top-header-right">
+            <div className="current-workspace-display">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M2.25 5.25C2.25 4.83579 2.41462 4.43855 2.70765 4.14549C3.00067 3.85243 3.39782 3.6875 3.8125 3.6875H6.75L8.25 6H14.1875C14.6022 6 14.9994 6.16462 15.2924 6.45765C15.5855 6.75067 15.75 7.14782 15.75 7.5625V12.75C15.75 13.1647 15.5855 13.5619 15.2924 13.8549C14.9994 14.148 14.6022 14.3125 14.1875 14.3125H3.8125C3.39782 14.3125 3.00067 14.148 2.70765 13.8549C2.41462 13.5619 2.25 13.1647 2.25 12.75V5.25Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <div className="current-workspace-info">
+                <span className="current-workspace-label">Workspace</span>
+                <span className="current-workspace-name">{currentWorkspace?.name || 'Personal'}</span>
+              </div>
             </div>
           </div>
          

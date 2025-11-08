@@ -57,7 +57,7 @@ func (h *userHandler) SignUpUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err2 := h.service.SignUpUser(context.Background(), bodyResponse.Email, bodyResponse.Password)
+	result, err2 := h.service.SignUpUser(context.Background(), bodyResponse.Email, bodyResponse.Password, bodyResponse.FullName)
 	if err2 != nil {
 		json.NewEncoder(w).Encode(map[string]string{"Error": err2.Error()})
 		return

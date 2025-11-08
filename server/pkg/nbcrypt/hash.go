@@ -1,4 +1,4 @@
-package bcrypt
+package nbcrypt
 
 import (
 	"fmt"

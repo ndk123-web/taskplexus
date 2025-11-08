@@ -3,8 +3,10 @@ package repository
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/ndk123-web/fast-todo/internal/model"
+	"github.com/ndk123-web/fast-todo/pkg/nbcrypt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,13 +14,16 @@ import (
 )
 
 type UserStruct struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email     string    `json:"email" bson:"email"`
+	Password  string    `json:"password" bson:"password"`
+	CreatedAt time.Time `json:"createdAt" bson:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt" bson:"updatedAt"`
+	FullName  string    `json:"fullName,omitempty" bson:"fullName"`
 }
 
 type UserRepository interface {
 	GetUserTodos(ctx context.Context, userId string) ([]model.Todo, error)
-	SignUpUser(ctx context.Context, email string, password string) (*SignUpResponse, error)
+	SignUpUser(ctx context.Context, email string, password string, fullName string) (*SignUpResponse, error)
 	SignInUser(ctx context.Context, email string, password string) (*SignUpResponse, error)
 }
 
@@ -72,9 +77,10 @@ type SignUpResponse struct {
 	AccessToken  string `json:"_accessToken"`
 	UserId       string `json:"userId"`
 	RefreshToken string `json:"_refreshToken"`
+	FullName     string `json:"fullName,omitempty"`
 }
 
-func (r *userRepo) SignUpUser(ctx context.Context, email string, password string) (*SignUpResponse, error) {
+func (r *userRepo) SignUpUser(ctx context.Context, email string, password string, fullName string) (*SignUpResponse, error) {
 
 	var user UserStruct
 	// before we need to find if email already exist
@@ -89,8 +95,7 @@ func (r *userRepo) SignUpUser(ctx context.Context, email string, password string
 
 	// else safe
 	// we need to hash the password before storing inside DB
-	currentUser := UserStruct{Email: email, Password: password}
-
+	currentUser := UserStruct{Email: email, Password: password, CreatedAt: time.Now(), UpdatedAt: time.Now(), FullName: fullName}
 	// we need to store the user in Mongodb
 	inserted, err := r.userColletion.InsertOne(ctx, currentUser)
 	if err != nil {
@@ -102,8 +107,9 @@ func (r *userRepo) SignUpUser(ctx context.Context, email string, password string
 	userId := oid.Hex()
 
 	return &SignUpResponse{
-		Email:  email,
-		UserId: userId,
+		Email:    email,
+		UserId:   userId,
+		FullName: fullName,
 	}, nil
 }
 
@@ -111,6 +117,7 @@ type SignInUserRequest struct {
 	Email          string             `json:"email" bson:"email"`
 	ID             primitive.ObjectID `json:"_id" bson:"_id"`
 	HashedPassword string             `json:"password" bson:"password"`
+	FullName       string             `json:"fullName,omitempty" bson:"fullName,omitempty"`
 }
 
 func (r *userRepo) SignInUser(ctx context.Context, email string, password string) (*SignUpResponse, error) {
@@ -125,16 +132,22 @@ func (r *userRepo) SignInUser(ctx context.Context, email string, password string
 	res.Decode(&user)
 
 	//password checking
-	ok, err := ValidatePassword(password, user.HashedPassword)
+	ok, err := nbcrypt.ValidatePassword(password, user.HashedPassword)
 	if !ok || err != nil {
 		return nil, err
 	}
 
 	userId := user.ID.Hex()
+	updated := bson.M{"$set": bson.M{"updatedAt": time.Now()}}
+	updatedResult := r.userColletion.FindOneAndUpdate(ctx, filter, updated)
+	if err := updatedResult.Err(); err != nil {
+		return nil, err
+	}
 
 	return &SignUpResponse{
-		Email:  email,
-		UserId: userId,
+		Email:    email,
+		UserId:   userId,
+		FullName: user.FullName,
 	}, nil
 }
 

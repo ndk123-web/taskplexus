@@ -16,6 +16,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import './FlowchartView.css';
+import useWorkspaceStore from '../store/useWorkspaceStore';
 
 // Todo interface - same as Dashboard
 interface Todo {
@@ -27,6 +28,12 @@ interface Todo {
 
 const FlowchartView = () => {
   const navigate = useNavigate();
+  const { currentWorkspace, initializeDefaultWorkspace } = useWorkspaceStore();
+  
+  // Initialize default workspace on mount
+  useEffect(() => {
+    initializeDefaultWorkspace();
+  }, [initializeDefaultWorkspace]);
   
   // Help panel toggle state
   const [showHelp, setShowHelp] = useState(false);
@@ -180,6 +187,17 @@ const FlowchartView = () => {
             <span className="flowchart-logo-icon">⚡</span>
             TaskPlexus
           </Link>
+          
+          {/* Current Workspace Display */}
+          <div className="flowchart-workspace-display">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M2.25 5.25C2.25 4.83579 2.41462 4.43855 2.70765 4.14549C3.00067 3.85243 3.39782 3.6875 3.8125 3.6875H6.75L8.25 6H14.1875C14.6022 6 14.9994 6.16462 15.2924 6.45765C15.5855 6.75067 15.75 7.14782 15.75 7.5625V12.75C15.75 13.1647 15.5855 13.5619 15.2924 13.8549C14.9994 14.148 14.6022 14.3125 14.1875 14.3125H3.8125C3.39782 14.3125 3.00067 14.148 2.70765 13.8549C2.41462 13.5619 2.25 13.1647 2.25 12.75V5.25Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <div className="flowchart-workspace-info">
+              <span className="flowchart-workspace-label">Workspace</span>
+              <span className="flowchart-workspace-name">{currentWorkspace?.name || 'Personal'}</span>
+            </div>
+          </div>
           
           <div className="flowchart-header-right">
             {/* Back to Dashboard button */}

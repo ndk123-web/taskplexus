@@ -14,7 +14,7 @@ var JWTSECRET = []byte(os.Getenv("JWT_SECRET"))
 
 type UserService interface {
 	GetUserTodos(ctx context.Context, userId string) ([]model.Todo, error)
-	SignUpUser(ctx context.Context, email string, password string) (*repository.SignUpResponse, error)
+	SignUpUser(ctx context.Context, email string, password string, fullName string) (*repository.SignUpResponse, error)
 	SignInUser(ctx context.Context, email string, password string) (*repository.SignUpResponse, error)
 }
 
@@ -26,7 +26,7 @@ func (s *userService) GetUserTodos(ctx context.Context, userId string) ([]model.
 	return s.repo.GetUserTodos(ctx, userId)
 }
 
-func (s *userService) SignUpUser(ctx context.Context, email string, password string) (*repository.SignUpResponse, error) {
+func (s *userService) SignUpUser(ctx context.Context, email string, password string, fullName string) (*repository.SignUpResponse, error) {
 
 	// bcrypt the password
 	hashedPassword, err := BcryptForPassword(password)
@@ -34,7 +34,7 @@ func (s *userService) SignUpUser(ctx context.Context, email string, password str
 		return nil, err
 	}
 
-	response, err := s.repo.SignUpUser(ctx, email, hashedPassword)
+	response, err := s.repo.SignUpUser(ctx, email, hashedPassword,fullName)
 	if err != nil {
 		return nil, err
 	}

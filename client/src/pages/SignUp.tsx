@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import signUpUserApi from '../api/signUpUserApi';
+import useUserStore from '../store/useUserInfo';
 import './SignUp.css';
 
 const SignUp = () => {
@@ -8,15 +10,31 @@ const SignUp = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
+  const { signinUser } = useUserStore();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       alert('Passwords do not match');
       return;
     }
+
+    try {
+      const response = await signUpUserApi({ fullName: name, email, password });
+      if (response && response.response) {
+        console.log('Sign Up Response:', response);
+        signinUser(response.response);
+        navigate('/dashboard'); 
+      }
+    } catch (error) {
+      console.error('Sign up error:', error);
+      alert('Failed to sign up');
+    }
+
+
     // Handle sign up logic here
     console.log('Sign up:', { name, email, password });
+
     navigate('/dashboard');
   };
 

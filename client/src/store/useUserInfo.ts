@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface User {
-  name?: string;
+  fullName?: string;
   email: string;
   userId: string;
   _accessToken: string;
@@ -26,7 +26,7 @@ const useUserStore = create<UserState>()(
         set({
           userInfo: {
             ...data,
-            name: data.email,
+            fullName: data.fullName || data.email,
             auth: true,
           },
         });
