@@ -14,5 +14,6 @@ type Todo struct {
 
 	// why not omitempty
 	// because if false then it wont show in json / bson response
-	Done bool `bson:"done" json:"done"`
+	Done        bool               `bson:"done" json:"done"`
+	WorkspaceId primitive.ObjectID `bson:"worspaceId" json:"worspaceId"`
 }

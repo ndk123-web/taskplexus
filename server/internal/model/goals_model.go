@@ -10,4 +10,5 @@ type Goals struct {
 	Category      string             `bson:"category" json:"category"`
 	Done          bool               `bson:"done" json:"done"`
 	CurrentTarget int                `bson:"currentTarget" json:"currentTarget"`
+	WorkspaceId   primitive.ObjectID `bson:"workspaceId" json:"workspaceId"`
 }
