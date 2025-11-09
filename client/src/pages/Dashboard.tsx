@@ -25,9 +25,36 @@ interface Goal {
 
 
 const Dashboard = () => {
+
   const navigate = useNavigate();
   const {userInfo, signOutUser} = useUserStore();
   const { workspaces, currentWorkspace, addWorkspace, editWorkspace, deleteWorkspace, setCurrentWorkspace, initializeDefaultWorkspace } = useWorkspaceStore();
+  
+  // Wait for hydration from IndexedDB
+  const [isHydrated, setIsHydrated] = useState(false);
+  
+  useEffect(() => {
+    // Check if store is hydrated
+    // here we listen for the hydration event
+
+    // onFinishHydration returns an unsubscribe function so that we can stop listening when not needed
+    // onFinishHydration takes function that automatically called when hydration is done
+    const unsubHydrate = useWorkspaceStore.persist.onFinishHydration(() => {
+      setIsHydrated(true);
+      initializeDefaultWorkspace();
+    });
+    
+    // If already hydrated
+    if (useWorkspaceStore.persist.hasHydrated()) {
+      setIsHydrated(true);
+      initializeDefaultWorkspace();
+    }
+    
+    // Cleanup subscription on unmount
+    // beause we don't need to listen anymore after hydration
+    // cleans the memory leak
+    return () => unsubHydrate();
+  }, [initializeDefaultWorkspace]);
   
   // Sidebar state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -40,11 +67,6 @@ const Dashboard = () => {
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [editingWorkspaceId, setEditingWorkspaceId] = useState<string | null>(null);
   const [editingWorkspaceName, setEditingWorkspaceName] = useState('');
-  
-  // Initialize default workspace on mount
-  useEffect(() => {
-    initializeDefaultWorkspace();
-  }, [initializeDefaultWorkspace]);
   
   // Demo todos with different priorities and statuses
   const [todos, setTodos] = useState<Todo[]>([
@@ -307,6 +329,18 @@ const Dashboard = () => {
   
   // Recent tasks (last 5)
   const recentTasks = [...todos].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 5);
+
+  // Show loading until hydrated
+  if (!isHydrated) {
+    return (
+      <div className="dashboard-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <div style={{ textAlign: 'center', color: 'white' }}>
+          <div style={{ fontSize: '48px', marginBottom: '20px' }}>⚡</div>
+          <div style={{ fontSize: '18px', opacity: 0.7 }}>Loading workspace...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">
