@@ -58,15 +58,14 @@ func (h *todoHandler) GetTodos(w http.ResponseWriter, r *http.Request) {
 func (h *todoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 
 	// Regex Based to get userId and workspaceID
-	var todoPath = regexp.MustCompile(`^/api/v1/users/([0-9a-zA-Z\-]+)/create-todo/([0-9a-zA-Z\-]+)$`)
-	matchers := todoPath.FindStringSubmatch(r.URL.Path)
+	// var todoPath = regexp.MustCompile(`^/api/v1/users/([0-9a-zA-Z\-]+)/create-todo/([0-9a-zA-Z\-]+)$`)
+	// matchers := todoPath.FindStringSubmatch(r.URL.Path)
 
-	userId := matchers[1]
-	workspaceId := matchers[2]
+	// userId := matchers[1]
+	// workspaceId := matchers[2]
 
-	
-	// userId := r.PathValue("userId")
-	// workspaceId := r.PathValue("workspaceID")
+	userId := r.PathValue("userId")
+	workspaceId := r.PathValue("workspaceId")
 
 	// debug
 	fmt.Println("User ID:", userId)
