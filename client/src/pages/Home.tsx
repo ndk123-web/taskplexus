@@ -1,7 +1,16 @@
 import { Link } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import useUserStore from '../store/useUserInfo';
+import dotenv from 'dotenv';
 import './Home.css';
 
 const Home = () => {
+
+  // Load environment variables
+  dotenv.config();
+
+  let userInfo = useUserStore(state => state.userInfo);
+
   return (
     <div className="home-container">
       <nav className="navbar">
@@ -35,12 +44,20 @@ const Home = () => {
           </p>
           
           <div className="cta-buttons">
+
+            {userInfo?.auth ? (<>
+              <Link to="/dashboard" className="cta-primary">
+              Go to Dashboard
+              </Link>
+            </>):(<>
             <Link to="/signup" className="cta-primary">
               Start Free Today
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </Link>
+            </>)}
+
             <Link to="/signin" className="cta-secondary">
               Sign In
             </Link>
