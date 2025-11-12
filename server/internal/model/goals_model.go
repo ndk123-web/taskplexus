@@ -3,7 +3,7 @@ package model
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Goals struct {
-	ID            primitive.ObjectID `bson:"_id" json:"_id"`
+	ID            primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 	Title         string             `bson:"title" json:"title"`
 	UserId        primitive.ObjectID `bson:"userId" json:"userId"`
 	TargetDays    int                `bson:"targetDays" json:"targetDays"`

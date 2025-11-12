@@ -11,6 +11,7 @@ import (
 
 type GoalRepository interface {
 	GetUserGoals(ctx context.Context, userId string, workspaceId string) ([]model.Goals, error)
+	CreateUserGoal(ctx context.Context, userId string, workspaceId string, goalName string, targetDays int64, category string) (model.Goals, error)
 }
 
 type goalRepository struct {
@@ -52,6 +53,42 @@ func (r *goalRepository) GetUserGoals(ctx context.Context, userId string, worksp
 	}
 
 	return goalsDocs, nil
+}
+
+func (r *goalRepository) CreateUserGoal(ctx context.Context, userId string, workspaceId string, goalName string, targetDays int64, category string) (model.Goals, error) {
+	if userId == "" || workspaceId == "" {
+		return model.Goals{}, errors.New("UserId / WorkspaceId is Empty in Repo")
+	}
+
+	// convert string -> ObjectId
+	userOid, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return model.Goals{}, err
+	}
+	workspaceOid, err := primitive.ObjectIDFromHex(workspaceId)
+	if err != nil {
+		return model.Goals{}, err
+	}
+
+	insert := model.Goals{
+		ID:          primitive.NewObjectID(),
+		UserId:      userOid,
+		WorkspaceId: workspaceOid,
+		TargetDays:  int(targetDays),
+		Title:       goalName,
+		Category:    category,
+	}
+
+	insertedRes, err := r.goalCollection.InsertOne(ctx, insert)
+	if err != nil {
+		return model.Goals{}, err
+	}
+
+	if oid, ok := insertedRes.InsertedID.(primitive.ObjectID); ok {
+		insert.ID = oid
+	}
+
+	return insert, nil
 }
 
 func NewGoalRepository(goalCollection *mongo.Collection) GoalRepository {
