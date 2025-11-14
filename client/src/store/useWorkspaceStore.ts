@@ -3,7 +3,9 @@ import { persist } from "zustand/middleware";
 import { getItem, setItem, deleteItem } from "./indexDB/indexDBStorage";
 import type { PersistStorage } from "zustand/middleware";
 import createWorkspaceAPI from "../api/createWorkspaceApi";
+import deleteWorkspaceAPI from "../api/deleteWorkspaceApi";
 import useUserStore from "./useUserInfo";
+import { use } from "react";
 
 // Todo interface
 export interface Todo {
@@ -188,6 +190,12 @@ const useWorkspaceStore = create<WorkspaceState>()(
 
       // WORKSPACE ACTIONS
       addWorkspace: async (name: string) => {
+        // need to check for duplicate names ?
+        if (get().workspaces.find((ws) => ws.name === name)) {
+          alert("Workspace with this name already exists.");
+          return;
+        }
+
         const tempId = `workspace_${Date.now()}`;
         const newWorkspace: Workspace = {
           id: tempId,
@@ -282,9 +290,21 @@ const useWorkspaceStore = create<WorkspaceState>()(
 
         const oldWorkspaces = get().workspaces;
 
-        // Optimistic update
+        const ToBeDeleteWorkspace: Workspace | undefined = oldWorkspaces.find(
+          (ws) => ws.id === id
+        );
+        if (!ToBeDeleteWorkspace) {
+          alert("Workspace not found");
+          return;
+        }
+
+        // Set status to PENDING for potential UI indication of deletion in progress
+        ToBeDeleteWorkspace.status = "PENDING";
+
+        // Optimistic update (change UI instantly)
         set({ workspaces: oldWorkspaces.filter((ws) => ws.id !== id) });
 
+        // If the deleted workspace is the current one, switch to default workspace
         if (get().currentWorkspace?.id === id) {
           const defaultWorkspace = get().workspaces.find((ws) => ws.isDefault);
           if (defaultWorkspace) {
@@ -293,13 +313,29 @@ const useWorkspaceStore = create<WorkspaceState>()(
         }
 
         try {
+          const userId = useUserStore.getState().userInfo?.userId;
+          if (!userId) throw new Error("User not logged in");
+
           // API call
-          // await deleteWorkspaceAPI({ workspaceId: id });
+          const response: any = await deleteWorkspaceAPI({
+            workspaceName: ToBeDeleteWorkspace.name,
+            userId: userId,
+          });
+          console.log("Response from deleteWorkspaceAPI:", response);
+
+          // Check if response indicates success
+          if (response.response !== "Success") {
+            throw new Error("Failed to delete workspace on server");
+          }
           console.log("✅ Workspace deleted");
         } catch (error) {
           console.error("❌ Failed to delete workspace:", error);
-          // Rollback
+          
+          // Rollback on error - restore old workspaces
           set({ workspaces: oldWorkspaces });
+
+          // Update status to FAILED for error indication
+          ToBeDeleteWorkspace.status = "FAILED";
           alert("Failed to delete workspace. Please try again.");
         }
       },
