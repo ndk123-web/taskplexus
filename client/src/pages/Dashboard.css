@@ -1855,6 +1855,45 @@
   color: white;
 }
 
+.workspace-badge-error {
+  padding: 3px 8px;
+  background: rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(102, 126, 234, 0.4);
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #a5b4fc;
+  flex-shrink: 0;
+}
+
+.workspace-badge-pending{
+  padding: 3px 8px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fca5a5;
+  flex-shrink: 0;
+}
+
+.workspace-badge-success{
+  padding: 3px 8px;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6ee7b7;
+  flex-shrink: 0;
+}
+
 .sidebar-workspaces-list {
   display: flex;
   flex-direction: column;
@@ -2219,3 +2258,4 @@
     grid-template-columns: 1fr;
   }
 }
+

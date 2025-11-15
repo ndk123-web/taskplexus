@@ -17,6 +17,8 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import './FlowchartView.css';
 import useWorkspaceStore from '../store/useWorkspaceStore';
+import { userInfo } from 'os';
+import useUserStore from '../store/useUserInfo';
 
 // Todo interface - same as Dashboard
 interface Todo {
@@ -208,8 +210,8 @@ const FlowchartView = () => {
 
             {/* User info */}
             <div className="user-info">
-              <div className="user-avatar">JD</div>
-              <span className="user-name">John Doe</span>
+              <div className="user-avatar">✨</div>
+              <span className="user-name">{useUserStore.getState().userInfo?.fullName}</span>
             </div>
 
             {/* Logout button */}

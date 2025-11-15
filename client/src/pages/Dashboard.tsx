@@ -522,6 +522,9 @@ const Dashboard = () => {
                           {/* Name could be long because we cant trust users for destroying the app */}
                           <span className="workspace-name-text">{workspace.name.substring(0,15)}</span>
                           {workspace.isDefault && <span className="workspace-badge">Default</span>}
+                          {workspace.status === "FAILED" && <span className="workspace-badge-error">E</span>}
+                          {workspace.status === "PENDING" && <span className="workspace-badge-pending">P</span>}
+                          {workspace.status === "SUCCESS" && <span className="workspace-badge-success">S</span>}
                         </button>
                         {!workspace.isDefault && (
                           <div className="workspace-menu">

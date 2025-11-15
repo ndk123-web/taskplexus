@@ -263,17 +263,18 @@ const useWorkspaceStore = create<WorkspaceState>()(
           alert("Workspace not found");
           return;
         }
-        workspaceToEdit.status = "PENDING";
+        
+        const oldWorkspaceName = workspaceToEdit.name;
 
-        // Optimistic update
+        // Optimistic update with PENDING status
         set({
           workspaces: oldWorkspaces.map((ws) =>
-            ws.id === id ? { ...ws, name } : ws
+            ws.id === id ? { ...ws, name, status: "PENDING" } : ws
           ),
         });
 
         if (get().currentWorkspace?.id === id) {
-          set({ currentWorkspace: { ...get().currentWorkspace!, name } });
+          set({ currentWorkspace: { ...get().currentWorkspace!, name, status: "PENDING" } });
         }
 
         try {
@@ -282,7 +283,7 @@ const useWorkspaceStore = create<WorkspaceState>()(
           if (!userId) throw new Error("User not logged in");
 
           const response: any = await updateWorkspaceAPI({
-            workspaceName: workspaceToEdit.name,
+            workspaceName: oldWorkspaceName,
             updatedWorkspaceName: name,
             userId: userId,
           });
@@ -294,18 +295,30 @@ const useWorkspaceStore = create<WorkspaceState>()(
           console.log("Response from updateWorkspaceAPI:", response);
 
           // Update status to SUCCESS
-          workspaceToEdit.status = "SUCCESS";
+          set({
+            workspaces: get().workspaces.map((ws) =>
+              ws.id === id ? { ...ws, status: "SUCCESS" } : ws
+            ),
+          });
 
-          // await updateWorkspaceAPI({ workspaceId: id, workspaceName: name });
+          if (get().currentWorkspace?.id === id) {
+            set({ currentWorkspace: { ...get().currentWorkspace!, status: "SUCCESS" } });
+          }
+
           console.log("✅ Workspace updated:", name);
         } catch (error) {
           console.error("❌ Failed to update workspace:", error);
 
-          // Rollback
-          set({ workspaces: oldWorkspaces });
+          // Rollback with FAILED status
+          set({ 
+            workspaces: oldWorkspaces.map((ws) =>
+              ws.id === id ? { ...ws, status: "FAILED" } : ws
+            )
+          });
 
-          // Update status to FAILED
-          workspaceToEdit.status = "FAILED";
+          if (get().currentWorkspace?.id === id) {
+            set({ currentWorkspace: { ...get().currentWorkspace!, status: "FAILED" } });
+          }
 
           alert("Failed to update workspace. Please try again.");
         }
