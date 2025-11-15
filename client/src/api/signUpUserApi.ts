@@ -1,4 +1,3 @@
-import axios from "axios";
 import type { SignUpRequest, signUpResponse } from "../types/signUpType";
 import { api } from "./globalApi";
 
@@ -18,7 +17,7 @@ const signUpUserApi = async (data: SignUpRequest): Promise<signUpResponse> => {
   //   }
   // );
 
-  const response = await api.post(`/api/v1/users/signup`, {
+  const response = await api.post(`/users/signup`, {
     email: data.email,
     password: data.password,
     fullname: data.fullName,

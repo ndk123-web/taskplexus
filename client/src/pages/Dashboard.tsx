@@ -29,7 +29,7 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
   const {userInfo, signOutUser} = useUserStore();
-  const { workspaces, currentWorkspace, addWorkspace, editWorkspace, deleteWorkspace, setCurrentWorkspace, initializeDefaultWorkspace } = useWorkspaceStore();
+  const { workspaces, currentWorkspace, addWorkspace, editWorkspace, deleteWorkspace, setCurrentWorkspace, initializeDefaultWorkspace, clearWorkspace } = useWorkspaceStore();
   
   // Wait for hydration from IndexedDB
   const [isHydrated, setIsHydrated] = useState(false);
@@ -317,6 +317,7 @@ const Dashboard = () => {
 
   // Logout and redirect to home
   const handleLogout = () => {
+    clearWorkspace();
     signOutUser();
     navigate('/');
   };

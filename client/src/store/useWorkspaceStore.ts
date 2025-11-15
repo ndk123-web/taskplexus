@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { getItem, setItem, deleteItem } from "./indexDB/indexDBStorage";
+import { getItem, setItem, deleteItem } from "./indexDB/workspaceIndexDB";
 import type { PersistStorage } from "zustand/middleware";
 import createWorkspaceAPI from "../api/createWorkspaceApi";
 import deleteWorkspaceAPI from "../api/deleteWorkspaceApi";
@@ -103,6 +103,7 @@ interface WorkspaceState {
   // ReactFlow Actions - No API needed, just local state
   updateNodes: (workspaceId: string, nodes: FlowNode[]) => void;
   updateEdges: (workspaceId: string, edges: FlowEdge[]) => void;
+  clearWorkspace: () => void;
 }
 
 // Custom IndexedDB storage implementation for zustand persist middleware
@@ -263,7 +264,7 @@ const useWorkspaceStore = create<WorkspaceState>()(
           alert("Workspace not found");
           return;
         }
-        
+
         const oldWorkspaceName = workspaceToEdit.name;
 
         // Optimistic update with PENDING status
@@ -274,7 +275,13 @@ const useWorkspaceStore = create<WorkspaceState>()(
         });
 
         if (get().currentWorkspace?.id === id) {
-          set({ currentWorkspace: { ...get().currentWorkspace!, name, status: "PENDING" } });
+          set({
+            currentWorkspace: {
+              ...get().currentWorkspace!,
+              name,
+              status: "PENDING",
+            },
+          });
         }
 
         try {
@@ -302,7 +309,12 @@ const useWorkspaceStore = create<WorkspaceState>()(
           });
 
           if (get().currentWorkspace?.id === id) {
-            set({ currentWorkspace: { ...get().currentWorkspace!, status: "SUCCESS" } });
+            set({
+              currentWorkspace: {
+                ...get().currentWorkspace!,
+                status: "SUCCESS",
+              },
+            });
           }
 
           console.log("✅ Workspace updated:", name);
@@ -310,14 +322,19 @@ const useWorkspaceStore = create<WorkspaceState>()(
           console.error("❌ Failed to update workspace:", error);
 
           // Rollback with FAILED status
-          set({ 
+          set({
             workspaces: oldWorkspaces.map((ws) =>
               ws.id === id ? { ...ws, status: "FAILED" } : ws
-            )
+            ),
           });
 
           if (get().currentWorkspace?.id === id) {
-            set({ currentWorkspace: { ...get().currentWorkspace!, status: "FAILED" } });
+            set({
+              currentWorkspace: {
+                ...get().currentWorkspace!,
+                status: "FAILED",
+              },
+            });
           }
 
           alert("Failed to update workspace. Please try again.");
@@ -388,7 +405,11 @@ const useWorkspaceStore = create<WorkspaceState>()(
         set({ currentWorkspace: workspace });
       },
 
-      initializeDefaultWorkspace: () => {
+      clearWorkspace: async () => {
+        set({ workspaces: [], currentWorkspace: null });
+      },
+
+      initializeDefaultWorkspace: async () => {
         const existingDefault = get().workspaces.find((ws) => ws.isDefault);
 
         if (!existingDefault) {
@@ -403,11 +424,55 @@ const useWorkspaceStore = create<WorkspaceState>()(
             initialEdges: [],
             status: "SUCCESS",
           };
-
           set({
             workspaces: [defaultWorkspace],
             currentWorkspace: defaultWorkspace,
           });
+
+          // api call to create default workspace on server can be added here if needed
+          try {
+            const userId = useUserStore.getState().userInfo?.userId;
+            if (!userId) throw new Error("User not logged in");
+
+            // API call in background
+            const response: any = await createWorkspaceAPI({
+              workspaceName: defaultWorkspace.name,
+              userId: userId,
+            });
+
+            // Check if response indicates success
+            if (response?.response.success !== "true") {
+              throw new Error("Failed to create workspace on server");
+            }
+
+            // Update workspace status to SUCCESS
+            defaultWorkspace.status = "SUCCESS";
+
+            // Extract the workspace ID from server response
+            const workspaceIdFromServer = response.response.workspaceId;
+            console.log("Response from createWorkspaceAPI:", response);
+
+            // Update workspace ID with the one from server
+            set({
+              workspaces: get().workspaces.map((ws) =>
+                ws.id === "workspace_default"
+                  ? { ...ws, id: workspaceIdFromServer }
+                  : ws
+              ),
+            });
+
+            console.log("✅ Workspace created:", name);
+          } catch (error) {
+            console.error("❌ Failed to create workspace:", error);
+            // Rollback on error
+            set({
+              workspaces: get().workspaces.filter(
+                (ws) => ws.id !== "workspace_default"
+              ),
+            });
+            defaultWorkspace.status = "FAILED";
+            alert("Failed to create workspace. Please try again.");
+          }
         } else if (!get().currentWorkspace) {
           set({ currentWorkspace: existingDefault });
         }

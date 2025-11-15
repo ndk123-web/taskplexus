@@ -1,7 +1,7 @@
 import { openDB } from "idb";
 
 const DB_NAME = "workspaceDB";
-const STORE_NAME = "zustandStore";
+const STORE_NAME = "workspacesStore";
 
 // it returns the indexDB store where DB_NAME as INDEXDB DB_NAME
 // and inside that there is store STORE_NAME
