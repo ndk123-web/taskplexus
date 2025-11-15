@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import useUserStore from '../store/useUserInfo';
 import useWorkspaceStore from '../store/useWorkspaceStore';
 import TrelloLogo from '../components/TrelloLogo';
+import pendingOps from '../hooks/useRunBackgroundOps';
 import './Dashboard.css';
 
 // Todo interface - defines structure for task items
@@ -56,6 +57,12 @@ const Dashboard = () => {
     // cleans the memory leak
     return () => unsubHydrate();
   }, [initializeDefaultWorkspace]);
+
+  // Run pending operations when workspaces or currentWorkspace change
+  useEffect(() => {
+    pendingOps();
+    console.log("Running pending operations...");
+  },[workspaces, currentWorkspace]);
   
   // Sidebar state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

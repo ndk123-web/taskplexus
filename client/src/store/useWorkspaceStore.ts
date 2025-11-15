@@ -6,6 +6,7 @@ import createWorkspaceAPI from "../api/createWorkspaceApi";
 import deleteWorkspaceAPI from "../api/deleteWorkspaceApi";
 import updateWorkspaceAPI from "../api/updateWorkspaceApi";
 import useUserStore from "./useUserInfo";
+import { addPendingOperation } from "./indexDB/pendingOps/usePendingOps";
 
 // Todo interface
 export interface Todo {
@@ -213,46 +214,28 @@ const useWorkspaceStore = create<WorkspaceState>()(
         // Optimistic update - UI instantly updates
         set({ workspaces: [...get().workspaces, newWorkspace] });
 
-        // Background API call to create workspace on server and update Workspace ID to real ID from server
-        try {
-          const userId = useUserStore.getState().userInfo?.userId;
-          if (!userId) throw new Error("User not logged in");
+        // Add to pending operations for background processing
+        const userId = useUserStore.getState().userInfo?.userId;
+        if (!userId) {
+          console.error("User not logged in");
+          alert("User not logged in");
+          return;
+        }
 
-          // API call in background
-          const response: any = await createWorkspaceAPI({
+        await addPendingOperation({
+          id: `create_workspace_${tempId}`,
+          type: "CREATE_WORKSPACE",
+          status: "PENDING",
+          payload: {
             workspaceName: name,
             userId: userId,
-          });
+            tempId: tempId,
+          },
+          timestamp: Date.now(),
+          retryCount: 0,
+        });
 
-          // Check if response indicates success
-          if (response?.response.success !== "true") {
-            throw new Error("Failed to create workspace on server");
-          }
-
-          // Update workspace status to SUCCESS
-          newWorkspace.status = "SUCCESS";
-
-          // Extract the workspace ID from server response
-          const workspaceIdFromServer = response.response.workspaceId;
-          console.log("Response from createWorkspaceAPI:", response);
-
-          // Update workspace ID with the one from server
-          set({
-            workspaces: get().workspaces.map((ws) =>
-              ws.id === tempId ? { ...ws, id: workspaceIdFromServer } : ws
-            ),
-          });
-
-          console.log("✅ Workspace created:", name);
-        } catch (error) {
-          console.error("❌ Failed to create workspace:", error);
-          // Rollback on error
-          set({
-            workspaces: get().workspaces.filter((ws) => ws.id !== tempId),
-          });
-          newWorkspace.status = "FAILED";
-          alert("Failed to create workspace. Please try again.");
-        }
+        console.log("✅ Workspace creation queued:", name);
       },
 
       editWorkspace: async (id: string, name: string) => {
