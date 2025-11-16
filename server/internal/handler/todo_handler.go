@@ -79,7 +79,8 @@ func (h *todoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&todo)
 
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
+		return
 	}
 
 	fmt.Println("Body: ", r.Body)
@@ -87,12 +88,12 @@ func (h *todoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 	todores, todoerr := h.service.CreateTodo(context.Background(), todo, workspaceId, userId)
 
 	if todoerr != nil {
-		json.NewEncoder(w).Encode(map[string]string{"Error": todoerr.Error()})
+		json.NewEncoder(w).Encode(map[string]string{"Error": todoerr.Error(), "success": "false"})
 	}
 
 	fmt.Println("Todo Create : ", todores)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(todores)
+	json.NewEncoder(w).Encode(map[string]any{"response": todores, "success": "true"})
 }
 
 // updateTodo represents the request payload for updating a todo

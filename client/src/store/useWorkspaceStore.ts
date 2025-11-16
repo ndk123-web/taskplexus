@@ -2,19 +2,17 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getItem, setItem, deleteItem } from "./indexDB/workspaceIndexDB";
 import type { PersistStorage } from "zustand/middleware";
-// import deleteWorkspaceAPI from "../api/deleteWorkspaceApi";
-// import updateWorkspaceAPI from "../api/updateWorkspaceApi";
 import useUserStore from "./useUserInfo";
 import { addPendingOperation } from "./indexDB/pendingOps/usePendingOps";
-// import { use } from "react";
+import type { CreateTaskReq } from "../types/createTaskType";
 
 // Todo interface
 export interface Todo {
   id: string;
-  text: string;
-  completed: boolean;
+  text?: string;
+  completed?: boolean;
   priority: "low" | "medium" | "high";
-  createdAt: Date;
+  createdAt?: Date;
   workspaceId: string;
   status: string;
 }
@@ -24,8 +22,8 @@ export interface Goal {
   id: string;
   title: string;
   description?: string;
-  completed: boolean;
-  createdAt: Date;
+  completed?: boolean;
+  createdAt?: Date;
   workspaceId: string;
   status: string;
 }
@@ -77,10 +75,7 @@ interface WorkspaceState {
   initializeDefaultWorkspace: () => void;
 
   // Todo Actions - Optimistic Updates with API calls
-  addTodo: (
-    workspaceId: string,
-    todo: Omit<Todo, "id" | "createdAt" | "workspaceId">
-  ) => Promise<void>;
+  addTodo: (data: CreateTaskReq) => Promise<void>;
   updateTodo: (
     workspaceId: string,
     todoId: string,
@@ -196,28 +191,6 @@ const useWorkspaceStore = create<WorkspaceState>()(
       clearWorkspace: async () => {
         // Clear state in memory
         set({ workspaces: [], currentWorkspace: null });
-
-        // Clear IndexedDB storage
-        try {
-          await deleteItem("workspace-storage");
-          console.log("✅ Workspace storage cleared from IndexedDB");
-        } catch (error) {
-          console.error("❌ Failed to clear workspace storage:", error);
-        }
-
-        // Clear pending operations
-        try {
-          const { getPendingOperations, removePendingOperation } = await import(
-            "./indexDB/pendingOps/usePendingOps"
-          );
-          const pendingOps = await getPendingOperations();
-          for (const op of pendingOps) {
-            await removePendingOperation(op.id);
-          }
-          console.log("✅ Pending operations cleared");
-        } catch (error) {
-          console.error("❌ Failed to clear pending operations:", error);
-        }
       },
 
       setWorkspace: (workspaces: Workspace[]) => {
@@ -427,7 +400,6 @@ const useWorkspaceStore = create<WorkspaceState>()(
           });
 
           console.log("✅ Workspace deleted");
-          
         } catch (error) {
           console.error("❌ Failed to delete workspace:", error);
 
@@ -563,47 +535,89 @@ const useWorkspaceStore = create<WorkspaceState>()(
       },
 
       // ============= TODO ACTIONS =============
-      addTodo: async (
-        workspaceId: string,
-        todo: Omit<Todo, "id" | "createdAt" | "workspaceId">
-      ) => {
+      addTodo: async (data: CreateTaskReq) => {
+        // const tempId = `todo_${Date.now()}`;
+        // const newTodo: Todo = {
+        //   ...todo,
+        //   id: tempId,
+        //   workspaceId,
+        //   createdAt: new Date(),
+        // };
+
+        // const oldWorkspaces = get().workspaces;
+
+        // // Optimistic update
+        // set({
+        //   workspaces: oldWorkspaces.map((ws) =>
+        //     ws.id === workspaceId
+        //       ? { ...ws, todos: [...ws.todos, newTodo] }
+        //       : ws
+        //   ),
+        // });
+
+        // if (get().currentWorkspace?.id === workspaceId) {
+        //   set({
+        //     currentWorkspace: {
+        //       ...get().currentWorkspace!,
+        //       todos: [...get().currentWorkspace!.todos, newTodo],
+        //     },
+        //   });
+        // }
+
+        // need to change the current workspace's insides todo
+        // need to change the workspaces array's inside todo array
+        const workspaceId = data.workspaceId;
+        const taskName = data.text;
+        const priority = data?.priority;
         const tempId = `todo_${Date.now()}`;
-        const newTodo: Todo = {
-          ...todo,
+        const userId = data.userId;
+
+        let todo: CreateTaskReq = {
           id: tempId,
-          workspaceId,
+          text: taskName,
+          priority: priority,
           createdAt: new Date(),
+          workspaceId: workspaceId,
+          userId: userId,
+          status: "PENDING",
         };
 
-        const oldWorkspaces = get().workspaces;
+        // add todo in current Workspace optimistically
+        // useWorkspaceStore.getState().setCurrentWorkspace()
+        let currentWorkspace = useWorkspaceStore.getState().currentWorkspace;
+        currentWorkspace?.todos.push(todo);
 
-        // Optimistic update
-        set({
-          workspaces: oldWorkspaces.map((ws) =>
-            ws.id === workspaceId
-              ? { ...ws, todos: [...ws.todos, newTodo] }
-              : ws
-          ),
+        // also add in workspaces array
+        let workspaces = useWorkspaceStore.getState().workspaces;
+        let updatedWorkspacesWithTodo = workspaces.map((ws) => {
+          if (ws.id === workspaceId) {
+            ws.todos.push(todo);
+            return ws;
+          }
+          return ws;
+        });
+        useWorkspaceStore.getState().setWorkspace(updatedWorkspacesWithTodo);
+
+        await addPendingOperation({
+          id: `CREATE_TODO_${tempId}`,
+          type: "CREATE_TODO",
+          status: "PENDING",
+          payload: {
+            ...todo,
+          },
+          timestamp: Date.now(),
+          retryCount: 0,
         });
 
-        if (get().currentWorkspace?.id === workspaceId) {
-          set({
-            currentWorkspace: {
-              ...get().currentWorkspace!,
-              todos: [...get().currentWorkspace!.todos, newTodo],
-            },
-          });
-        }
-
-        try {
-          // API call
-          // const response = await createTodoAPI({ ...newTodo, workspaceId });
-          console.log("✅ Todo created:", todo.text);
-        } catch (error) {
-          console.error("❌ Failed to create todo:", error);
-          set({ workspaces: oldWorkspaces });
-          alert("Failed to create todo. Please try again.");
-        }
+        // try {
+        //   // API call
+        //   // const response = await createTodoAPI({ ...newTodo, workspaceId });
+        //   console.log("✅ Todo created:", todo.text);
+        // } catch (error) {
+        //   console.error("❌ Failed to create todo:", error);
+        //   set({ workspaces: oldWorkspaces });
+        //   alert("Failed to create todo. Please try again.");
+        // }
       },
 
       updateTodo: async (

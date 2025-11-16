@@ -8,6 +8,11 @@ export async function getDB() {
     upgrade(db) {
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME, { keyPath: "id" });
+        //  const store =  db.createObjectStore(STORE_NAME, { keyPath: "id" });
+
+        // creates the index for status field 
+        // creates new column in the database
+        //  store.createIndex("by_status", "status",{ unique: false } );
       }
     },
   });

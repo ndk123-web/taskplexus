@@ -3,6 +3,7 @@ import createWorkspaceAPI from "../api/createWorkspaceApi";
 import updateWorkspaceAPI from "../api/updateWorkspaceApi";
 import useWorkspaceStore from "../store/useWorkspaceStore";
 import deleteWorkspaceAPI from "../api/deleteWorkspaceApi";
+import createTaskApi from "../api/createTaskApi";
 
 const pendingOps = async () => {
     const ops = await getPendingOperations();
@@ -172,6 +173,64 @@ const pendingOps = async () => {
                 }
 
                 continue; // skip to next operation
+            }
+        }
+        else if (op.type === "CREATE_TODO" && op.status === "PENDING") {
+            try {
+                const response: any = await createTaskApi(op.payload);
+                console.log("Create Task API response:", response);
+
+                if (response?.success !== "true") {
+                    throw new Error("Failed to create task on server");
+                }
+
+                const serverTodo = response.response;
+                const newId = serverTodo?._id;
+                const workspaceId = op.payload.workspaceId;
+                const tempId = op.payload.id; // we stored optimistic todo under this id
+
+                // Update workspaces array
+                const allWorkspaces = useWorkspaceStore.getState().workspaces;
+                const updatedWorkspaces = allWorkspaces.map(ws => ws.id === workspaceId ? {
+                    ...ws,
+                    todos: ws.todos.map(t => t.id === tempId ? { ...t, id: newId || t.id, status: "SUCCESS" } : t)
+                } : ws);
+                useWorkspaceStore.setState({ workspaces: updatedWorkspaces });
+
+                // Update currentWorkspace if applicable
+                const cw = useWorkspaceStore.getState().currentWorkspace;
+                if (cw?.id === workspaceId) {
+                    const updatedCw = updatedWorkspaces.find(w => w.id === workspaceId);
+                    if (updatedCw) {
+                        useWorkspaceStore.setState({ currentWorkspace: updatedCw });
+                    }
+                }
+
+                await removePendingOperation(op.id);
+            } catch (error) {
+                console.error("Error processing pending operation:", error);
+                op.retryCount += 1;
+                if (op.retryCount >= 3) {
+                    console.error("Max retry count reached for operation:", op.id);
+
+                    const workspaceId = op.payload.workspaceId;
+                    const tempId = op.payload.id;
+                    const allWorkspaces = useWorkspaceStore.getState().workspaces;
+                    const updatedWorkspaces = allWorkspaces.map(ws => ws.id === workspaceId ? {
+                        ...ws,
+                        todos: ws.todos.map(t => t.id === tempId ? { ...t, status: "FAILED" } : t)
+                    } : ws);
+                    useWorkspaceStore.setState({ workspaces: updatedWorkspaces });
+                    const cw = useWorkspaceStore.getState().currentWorkspace;
+                    if (cw?.id === workspaceId) {
+                        const updatedCw = updatedWorkspaces.find(w => w.id === workspaceId);
+                        if (updatedCw) useWorkspaceStore.setState({ currentWorkspace: updatedCw });
+                    }
+
+                    await removePendingOperation(op.id);
+                } else {
+                    await addPendingOperation(op);
+                }
             }
         }
     }

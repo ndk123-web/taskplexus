@@ -6,16 +6,8 @@ import TrelloLogo from '../components/TrelloLogo';
 import pendingOps from '../hooks/useRunBackgroundOps';
 import './Dashboard.css';
 import getUserWorkspaceApi from '../api/getUserWorkspaceApi';
-
-// Todo interface - defines structure for task items
-interface Todo {
-  id: number;
-  text: string;
-  completed: boolean;
-  priority: 'low' | 'medium' | 'high';
-  status: 'in-progress' | 'completed' | 'not-started' | 'todo';
-  createdAt: Date;
-}
+import type { CreateTaskReq } from '../types/createTaskType';
+import type { Todo } from '../store/useWorkspaceStore';
 
 // Goal interface - defines structure for goal items
 interface Goal {
@@ -31,7 +23,7 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
   const {userInfo, signOutUser} = useUserStore();
-  const { workspaces, currentWorkspace, addWorkspace, editWorkspace, deleteWorkspace, setCurrentWorkspace, initializeDefaultWorkspace } = useWorkspaceStore();
+  const { workspaces, currentWorkspace, addWorkspace, editWorkspace, deleteWorkspace, setCurrentWorkspace, initializeDefaultWorkspace, addTodo, toggleTodoCompleted, deleteTodo: storeDeleteTodo, updateTodo } = useWorkspaceStore();
   
   // Wait for hydration from IndexedDB
   const [isHydrated, setIsHydrated] = useState(false);
@@ -163,16 +155,21 @@ const Dashboard = () => {
   const [editingWorkspaceName, setEditingWorkspaceName] = useState('');
   
   // Demo todos with different priorities and statuses
-  const [todos, setTodos] = useState<Todo[]>([
-    { id: 1, text: 'Complete project documentation', completed: true, priority: 'high', status: 'completed', createdAt: new Date(2025, 10, 5) },
-    { id: 2, text: 'Review pull requests', completed: false, priority: 'medium', status: 'in-progress', createdAt: new Date(2025, 10, 6) },
-    { id: 3, text: 'Team meeting at 3 PM', completed: false, priority: 'high', status: 'not-started', createdAt: new Date(2025, 10, 7) },
-    { id: 4, text: 'Update portfolio website', completed: false, priority: 'low', status: 'not-started', createdAt: new Date(2025, 10, 4) },
-    { id: 5, text: 'Morning workout', completed: true, priority: 'medium', status: 'completed', createdAt: new Date(2025, 10, 6) },
-    { id: 6, text: 'Code review for feature branch', completed: false, priority: 'high', status: 'in-progress', createdAt: new Date(2025, 10, 7) },
-    { id: 7, text: 'Write unit tests', completed: false, priority: 'medium', status: 'not-started', createdAt: new Date(2025, 10, 5) },
-    { id: 8, text: 'Fix production bug', completed: false, priority: 'high', status: 'in-progress', createdAt: new Date(2025, 10, 7) },
-  ]);
+  // const [todos, setTodos] = useState<Todo[]>([
+  //   // { id: 1, text: 'Complete project documentation', completed: true, priority: 'high', status: 'completed', createdAt: new Date(2025, 10, 5) },
+  //   // { id: 2, text: 'Review pull requests', completed: false, priority: 'medium', status: 'in-progress', createdAt: new Date(2025, 10, 6) },
+  //   // { id: 3, text: 'Team meeting at 3 PM', completed: false, priority: 'high', status: 'not-started', createdAt: new Date(2025, 10, 7) },
+  //   // { id: 4, text: 'Update portfolio website', completed: false, priority: 'low', status: 'not-started', createdAt: new Date(2025, 10, 4) },
+  //   // { id: 5, text: 'Morning workout', completed: true, priority: 'medium', status: 'completed', createdAt: new Date(2025, 10, 6) },
+  //   // { id: 6, text: 'Code review for feature branch', completed: false, priority: 'high', status: 'in-progress', createdAt: new Date(2025, 10, 7) },
+  //   // { id: 7, text: 'Write unit tests', completed: false, priority: 'medium', status: 'not-started', createdAt: new Date(2025, 10, 5) },
+  //   // { id: 8, text: 'Fix production bug', completed: false, priority: 'high', status: 'in-progress', createdAt: new Date(2025, 10, 7) },
+  // ]);
+
+  const [todos, setTodos] = useState<Todo[]>(currentWorkspace?.todos ?? []);
+  useEffect(() => {
+    setTodos(currentWorkspace?.todos ?? []);
+  }, [currentWorkspace?.id, currentWorkspace?.todos]);
 
   // Demo goals with progress tracking
   const [goals, setGoals] = useState<Goal[]>([
@@ -191,7 +188,7 @@ const Dashboard = () => {
   const [newGoal, setNewGoal] = useState({ title: '', target: '', category: '' });
   
   // States for editing todos
-  const [editingTodo, setEditingTodo] = useState<number | null>(null);
+  const [editingTodo, setEditingTodo] = useState<string | null>(null);
   const [editTodoText, setEditTodoText] = useState('');
   const [editTodoPriority, setEditTodoPriority] = useState<'low' | 'medium' | 'high'>('medium');
   
@@ -235,20 +232,34 @@ const Dashboard = () => {
   };
 
   // Handle adding new todo with selected priority
-  const handleAddTodo = (e: React.FormEvent) => {
+  const handleAddTodo =async (e: React.FormEvent) => {
     e.preventDefault();
     if (newTodo.trim()) {
-      setTodos([...todos, { 
-        id: Date.now(), 
-        text: newTodo, 
-        completed: false, 
-        priority: newTodoPriority,
-        status: 'not-started',
-        createdAt: new Date()
-      }]);
-      setNewTodo('');
-      setNewTodoPriority('medium');
-      setShowAddTodo(false);
+      // setTodos([...todos, { 
+      //   id: Date.now(), 
+      //   text: newTodo, 
+      //   completed: false, 
+      //   priority: newTodoPriority,
+      //   status: 'not-started',
+      //   createdAt: new Date()
+      // }]);
+
+      // Also add to the current workspace store
+      if (currentWorkspace) {
+        let newtask: CreateTaskReq = {
+          text: newTodo,
+          priority: newTodoPriority,
+          userId: userInfo?.userId || '',
+          workspaceId: currentWorkspace.id,
+          id: `todo_${Date.now()}`, // Temporary client id
+          status: "PENDING",
+        }
+        await addTodo(newtask);
+
+        setNewTodo('');
+        setNewTodoPriority('medium');
+        setShowAddTodo(false);
+      }
     }
   };
 
@@ -268,31 +279,29 @@ const Dashboard = () => {
     }
   };
 
-  // Toggle todo completion status
-  const toggleTodo = (id: number) => {
-    setTodos(todos.map(todo => 
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    ));
+  // Toggle todo completion status via store
+  const toggleTodo = async (id: string) => {
+    if (!currentWorkspace) return;
+    await toggleTodoCompleted(currentWorkspace.id, id);
   };
 
-  // Delete a todo
-  const deleteTodo = (id: number) => {
-    setTodos(todos.filter(todo => todo.id !== id));
+  // Delete a todo via store
+  const deleteTodo = async (id: string) => {
+    if (!currentWorkspace) return;
+    await storeDeleteTodo(currentWorkspace.id, id);
   };
 
   // Start editing a todo - set edit mode with current values
   const startEditTodo = (todo: Todo) => {
     setEditingTodo(todo.id);
-    setEditTodoText(todo.text);
+    setEditTodoText(todo.text || '');
     setEditTodoPriority(todo.priority);
   };
 
-  // Save edited todo with updated text and priority
-  const saveEditTodo = () => {
-    if (editingTodo && editTodoText.trim()) {
-      setTodos(todos.map(todo => 
-        todo.id === editingTodo ? { ...todo, text: editTodoText, priority: editTodoPriority } : todo
-      ));
+  // Save edited todo with updated text and priority via store
+  const saveEditTodo = async () => {
+    if (editingTodo && editTodoText.trim() && currentWorkspace) {
+      await updateTodo(currentWorkspace.id, editingTodo, { text: editTodoText, priority: editTodoPriority });
       setEditingTodo(null);
       setEditTodoText('');
       setEditTodoPriority('medium');
@@ -413,7 +422,11 @@ const Dashboard = () => {
     // clearWorkspace();
 
     // It means Clear the Persisted Storage of Workspace Store 
-    useWorkspaceStore.persist.clearStorage();
+    useWorkspaceStore.persist.clearStorage(); 
+
+    // clear the ui state of workspace store
+    // useWorkspaceStore.getState().clearWorkspace();
+
     signOutUser();
     navigate('/');
   };
@@ -426,7 +439,9 @@ const Dashboard = () => {
   const completionRate = totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0;
   
   // Recent tasks (last 5)
-  const recentTasks = [...todos].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 5);
+  const recentTasks = [...todos]
+    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+    .slice(0, 5);
 
   // Show loading until hydrated and workspaces fetched
   if (!isHydrated || !workspacesFetched) {
