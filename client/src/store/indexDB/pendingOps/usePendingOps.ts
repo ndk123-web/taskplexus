@@ -13,7 +13,7 @@ interface PendingOperation {
 
 export async function addPendingOperation(op: PendingOperation) {
   const db = await getDB();
-  return db.put(STORE_NAME, op, op.id);
+  return db.put(STORE_NAME, op);
 }
 
 export async function getPendingOperations(): Promise<PendingOperation[]> {

@@ -5,6 +5,7 @@ import useWorkspaceStore from '../store/useWorkspaceStore';
 import TrelloLogo from '../components/TrelloLogo';
 import pendingOps from '../hooks/useRunBackgroundOps';
 import './Dashboard.css';
+import getUserWorkspaceApi from '../api/getUserWorkspaceApi';
 
 // Todo interface - defines structure for task items
 interface Todo {
@@ -34,35 +35,120 @@ const Dashboard = () => {
   
   // Wait for hydration from IndexedDB
   const [isHydrated, setIsHydrated] = useState(false);
+  const [workspacesFetched, setWorkspacesFetched] = useState(false);
   
-  useEffect(() => {
-    // Check if store is hydrated
-    // here we listen for the hydration event
+  // Fetch workspaces from server
+  const fetchWorkspacesFromServer = async () => {
+    try {
+      const userId: any = userInfo?.userId;
+      if (!userId) {
+        console.error("User ID not found");
+        return [];
+      }
 
-    // onFinishHydration returns an unsubscribe function so that we can stop listening when not needed
-    // onFinishHydration takes function that automatically called when hydration is done
-    const unsubHydrate = useWorkspaceStore.persist.onFinishHydration(() => {
-      setIsHydrated(true);
-      initializeDefaultWorkspace();
-    });
-    
-    // If already hydrated
-    if (useWorkspaceStore.persist.hasHydrated()) {
-      setIsHydrated(true);
-      initializeDefaultWorkspace();
+      const response: any = await getUserWorkspaceApi(userId);
+      console.log("Fetched Workspaces from Server:", response);
+      
+      // Extract the response array from the response object
+      const workspacesArray = response;
+
+      if (workspacesArray === null || !workspacesArray){
+        console.log("Workspaces array is null or undefined");
+        return [];
+      }
+
+      const formattedWorkspaces = workspacesArray?.map((ws: any) => ({
+        id: ws._id,
+        name: ws.worskpaceName || ws.workspaceName, // Backend has typo: worskpaceName
+        status: "SUCCESS",
+        isDefault: (ws.worskpaceName || ws.workspaceName) === "Default",
+        createdAt: new Date(ws.createdAt || Date.now()),
+        todos: ws.todos || [],
+        goals: ws.goals || [],
+        initialNodes: ws.initialNodes || [],
+        initialEdges: ws.initialEdges || []
+      }));
+
+      return formattedWorkspaces;
+    } catch (error) {
+      console.error("Error fetching workspaces:", error);
+      return [];
     }
-    
-    // Cleanup subscription on unmount
-    // beause we don't need to listen anymore after hydration
-    // cleans the memory leak
-    return () => unsubHydrate();
-  }, [initializeDefaultWorkspace]);
+  };
 
-  // Run pending operations when workspaces or currentWorkspace change
   useEffect(() => {
-    await pendingOps();
-    console.log("Running pending operations...");
-  },[workspaces, currentWorkspace]);
+    const initializeWorkspaces = async () => {
+      // Wait for hydration first
+      const unsubHydrate = useWorkspaceStore.persist.onFinishHydration(async () => {
+        setIsHydrated(true);
+        
+        // After hydration, fetch workspaces from server
+        const serverWorkspaces = await fetchWorkspacesFromServer();
+        
+        if (serverWorkspaces.length > 0) {
+          console.log("Setting workspaces from server (on hydrate):", serverWorkspaces);
+          useWorkspaceStore.getState().setWorkspace(serverWorkspaces);
+        }
+        else if (serverWorkspaces.length === 0 || serverWorkspaces === null) {
+          console.log("No server workspaces, initializing default (on hydrate)");
+          await initializeDefaultWorkspace();
+        }
+
+        setWorkspacesFetched(true);
+      });
+      
+      // If already hydrated, run immediately
+      if (useWorkspaceStore.persist.hasHydrated()) {
+        setIsHydrated(true);
+        
+        const serverWorkspaces = await fetchWorkspacesFromServer();
+        
+        if (serverWorkspaces.length > 0) {
+          console.log("Setting workspaces from server (already hydrated):", serverWorkspaces);
+          useWorkspaceStore.getState().setWorkspace(serverWorkspaces);
+          
+          const defaultWs = serverWorkspaces.find((ws: any) => ws.isDefault);
+          useWorkspaceStore.getState().setCurrentWorkspace(defaultWs || serverWorkspaces[0]);
+        } else {
+          console.log("No server workspaces, initializing default (already hydrated)");
+          await initializeDefaultWorkspace();
+        }
+        
+        setWorkspacesFetched(true);
+      }
+      
+      return () => unsubHydrate();
+    };
+
+    initializeWorkspaces();
+  }, [userInfo?.userId]);
+
+  // Sync Means at some time of iterations we need to run pending operations
+  // now for this for 10 seconds the operations will run in background
+  useEffect(() => {
+    const runPendingOps = async () => {
+      await pendingOps();
+      console.log("Running pending operations...");
+    }
+
+    // this will run every 10 seconds
+    const id = setInterval(runPendingOps,10000)
+
+    // this will run when the app comes online
+    window.addEventListener("online",runPendingOps)
+
+    // debug log for the useEffect
+    console.log("Running UseEffect for pending ops");
+
+    // useEffect returns a cleanup function 
+    // if the component unmounts we need to cleanup the event listener and interval
+    // if i dont clean them then they will keep running in background causing memory leaks
+    return () => {
+      window.removeEventListener("online",runPendingOps)
+      clearInterval(id);
+    }
+
+  },[]);
   
   // Sidebar state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -324,7 +410,10 @@ const Dashboard = () => {
 
   // Logout and redirect to home
   const handleLogout = () => {
-    clearWorkspace();
+    // clearWorkspace();
+
+    // It means Clear the Persisted Storage of Workspace Store 
+    useWorkspaceStore.persist.clearStorage();
     signOutUser();
     navigate('/');
   };
@@ -339,13 +428,15 @@ const Dashboard = () => {
   // Recent tasks (last 5)
   const recentTasks = [...todos].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 5);
 
-  // Show loading until hydrated
-  if (!isHydrated) {
+  // Show loading until hydrated and workspaces fetched
+  if (!isHydrated || !workspacesFetched) {
     return (
       <div className="dashboard-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
         <div style={{ textAlign: 'center', color: 'white' }}>
           <div style={{ marginBottom: '20px' }}><TrelloLogo size={60} /></div>
-          <div style={{ fontSize: '18px', opacity: 0.7 }}>Loading workspace...</div>
+          <div style={{ fontSize: '18px', opacity: 0.7 }}>
+            {!isHydrated ? 'Loading...' : 'Fetching workspaces...'}
+          </div>
         </div>
       </div>
     );

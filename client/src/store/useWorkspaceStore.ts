@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getItem, setItem, deleteItem } from "./indexDB/workspaceIndexDB";
 import type { PersistStorage } from "zustand/middleware";
-import createWorkspaceAPI from "../api/createWorkspaceApi";
 import deleteWorkspaceAPI from "../api/deleteWorkspaceApi";
 import updateWorkspaceAPI from "../api/updateWorkspaceApi";
 import useUserStore from "./useUserInfo";
@@ -73,6 +72,7 @@ interface WorkspaceState {
   editWorkspace: (id: string, name: string) => Promise<void>;
   deleteWorkspace: (id: string) => Promise<void>;
   setCurrentWorkspace: (workspace: Workspace) => void;
+  setWorkspace: (workspaces: Workspace[]) => void;
   initializeDefaultWorkspace: () => void;
 
   // Todo Actions - Optimistic Updates with API calls
@@ -191,6 +191,36 @@ const useWorkspaceStore = create<WorkspaceState>()(
       currentWorkspace: null,
 
       // WORKSPACE ACTIONS
+
+      clearWorkspace: async () => {
+        // Clear state in memory
+        set({ workspaces: [], currentWorkspace: null });
+        
+        // Clear IndexedDB storage
+        try {
+          await deleteItem("workspace-storage");
+          console.log("✅ Workspace storage cleared from IndexedDB");
+        } catch (error) {
+          console.error("❌ Failed to clear workspace storage:", error);
+        }
+        
+        // Clear pending operations
+        try {
+          const { getPendingOperations, removePendingOperation } = await import("./indexDB/pendingOps/usePendingOps");
+          const pendingOps = await getPendingOperations();
+          for (const op of pendingOps) {
+            await removePendingOperation(op.id);
+          }
+          console.log("✅ Pending operations cleared");
+        } catch (error) {
+          console.error("❌ Failed to clear pending operations:", error);
+        }
+      },
+
+      setWorkspace: (workspaces: Workspace[]) => {
+        set({ workspaces });
+      },
+
       addWorkspace: async (name: string) => {
         // need to check for duplicate names ?
         if (get().workspaces.find((ws) => ws.name === name)) {
@@ -388,73 +418,118 @@ const useWorkspaceStore = create<WorkspaceState>()(
         set({ currentWorkspace: workspace });
       },
 
-      clearWorkspace: async () => {
-        set({ workspaces: [], currentWorkspace: null });
-      },
-
       initializeDefaultWorkspace: async () => {
         const existingDefault = get().workspaces.find((ws) => ws.isDefault);
 
         if (!existingDefault) {
           const defaultWorkspace: Workspace = {
             id: "workspace_default",
-            name: "Personal",
+            name: "Default",
             createdAt: new Date(),
             isDefault: true,
             todos: [],
             goals: [],
             initialNodes: [],
             initialEdges: [],
-            status: "SUCCESS",
+            status: "PENDING",
           };
           set({
             workspaces: [defaultWorkspace],
             currentWorkspace: defaultWorkspace,
           });
 
-          // api call to create default workspace on server can be added here if needed
+          // API call to create default workspace on server
           try {
             const userId = useUserStore.getState().userInfo?.userId;
-            if (!userId) throw new Error("User not logged in");
-
-            // API call in background
-            const response: any = await createWorkspaceAPI({
-              workspaceName: defaultWorkspace.name,
-              userId: userId,
-            });
-
-            // Check if response indicates success
-            if (response?.response.success !== "true") {
-              throw new Error("Failed to create workspace on server");
+            if (!userId) {
+              console.error("User not logged in");
+              return;
             }
 
-            // Update workspace status to SUCCESS
-            defaultWorkspace.status = "SUCCESS";
+            // const response: any = await createWorkspaceAPI({
+            //   workspaceName: "Default",
+            //   userId: userId,
+            // });
 
-            // Extract the workspace ID from server response
-            const workspaceIdFromServer = response.response.workspaceId;
-            console.log("Response from createWorkspaceAPI:", response);
+            // console.log("Response from createWorkspaceAPI:", response);
 
-            // Update workspace ID with the one from server
-            set({
-              workspaces: get().workspaces.map((ws) =>
-                ws.id === "workspace_default"
-                  ? { ...ws, id: workspaceIdFromServer }
-                  : ws
-              ),
+            // if (response?.success === "true") {
+
+            //   // Update with server-generated ID
+            //   const serverId = response.workspaceId || defaultWorkspace.id;
+            //   set({
+            //     workspaces: [
+            //       { ...defaultWorkspace, id: serverId, status: "SUCCESS" },
+            //     ],
+            //     currentWorkspace: {
+            //       ...defaultWorkspace,
+            //       id: serverId,
+            //       status: "SUCCESS",
+            //     },
+            //   });
+
+            //   console.log("✅ Default workspace created on server");
+            // } else if (response?.response?.includes("already exists")) {
+            //   // Workspace already exists on server, fetch it
+            //   console.log("Workspace already exists, fetching from server...");
+            //   try {
+            //     const getUserWorkspaceApi = (
+            //       await import("../api/getUserWorkspaceApi")
+            //     ).default;
+            //     const workspacesResponse: any = await getUserWorkspaceApi(
+            //       userId
+            //     );
+            //     if (workspacesResponse && workspacesResponse.length > 0) {
+            //       const serverWorkspaces = workspacesResponse.map(
+            //         (ws: any) => ({
+            //           id: ws._id,
+            //           name: ws.workspaceName,
+            //           status: "SUCCESS",
+            //           isDefault: ws.workspaceName === "Default Workspace",
+            //           createdAt: new Date(ws.createdAt || Date.now()),
+            //           todos: ws.todos || [],
+            //           goals: ws.goals || [],
+            //           initialNodes: ws.initialNodes || [],
+            //           initialEdges: ws.initialEdges || [],
+            //         })
+            //       );
+
+            //       set({ workspaces: serverWorkspaces });
+            //       const defaultWs = serverWorkspaces.find(
+            //         (ws: Workspace) => ws.isDefault
+            //       );
+            //       set({ currentWorkspace: defaultWs || serverWorkspaces[0] });
+            //       console.log("✅ Fetched existing workspaces from server");
+            //     }
+            //   } catch (fetchError) {
+            //     console.error(
+            //       "Failed to fetch existing workspaces:",
+            //       fetchError
+            //     );
+            //   }
+            // }
+
+            await addPendingOperation({
+              id: `create_workspace_${Date.now()}`,
+              type: "CREATE_WORKSPACE",
+              status: "PENDING",
+              payload: {
+                workspaceName: "Default",
+                userId: userId,
+                tempId: defaultWorkspace.id,
+              },
+              timestamp: Date.now(),
+              retryCount: 0,
             });
 
-            console.log("✅ Workspace created:", name);
+            console.log("✅ Default workspace creation queued");
           } catch (error) {
-            console.error("❌ Failed to create workspace:", error);
-            // Rollback on error
+            console.error("❌ Failed to create default workspace:", error);
+            // Keep the optimistic update even if API fails
             set({
-              workspaces: get().workspaces.filter(
-                (ws) => ws.id !== "workspace_default"
-              ),
+              workspaces: [{ ...defaultWorkspace, status: "FAILED" }],
+              currentWorkspace: { ...defaultWorkspace, status: "FAILED" },
             });
-            defaultWorkspace.status = "FAILED";
-            alert("Failed to create workspace. Please try again.");
           }
         } else if (!get().currentWorkspace) {
           set({ currentWorkspace: existingDefault });

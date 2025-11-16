@@ -30,11 +30,11 @@ func (h *workspaceHandler) GetAllUserWorkspace(w http.ResponseWriter, r *http.Re
 	workspaces, err := h.service.GetAllUserWorkspace(context.Background(), userId)
 
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "Success": "false"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]any{"response": workspaces})
+	json.NewEncoder(w).Encode(map[string]any{"response": workspaces, "Success": "true"})
 }
 
 type createWorkspaceStruct struct {
