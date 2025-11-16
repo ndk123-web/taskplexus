@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getItem, setItem, deleteItem } from "./indexDB/workspaceIndexDB";
 import type { PersistStorage } from "zustand/middleware";
-import deleteWorkspaceAPI from "../api/deleteWorkspaceApi";
+// import deleteWorkspaceAPI from "../api/deleteWorkspaceApi";
 // import updateWorkspaceAPI from "../api/updateWorkspaceApi";
 import useUserStore from "./useUserInfo";
 import { addPendingOperation } from "./indexDB/pendingOps/usePendingOps";
@@ -402,18 +402,32 @@ const useWorkspaceStore = create<WorkspaceState>()(
           const userId = useUserStore.getState().userInfo?.userId;
           if (!userId) throw new Error("User not logged in");
 
-          // API call
-          const response: any = await deleteWorkspaceAPI({
-            workspaceName: ToBeDeleteWorkspace.name,
-            userId: userId,
-          });
-          console.log("Response from deleteWorkspaceAPI:", response);
+          // // API call
+          // const response: any = await deleteWorkspaceAPI({
+          //   workspaceName: ToBeDeleteWorkspace.name,
+          //   userId: userId,
+          // });
+          // console.log("Response from deleteWorkspaceAPI:", response);
 
-          // Check if response indicates success
-          if (response.response !== "Success") {
-            throw new Error("Failed to delete workspace on server");
-          }
+          // // Check if response indicates success
+          // if (response.response !== "Success") {
+          //   throw new Error("Failed to delete workspace on server");
+          // }
+
+          await addPendingOperation({
+            id: id,
+            type: "DELETE_WORKSPACE",
+            status: "PENDING",
+            payload: {
+              userId: userId,
+              workspaceName: ToBeDeleteWorkspace.name,
+            },
+            timestamp: Date.now(),
+            retryCount: 0,
+          });
+
           console.log("✅ Workspace deleted");
+          
         } catch (error) {
           console.error("❌ Failed to delete workspace:", error);
 

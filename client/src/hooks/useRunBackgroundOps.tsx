@@ -2,6 +2,7 @@ import { getPendingOperations, addPendingOperation, removePendingOperation } fro
 import createWorkspaceAPI from "../api/createWorkspaceApi";
 import updateWorkspaceAPI from "../api/updateWorkspaceApi";
 import useWorkspaceStore from "../store/useWorkspaceStore";
+import deleteWorkspaceAPI from "../api/deleteWorkspaceApi";
 
 const pendingOps = async () => {
     const ops = await getPendingOperations();
@@ -101,9 +102,9 @@ const pendingOps = async () => {
 
                 // If this was the current workspace, update it too
                 const currentWorkspace = useWorkspaceStore.getState().currentWorkspace;
-                if (currentWorkspace?.id === op.payload.workspaceId) {
+                if (currentWorkspace?.id === op.id) {
                     const updatedCurrentWorkspace = updatedWorkspaces.find(
-                        (ws) => ws.id === op.payload.workspaceId
+                        (ws) => ws.id === op.id
                     );
                     if (updatedCurrentWorkspace) {
                         useWorkspaceStore.setState({
@@ -128,7 +129,7 @@ const pendingOps = async () => {
                     // Update workspace status to FAILED in store
                     const currentWorkspaces = useWorkspaceStore.getState().workspaces;
                     const updatedWorkspaces = currentWorkspaces.map((ws) =>
-                        ws.id === op.payload.workspaceId
+                        ws.id === op.id
                             ? { ...ws, status: "FAILED" }
                             : ws
                     );
@@ -140,6 +141,36 @@ const pendingOps = async () => {
                     // Update the retry count in pending operations
                     await addPendingOperation(op);
                 }
+                continue; // skip to next operation
+            }
+        }
+        else if (op.type === "DELETE_WORKSPACE" && op.status === "PENDING") {
+            try {
+                const response: any = await deleteWorkspaceAPI(op.payload);
+                console.log("Delete Workspace API response:", response);
+
+                if (response?.response !== "Success") {
+                    throw new Error("Failed to delete workspace on server");
+                }
+
+                console.log("Response from deleteWorkspaceAPI:", response);
+                // if success remove workspace from store 
+            }
+            catch(error) {
+                console.error("Error processing pending operation:", error);
+                // Increment retry count
+                op.retryCount += 1;
+
+                // If retry count exceeds limit (e.g., 3), mark as FAILED
+                if (op.retryCount >= 3) {
+                    console.error("Max retry count reached for operation:", op.id);
+                    // Remove from pending operations
+                    await removePendingOperation(op.id);
+                } else {
+                    // Update the retry count in pending operations
+                    await addPendingOperation(op);
+                }
+
                 continue; // skip to next operation
             }
         }

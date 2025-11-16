@@ -627,7 +627,7 @@ const Dashboard = () => {
                         </button>
                         {!workspace.isDefault && (
                           <div className="workspace-menu">
-                            <button 
+                            {workspace.status === "SUCCESS" && <button 
                               className="workspace-menu-btn"
                               onClick={(e) => handleMenuClick(workspace.id, e)}
                             >
@@ -636,7 +636,7 @@ const Dashboard = () => {
                                 <circle cx="8" cy="8" r="1" fill="currentColor"/>
                                 <circle cx="8" cy="13" r="1" fill="currentColor"/>
                               </svg>
-                            </button>
+                            </button>}
                           </div>
                         )}
                       </>
