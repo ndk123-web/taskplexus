@@ -148,62 +148,102 @@ const Dashboard = () => {
       return merged;
     };
 
+    // const initializeWorkspaces = async () => {
+    //   // Wait for hydration first
+    //   const unsubHydrate = useWorkspaceStore.persist.onFinishHydration(async () => {
+    //     setIsHydrated(true);
+        
+    //     // After hydration, fetch workspaces from server
+    //     const serverWorkspaces = await fetchWorkspacesFromServer();
+        
+    //     if (serverWorkspaces.length > 0) {
+    //       const clientWorkspaces = useWorkspaceStore.getState().workspaces || [];
+    //       const merged = mergeWorkspaces(serverWorkspaces, clientWorkspaces);
+    //       console.log("Merging server + client workspaces (on hydrate):", merged);
+    //       useWorkspaceStore.getState().setWorkspace(merged);
+
+    //       // Preserve current selection if possible
+    //       const prevCurrent = useWorkspaceStore.getState().currentWorkspace;
+    //       if (prevCurrent) {
+    //         const next = merged.find((w) => w.id === prevCurrent.id) || merged[0];
+    //         if (next) useWorkspaceStore.getState().setCurrentWorkspace(next);
+    //       }
+    //     } else {
+    //       console.log("No server workspaces, initializing default (on hydrate)");
+    //       await initializeDefaultWorkspace();
+    //     }
+
+    //     setWorkspacesFetched(true);
+    //   });
+      
+    //   // If already hydrated, run immediately
+    //   if (useWorkspaceStore.persist.hasHydrated()) {
+    //     setIsHydrated(true);
+        
+    //     const serverWorkspaces = await fetchWorkspacesFromServer();
+        
+    //     if (serverWorkspaces.length > 0) {
+    //       const clientWorkspaces = useWorkspaceStore.getState().workspaces || [];
+    //       const merged = mergeWorkspaces(serverWorkspaces, clientWorkspaces);
+    //       console.log("Merging server + client workspaces (already hydrated):", merged);
+    //       useWorkspaceStore.getState().setWorkspace(merged);
+
+    //       const prevCurrent = useWorkspaceStore.getState().currentWorkspace;
+    //       const defaultWs = merged.find((ws: any) => ws.isDefault);
+    //       const next = prevCurrent
+    //         ? merged.find((w) => w.id === prevCurrent.id) || defaultWs || merged[0]
+    //         : defaultWs || merged[0];
+    //       if (next) useWorkspaceStore.getState().setCurrentWorkspace(next);
+    //     } else {
+    //       console.log("No server workspaces, initializing default (already hydrated)");
+    //       await initializeDefaultWorkspace();
+    //     }
+        
+    //     setWorkspacesFetched(true);
+    //   }
+      
+    //   return () => unsubHydrate();
+    // };
+
     const initializeWorkspaces = async () => {
-      // Wait for hydration first
-      const unsubHydrate = useWorkspaceStore.persist.onFinishHydration(async () => {
-        setIsHydrated(true);
-        
-        // After hydration, fetch workspaces from server
-        const serverWorkspaces = await fetchWorkspacesFromServer();
-        
-        if (serverWorkspaces.length > 0) {
-          const clientWorkspaces = useWorkspaceStore.getState().workspaces || [];
-          const merged = mergeWorkspaces(serverWorkspaces, clientWorkspaces);
-          console.log("Merging server + client workspaces (on hydrate):", merged);
-          useWorkspaceStore.getState().setWorkspace(merged);
-
-          // Preserve current selection if possible
-          const prevCurrent = useWorkspaceStore.getState().currentWorkspace;
-          if (prevCurrent) {
-            const next = merged.find((w) => w.id === prevCurrent.id) || merged[0];
-            if (next) useWorkspaceStore.getState().setCurrentWorkspace(next);
-          }
-        } else {
-          console.log("No server workspaces, initializing default (on hydrate)");
-          await initializeDefaultWorkspace();
-        }
-
-        setWorkspacesFetched(true);
+  // 1. Hydration wait kare -> then run
+  if (!useWorkspaceStore.persist.hasHydrated()) {
+    await new Promise<void>((resolve) => {
+      const unsub = useWorkspaceStore.persist.onFinishHydration(() => {
+        unsub();
+        resolve();
       });
-      
-      // If already hydrated, run immediately
-      if (useWorkspaceStore.persist.hasHydrated()) {
-        setIsHydrated(true);
-        
-        const serverWorkspaces = await fetchWorkspacesFromServer();
-        
-        if (serverWorkspaces.length > 0) {
-          const clientWorkspaces = useWorkspaceStore.getState().workspaces || [];
-          const merged = mergeWorkspaces(serverWorkspaces, clientWorkspaces);
-          console.log("Merging server + client workspaces (already hydrated):", merged);
-          useWorkspaceStore.getState().setWorkspace(merged);
+    });
+  }
 
-          const prevCurrent = useWorkspaceStore.getState().currentWorkspace;
-          const defaultWs = merged.find((ws: any) => ws.isDefault);
-          const next = prevCurrent
-            ? merged.find((w) => w.id === prevCurrent.id) || defaultWs || merged[0]
-            : defaultWs || merged[0];
-          if (next) useWorkspaceStore.getState().setCurrentWorkspace(next);
-        } else {
-          console.log("No server workspaces, initializing default (already hydrated)");
-          await initializeDefaultWorkspace();
-        }
-        
-        setWorkspacesFetched(true);
-      }
-      
-      return () => unsubHydrate();
-    };
+  // 2. Mark hydrated
+  setIsHydrated(true);
+
+  // 3. Fetch from server
+  const serverWorkspaces = await fetchWorkspacesFromServer();
+  const state = useWorkspaceStore.getState();
+
+  if (serverWorkspaces.length > 0) {
+    const clientWorkspaces = state.workspaces || [];
+    const merged = mergeWorkspaces(serverWorkspaces, clientWorkspaces);
+
+    state.setWorkspace(merged);
+
+    // Restore selection OR default
+    const prev = state.currentWorkspace;
+    const fallback =
+      merged.find((w) => w.id === prev?.id) ||
+      merged.find((w) => w.isDefault) ||
+      merged[0];
+
+    if (fallback) state.setCurrentWorkspace(fallback);
+  } else {
+    await initializeDefaultWorkspace();
+  }
+
+  setWorkspacesFetched(true);
+};
+
 
     initializeWorkspaces();
   }, [userInfo?.userId]);
