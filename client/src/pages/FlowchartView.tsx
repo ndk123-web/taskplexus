@@ -17,7 +17,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import './FlowchartView.css';
 import useWorkspaceStore from '../store/useWorkspaceStore';
-import { userInfo } from 'os';
+// import { userInfo } from 'os';
 import useUserStore from '../store/useUserInfo';
 
 // Todo interface - same as Dashboard
@@ -30,7 +30,7 @@ interface Todo {
 
 const FlowchartView = () => {
   const navigate = useNavigate();
-  const { currentWorkspace } = useWorkspaceStore();
+  const { currentWorkspace, updateNodes, updateEdges } = useWorkspaceStore();
   
   // Initialize default workspace on mount
   // useEffect(() => {
@@ -44,13 +44,7 @@ const FlowchartView = () => {
   const [showMiniMap, setShowMiniMap] = useState(true);
 
   // Demo todos - editable state
-  const [todos, setTodos] = useState<Todo[]>([
-    { id: 1, text: 'Complete project documentation', completed: true, priority: 'high' },
-    { id: 2, text: 'Review pull requests', completed: false, priority: 'medium' },
-    { id: 3, text: 'Team meeting at 3 PM', completed: false, priority: 'high' },
-    { id: 4, text: 'Update portfolio website anda', completed: false, priority: 'low' },
-    { id: 5, text: 'Morning workout', completed: true, priority: 'medium' },
-  ]);
+  const [todos, setTodos] = useState<any>(useWorkspaceStore.getState().currentWorkspace?.todos || []);
 
   // Toggle todo completed status
   const toggleTodoCompleted = (todoId: number) => {
@@ -63,7 +57,7 @@ const FlowchartView = () => {
 
   // Convert todos to React Flow nodes
   const initialNodes: Node[] = todos.map((todo, index) => ({
-    id: `todo-${todo.id}`,
+    id: `${todo.id}`,
     type: 'default',
     position: { x: 250, y: index * 120 }, // Vertical layout
     data: { 
@@ -100,22 +94,42 @@ const FlowchartView = () => {
   }));
 
   // Initial connections (sequential flow)
-  const initialEdges: Edge[] = todos.slice(0, -1).map((todo, index) => ({
-    id: `edge-${todo.id}-${todos[index + 1].id}`,
-    source: `todo-${todo.id}`,
-    target: `todo-${todos[index + 1].id}`,
-    animated: false,
-    style: { stroke: '#667eea', strokeWidth: 3 },
-    type: 'smoothstep',
-  }));
+  // const initialEdges: Edge[] = todos.slice(0, -1).map((todo, index) => ({
+  //   id: `edge-${todo.id}-${todos[index + 1].id}`,
+  //   source: `todo-${todo.id}`,
+  //   target: `todo-${todos[index + 1].id}`,
+  //   animated: false,
+  //   style: { stroke: '#667eea', strokeWidth: 3 },
+  //   type: 'smoothstep',
+  // }));
+
+  const initialEdges: Edge[] = []; 
 
   // React Flow state management
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(currentWorkspace?.initialNodes ||initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(currentWorkspace?.initialEdges || initialEdges);
+
+  // Auto-save nodes to workspace store whenever they change (position, addition, deletion)
+  useEffect(() => {
+    if (currentWorkspace && nodes.length > 0) {
+      // Save to both workspaces array and currentWorkspace
+      updateNodes(currentWorkspace.id, nodes as any);
+      console.log("💾 Nodes saved to workspace:", currentWorkspace.id);
+    }
+  }, [nodes, currentWorkspace?.id, updateNodes]);
+
+  // Auto-save edges to workspace store whenever they change (connect, delete)
+  useEffect(() => {
+    if (currentWorkspace) {
+      // Save to both workspaces array and currentWorkspace
+      updateEdges(currentWorkspace.id, edges as any);
+      console.log("💾 Edges saved to workspace:", currentWorkspace.id);
+    }
+  }, [edges, currentWorkspace?.id, updateEdges]);
 
   // Update nodes whenever todos change (for completed toggle)
   useEffect(() => {
-    const updatedNodes = todos.map((todo, index) => ({
+    const updatedNodes = todos.map((todo: any, index: number) => ({
       id: `todo-${todo.id}`,
       type: 'default',
       position: nodes.find(n => n.id === `todo-${todo.id}`)?.position || { x: 250, y: index * 120 },
@@ -168,7 +182,9 @@ const FlowchartView = () => {
 
   // Logout handler
   const handleLogout = () => {
-    navigate('/');
+    useUserStore.getState().signOutUser();
+    useWorkspaceStore.persist.clearStorage();
+    navigate('/signin');
   };
 
   // Back to dashboard
