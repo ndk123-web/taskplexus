@@ -5,6 +5,8 @@ import useWorkspaceStore from "../store/useWorkspaceStore";
 import deleteWorkspaceAPI from "../api/deleteWorkspaceApi";
 import createTaskApi from "../api/createTaskApi";
 import toggleTodoApi from "../api/toggleTaskApi";
+import updateTaskApi from "../api/updateTaskApi";
+import deleteTaskApi from "../api/deleteTaskApi";
 
 const pendingOps = async () => {
     const ops = await getPendingOperations();
@@ -268,6 +270,59 @@ const pendingOps = async () => {
                     await addPendingOperation(op);
                 }
                 continue; // skip to next operation
+            }
+        }
+        else if (op.type === "UPDATE_TODO" && op.status === "PENDING") {
+            try {
+                 // API call
+                const response: any = await updateTaskApi(op.payload)
+                console.log("Update Task API response:", response);
+
+                if (response.success !== "true") {
+                    throw new Error("Failed to update task on server");
+                }
+                console.log("Response from updateTaskApi:", response);
+
+                // if success remove from pending operations
+                await removePendingOperation(op.id);
+            }
+            catch(error) {
+                console.error("Error processing pending operation:", error);
+                // Increment retry count
+                op.retryCount += 1;
+                // If retry count exceeds limit (e.g., 3), mark as FAILED
+                if (op.retryCount >= 3) {
+                    console.error("Max retry count reached for operation:", op.id);
+                    // Remove from pending operations
+                    await removePendingOperation(op.id);
+                } else {
+                    // Update the retry count in pending operations
+                    await addPendingOperation(op);
+                }
+            }        
+        }
+        else if (op.type === "DELETE_TODO" && op.status === "PENDING") {
+            try {
+                const response: any = await deleteTaskApi(op.payload);
+                console.log("Response from deleteTaskApi:", response);
+
+                if (response?.success !== "true") {
+                    throw new Error("Failed to delete todo on server");
+                }
+            }
+            catch(error) {
+                console.error("Error processing pending operation:", error);
+                // Increment retry count
+                op.retryCount += 1;
+                // If retry count exceeds limit (e.g., 3), mark as FAILED
+                if (op.retryCount >= 3) {
+                    console.error("Max retry count reached for operation:", op.id);
+                    // Remove from pending operations
+                    await removePendingOperation(op.id);
+                } else {
+                    // Update the retry count in pending operations
+                    await addPendingOperation(op);
+                }
             }
         }
     }

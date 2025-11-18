@@ -13,7 +13,7 @@ import (
 type TodoService interface {
 	GetTodos(ctx context.Context) ([]model.Todo, error)
 	CreateTodo(ctx context.Context, todo model.Todo, workspaceId string, userId string) (model.Todo, error)
-	UpdateTodo(ctx context.Context, todoId string, updatedTask string) (model.Todo, error)
+	UpdateTodo(ctx context.Context, todoId string, updatedTask string, priority string) (model.Todo, error)
 	DeleteTodo(ctx context.Context, todoId string) (bool, error)
 	GetSpecificTodo(ctx context.Context, workspaceId string, userId string) ([]model.Todo, error)
 	ToggleTodo(ctx context.Context, todoId string, toggle string, userId string) (bool, error)
@@ -48,8 +48,8 @@ func (s *todoService) CreateTodo(ctx context.Context, todo model.Todo, workspace
 }
 
 // UpdateTodo modifies an existing todo's task through the repository
-func (s *todoService) UpdateTodo(ctx context.Context, todoId string, updatedTask string) (model.Todo, error) {
-	return s.repo.UpdateTodo(ctx, todoId, updatedTask)
+func (s *todoService) UpdateTodo(ctx context.Context, todoId string, updatedTask string, priority string) (model.Todo, error) {
+	return s.repo.UpdateTodo(ctx, todoId, updatedTask,priority)
 }
 
 // DeleteTodo removes a todo item by ID through the repository

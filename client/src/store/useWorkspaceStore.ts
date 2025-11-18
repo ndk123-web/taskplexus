@@ -6,6 +6,9 @@ import useUserStore from "./useUserInfo";
 import { addPendingOperation } from "./indexDB/pendingOps/usePendingOps";
 import type { CreateTaskReq } from "../types/createTaskType";
 import toggleTodoApi from "../api/toggleTaskApi";
+import updateTaskApi from "../api/updateTaskApi";
+import { todo } from "node:test";
+import deleteTaskApi from "../api/deleteTaskApi";
 
 // Todo interface
 export interface Todo {
@@ -660,8 +663,27 @@ const useWorkspaceStore = create<WorkspaceState>()(
         }
 
         try {
-          // API call
-          // await updateTodoAPI({ todoId, ...updates });
+          const task = updates.text || "";
+          if (!task) throw new Error("Task text cannot be empty");
+          const priority = updates.priority || "low";
+          if (!priority) throw new Error("Priority cannot be empty");
+          if (!todoId) throw new Error("Todo ID is required");
+
+          // Add to pending operations for background processing
+          await addPendingOperation({
+            id: `UPDATE_TODO_${Date.now()}`,
+            type: "UPDATE_TODO",
+            status: "PENDING",
+            payload: {
+              id: todoId,
+              task,
+              priority,
+            },
+            timestamp: Date.now(),
+            retryCount: 0,
+          });
+          // all good
+
           console.log("✅ Todo updated");
         } catch (error) {
           console.error("❌ Failed to update todo:", error);
@@ -692,6 +714,19 @@ const useWorkspaceStore = create<WorkspaceState>()(
         try {
           // API call
           // await deleteTodoAPI({ todoId });
+          await addPendingOperation({
+            id: `DELETE_TODO_${Date.now()}`,
+            type: "DELETE_TODO",
+            status: "PENDING",
+            payload: {
+              id: todoId,
+            },
+            timestamp: Date.now(),
+            retryCount: 0,
+          });
+
+          // else all good
+
           console.log("✅ Todo deleted");
         } catch (error) {
           console.error("❌ Failed to delete todo:", error);

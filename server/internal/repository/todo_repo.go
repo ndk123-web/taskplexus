@@ -14,7 +14,7 @@ import (
 type TodoRepository interface {
 	GetAll(ctx context.Context) ([]model.Todo, error)
 	CreateTodo(ctx context.Context, todo model.Todo, workspaceId string, userId string) (model.Todo, error)
-	UpdateTodo(ctx context.Context, todoId string, updatedTask string) (model.Todo, error)
+	UpdateTodo(ctx context.Context, todoId string, updatedTask string, priority string) (model.Todo, error)
 	DeleteTodo(ctx context.Context, todoId string) (bool, error)
 	GetSpecificTodo(ctx context.Context, workspaceId string, userId string) ([]model.Todo, error)
 	ToggleTodo(ctx context.Context, todoId string, toggle string, userId string) (bool, error)
@@ -126,7 +126,7 @@ func (r *todoRepo) CreateTodo(ctx context.Context, todo model.Todo, workspaceId 
 }
 
 // UpdateTodo modifies an existing todo's task text
-func (r *todoRepo) UpdateTodo(ctx context.Context, todoId string, updatedTask string) (model.Todo, error) {
+func (r *todoRepo) UpdateTodo(ctx context.Context, todoId string, updatedTask string, priority string) (model.Todo, error) {
 	if todoId == "" {
 		return model.Todo{}, errors.New("Todo Id is Empty")
 	}
@@ -140,7 +140,7 @@ func (r *todoRepo) UpdateTodo(ctx context.Context, todoId string, updatedTask st
 
 	// always convert string -> object id
 	filter := bson.M{"_id": oid}
-	update := bson.M{"$set": bson.M{"task": updatedTask}}
+	update := bson.M{"$set": bson.M{"task": updatedTask, "priority": priority}}
 
 	_, err := r.collection.UpdateOne(ctx, filter, update)
 

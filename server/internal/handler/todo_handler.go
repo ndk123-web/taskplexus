@@ -132,6 +132,7 @@ type updateTodo struct {
 	ID   string `json:"id"`   // ID of the todo to update
 	Task string `json:"task"` // New task text
 	// WorkspaceId string `json:"workspaceId"`  // No Need of workspaceID because ID is already unique
+	Priority string `json:"priority"`
 }
 
 // UpdateTodo handles HTTP PUT requests to update an existing todo
@@ -140,42 +141,40 @@ type updateTodo struct {
 func (h *todoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	var tobeUpdate updateTodo
 	if err := json.NewDecoder(r.Body).Decode(&tobeUpdate); err != nil {
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
+		return
 	}
 
-	todo, err2 := h.service.UpdateTodo(context.Background(), tobeUpdate.ID, tobeUpdate.Task)
+	todo, err2 := h.service.UpdateTodo(context.Background(), tobeUpdate.ID, tobeUpdate.Task, tobeUpdate.Priority)
 	if err2 != nil {
-		json.NewEncoder(w).Encode(map[string]string{"error": err2.Error()})
+		json.NewEncoder(w).Encode(map[string]string{"Error": err2.Error(), "success": "false"})
+		return
 	}
 
-	json.NewEncoder(w).Encode(todo)
-}
-
-// deleteStruct represents the request payload for deleting a todo
-type deleteStruct struct {
-	ID string `json:"id"` // ID of the todo to delete
+	json.NewEncoder(w).Encode(map[string]any{"response": todo, "success": "true"})
 }
 
 // DeleteTodo handles HTTP DELETE requests to remove a todo
 // Expects a JSON payload with the todo ID
 // Returns success status or an error message
 func (h *todoHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
-	var todoStruct deleteStruct
-	err := json.NewDecoder(r.Body).Decode(&todoStruct)
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+
+	todoId := r.PathValue("todoId")
+	if todoId == "" {
+		json.NewEncoder(w).Encode(map[string]any{"success": "false", "Error": "todoId in params is empty"})
+		return
 	}
 
-	ok, err2 := h.service.DeleteTodo(context.Background(), todoStruct.ID)
+	ok, err2 := h.service.DeleteTodo(context.Background(), todoId)
 	if err2 != nil {
-		json.NewEncoder(w).Encode(map[string]string{"error": err2.Error()})
+		json.NewEncoder(w).Encode(map[string]string{"error": err2.Error(), "success": "false"})
 	}
 
 	if !ok {
-		json.NewEncoder(w).Encode(map[string]string{"error": "Delete False"})
+		json.NewEncoder(w).Encode(map[string]string{"error": "Delete False", "success": "false"})
 	}
 
-	json.NewEncoder(w).Encode(map[string]string{"Success": "True"})
+	json.NewEncoder(w).Encode(map[string]string{"success": "true"})
 }
 
 func (h *todoHandler) GetSpecificTodo(w http.ResponseWriter, r *http.Request) {
