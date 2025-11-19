@@ -309,6 +309,8 @@ const pendingOps = async () => {
                 if (response?.success !== "true") {
                     throw new Error("Failed to delete todo on server");
                 }
+                // if success remove from pending operations
+                await removePendingOperation(op.id);
             }
             catch(error) {
                 console.error("Error processing pending operation:", error);

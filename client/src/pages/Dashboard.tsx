@@ -575,6 +575,7 @@ const Dashboard = () => {
   // Logout and redirect to home
   const handleLogout = () => {
     // clearWorkspace();
+    useWorkspaceStore.getState().clearWorkspace();
 
     // It means Clear the Persisted Storage of Workspace Store 
     useWorkspaceStore.persist.clearStorage(); 
