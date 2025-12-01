@@ -14,12 +14,11 @@ const Home = () => {
       <nav className="navbar">
         <div className="nav-content">
           <h1 className="nav-logo">
-            <img src="/TaskPlexus.png" alt="TaskPlexus" width={48} />
-            <span style={{ marginLeft: '12px' }}>TaskPlexus</span>
+            <img src="/TaskPlexus.png" alt="TaskPlexus" width={32} />
+            <span style={{ marginLeft: '8px' }}>TaskPlexus</span>
           </h1>
           <div className="nav-links">
-            <Link to="/signin" className="nav-link">Sign In</Link>
-            <Link to="/signup" className="nav-button">Get Started</Link>
+            <span className="nav-tagline">Built By Ndk</span>
           </div>
         </div>
       </nav>
@@ -27,7 +26,7 @@ const Home = () => {
       <main className="hero-section">
         <div className="hero-content">
           <div className="badge">
-            <span className="badge-text">Simple. Fast. Efficient.</span>
+            <span className="badge-text">Simple.Fast.Productive</span>
           </div>
           
           <h1 className="hero-title">

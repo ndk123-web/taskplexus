@@ -139,6 +139,9 @@
   font-weight: 700;
   margin: 0 0 8px 0;
   color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .signup-card-subtitle {
@@ -493,49 +496,317 @@
 
   .signup-benefits {
     align-items: center;
+    max-width: 600px;
+    margin: 0 auto;
   }
 
   .signup-benefit-item {
     max-width: 400px;
+    text-align: left;
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .signup-nav-content {
-    padding: 0 24px;
+    padding: 0 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .signup-nav-logo {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .signup-nav-links {
+    gap: 12px;
+  }
+
+  .signup-nav-link,
+  .signup-nav-button {
+    padding: 10px 16px;
+    font-size: 14px;
+    white-space: nowrap;
   }
 
   .signup-main {
-    padding: 20px 24px 60px;
+    padding: 20px 20px 60px;
+  }
+
+  .signup-content-wrapper {
+    gap: 40px;
+    padding: 0;
   }
 
   .signup-card {
     padding: 32px 24px;
+    border-radius: 20px;
+    margin: 0 auto;
+    max-width: none;
+    width: 100%;
   }
 
   .signup-hero-title {
     font-size: 36px;
+    line-height: 1.2;
   }
 
   .signup-card-title {
     font-size: 28px;
   }
 
-  .signup-nav-logo {
-    font-size: 24px;
+  .signup-form {
+    gap: 18px;
   }
 
+  .signup-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 16px 18px;
+    min-height: 50px;
+  }
+
+  .signup-submit-btn,
+  .google-signup-btn {
+    padding: 16px 24px;
+    font-size: 16px;
+    min-height: 52px;
+    touch-action: manipulation;
+  }
+
+  .signup-benefits {
+    gap: 20px;
+  }
+
+  .signup-benefit-item {
+    gap: 12px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .signup-benefit-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .signup-benefit-item h3 {
+    font-size: 16px;
+  }
+
+  .signup-benefit-item p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .signup-nav-content {
+    padding: 0 16px;
+    justify-content: space-between;
+  }
+  
+  .signup-nav-logo {
+    font-size: 20px;
+  }
+  
+  .signup-nav-logo img {
+    width: 32px;
+  }
+  
   .signup-nav-links {
     gap: 8px;
   }
-
-  .signup-nav-link,
+  
+  .signup-nav-link {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
   .signup-nav-button {
     padding: 8px 16px;
+    font-size: 13px;
+  }
+  
+  .signup-main {
+    padding: 16px;
+  }
+  
+  .signup-card {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+  
+  .signup-hero-title {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+  
+  .signup-card-title {
+    font-size: 24px;
+  }
+  
+  .signup-card-subtitle {
     font-size: 14px;
   }
-
+  
+  .signup-hero-description {
+    font-size: 16px;
+    margin-bottom: 32px;
+  }
+  
+  .signup-input {
+    padding: 14px 16px;
+  }
+  
   .signup-form {
     gap: 16px;
+  }
+  
+  .signup-benefits {
+    gap: 16px;
+  }
+  
+  .signup-benefit-item {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .signup-benefit-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+  
+  .signup-benefit-item h3 {
+    font-size: 15px;
+  }
+  
+  .signup-benefit-item p {
+    font-size: 13px;
+  }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .signup-main {
+    padding: 16px;
+  }
+  
+  .signup-content-wrapper {
+    gap: 32px;
+  }
+  
+  .signup-card {
+    max-width: 90vw;
+    margin: 0 auto;
+  }
+  
+  .signup-hero-title {
+    font-size: 32px;
+  }
+}
+
+/* Enhanced animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInScale {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes benefitSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.signup-card {
+  animation: slideInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+}
+
+.signup-form-group {
+  animation: fadeInUp 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+.signup-form-group:nth-child(1) { animation-delay: 0.1s; }
+.signup-form-group:nth-child(2) { animation-delay: 0.2s; }
+.signup-form-group:nth-child(3) { animation-delay: 0.3s; }
+.signup-form-group:nth-child(4) { animation-delay: 0.4s; }
+
+.signup-submit-btn {
+  animation: fadeInUp 0.5s ease-out 0.5s both;
+}
+
+.google-signup-btn {
+  animation: fadeInUp 0.5s ease-out 0.6s both;
+}
+
+.signup-benefit-item {
+  animation: benefitSlideIn 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+.signup-benefit-item:nth-child(1) { animation-delay: 0.3s; }
+.signup-benefit-item:nth-child(2) { animation-delay: 0.5s; }
+.signup-benefit-item:nth-child(3) { animation-delay: 0.7s; }
+
+/* Improved interactions */
+.signup-input:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.signup-submit-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.google-signup-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.signup-benefit-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.signup-benefit-item:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(102, 126, 234, 0.2);
+}
+
+/* Touch improvements */
+@media (hover: none) and (pointer: coarse) {
+  .signup-nav-link:hover,
+  .signup-nav-button:hover,
+  .signup-submit-btn:hover,
+  .google-signup-btn:hover,
+  .signup-benefit-item:hover {
+    transform: none;
+  }
+  
+  .signup-input {
+    font-size: 16px;
   }
 }

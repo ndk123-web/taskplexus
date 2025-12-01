@@ -25,9 +25,10 @@ const SignIn = () => {
       return;
     }
     try {
-      const response: signInResponse & { success?: string; Error?: string } = await signInUserApi({ email, password, googleLogin, idToken: "" });
+      const response: signInResponse & { success?: string | boolean; Error?: string } = await signInUserApi({ email, password, googleLogin, idToken: "" });
       console.log('Sign In Response:', response);
-      if (response.success && response.success !== 'true') {
+      const successFlag = String(response.success).toLowerCase();
+      if (successFlag !== 'true') {
         showToast('Password / Username is Invalid', 'error');
         return;
       }
@@ -53,14 +54,15 @@ const SignIn = () => {
       console.log("Firebase User:", firebaseUser);
       console.log("Google Login sending flag: ", googleFlag); 
       try {
-      const response: signInResponse & { success?: string; Error?: string } = await signInUserApi({ 
+      const response: signInResponse & { success?: string | boolean; Error?: string } = await signInUserApi({ 
         email: firebaseUser.email || '',
         password: '',
         googleLogin: googleFlag,
         idToken 
       });
       console.log('Sign In Response:', response);
-      if (response.success && response.success !== 'true') {
+      const successGoogle = String(response.success).toLowerCase();
+      if (successGoogle !== 'true') {
         showToast(response.Error || 'Password / Username is Invalid', 'error');
         return;
       }

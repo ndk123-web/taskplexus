@@ -212,6 +212,9 @@
   font-weight: 700;
   margin: 0 0 8px 0;
   color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .signin-card-subtitle {
@@ -487,6 +490,7 @@
 
   .signin-left {
     text-align: center;
+    order: 1;
   }
 
   .signin-hero-title {
@@ -500,47 +504,266 @@
 
   .signin-features {
     align-items: center;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .signin-right {
+    order: 0;
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .signin-nav-content {
-    padding: 0 24px;
+    padding: 0 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .signin-nav-logo {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .signin-nav-links {
+    gap: 12px;
+  }
+
+  .signin-nav-link,
+  .signin-nav-button {
+    padding: 10px 16px;
+    font-size: 14px;
+    white-space: nowrap;
   }
 
   .signin-main {
-    padding: 20px 24px 60px;
+    padding: 20px 20px 60px;
+  }
+
+  .signin-content-wrapper {
+    gap: 40px;
+    padding: 0;
   }
 
   .signin-card {
     padding: 32px 24px;
+    border-radius: 20px;
+    margin: 0 auto;
+    max-width: none;
+    width: 100%;
   }
 
   .signin-hero-title {
     font-size: 36px;
+    line-height: 1.2;
   }
 
   .signin-card-title {
     font-size: 28px;
   }
 
-  .signin-nav-logo {
-    font-size: 24px;
+  .signin-form {
+    gap: 20px;
   }
 
-  .signin-nav-links {
-    gap: 8px;
+  .signin-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 16px 18px;
+    min-height: 50px;
   }
 
-  .signin-nav-link,
-  .signin-nav-button {
-    padding: 8px 16px;
-    font-size: 14px;
+  .signin-submit-btn,
+  .google-signin-btn {
+    padding: 16px 24px;
+    font-size: 16px;
+    min-height: 52px;
+    touch-action: manipulation;
   }
 
   .signin-form-options {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 16px;
+    margin-top: 0;
+  }
+
+  .signin-checkbox {
+    align-self: flex-start;
+  }
+
+  .signin-features {
+    gap: 20px;
+  }
+
+  .signin-feature-item {
+    justify-content: center;
+    text-align: left;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .signin-nav-content {
+    padding: 0 16px;
+    justify-content: space-between;
+  }
+  
+  .signin-nav-logo {
+    font-size: 20px;
+  }
+  
+  .signin-nav-logo img {
+    width: 32px;
+  }
+  
+  .signin-nav-links {
+    gap: 8px;
+  }
+  
+  .signin-nav-link {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .signin-nav-button {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  
+  .signin-main {
+    padding: 16px;
+  }
+  
+  .signin-card {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+  
+  .signin-hero-title {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+  
+  .signin-card-title {
+    font-size: 24px;
+  }
+  
+  .signin-card-subtitle {
+    font-size: 14px;
+  }
+  
+  .signin-hero-description {
+    font-size: 16px;
+    margin-bottom: 32px;
+  }
+  
+  .signin-input {
+    padding: 14px 16px;
+  }
+  
+  .signin-features {
+    gap: 16px;
+  }
+  
+  .signin-feature-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+  
+  .signin-feature-item span {
+    font-size: 14px;
+  }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .signin-main {
+    padding: 16px;
+  }
+  
+  .signin-content-wrapper {
+    gap: 32px;
+  }
+  
+  .signin-card {
+    max-width: 90vw;
+    margin: 0 auto;
+  }
+  
+  .signin-hero-title {
+    font-size: 32px;
+  }
+}
+
+/* Enhanced animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInScale {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.signin-card {
+  animation: slideInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+}
+
+.signin-form-group {
+  animation: fadeInUp 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+.signin-form-group:nth-child(1) { animation-delay: 0.1s; }
+.signin-form-group:nth-child(2) { animation-delay: 0.2s; }
+.signin-form-group:nth-child(3) { animation-delay: 0.3s; }
+
+.signin-submit-btn {
+  animation: fadeInUp 0.5s ease-out 0.4s both;
+}
+
+.google-signin-btn {
+  animation: fadeInUp 0.5s ease-out 0.5s both;
+}
+
+/* Improved interactions */
+.signin-input:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.signin-submit-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.google-signin-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* Touch improvements */
+@media (hover: none) and (pointer: coarse) {
+  .signin-nav-link:hover,
+  .signin-nav-button:hover,
+  .signin-submit-btn:hover,
+  .google-signin-btn:hover {
+    transform: none;
+  }
+  
+  .signin-input {
+    font-size: 16px;
   }
 }

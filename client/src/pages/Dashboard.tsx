@@ -1038,7 +1038,8 @@ const Dashboard = () => {
           <span>TaskPlexus</span>
         </div>
         <div className="mobile-user">
-          <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userInfo?.email}`} alt="Profile" className="mobile-user-avatar" />
+          {/* <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userInfo?.email}`} alt="Profile" className="mobile-user-avatar" /> */}
+          ✨
         </div>
       </header>
 
@@ -1074,7 +1075,11 @@ const Dashboard = () => {
               </button>
               <button 
                 className={`mobile-nav-item ${activeSection === 'tasks' ? 'active' : ''}`}
-                onClick={() => { setActiveSection('tasks'); setMobileMenuOpen(false); }}
+                onClick={() => { 
+                  setActiveSection('tasks'); 
+                  setMobileMenuOpen(false); 
+                  setTimeout(() => scrollToSection('tasks-section'), 300);
+                }}
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path d="M16.5 3.5H3.5C2.94772 3.5 2.5 3.94772 2.5 4.5V15.5C2.5 16.0523 2.94772 16.5 3.5 16.5H16.5C17.0523 16.5 17.5 16.0523 17.5 15.5V4.5C17.5 3.94772 17.0523 3.5 16.5 3.5Z" stroke="currentColor" strokeWidth="1.5"/>
@@ -1084,7 +1089,11 @@ const Dashboard = () => {
               </button>
               <button 
                 className={`mobile-nav-item ${activeSection === 'goals' ? 'active' : ''}`}
-                onClick={() => { setActiveSection('goals'); setMobileMenuOpen(false); }}
+                onClick={() => { 
+                  setActiveSection('goals'); 
+                  setMobileMenuOpen(false); 
+                  setTimeout(() => scrollToSection('goals-section'), 300);
+                }}
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.5"/>
@@ -1095,7 +1104,10 @@ const Dashboard = () => {
               </button>
               <button 
                 className={`mobile-nav-item ${activeSection === 'flowchart' ? 'active' : ''}`}
-                onClick={() => { setActiveSection('flowchart'); setMobileMenuOpen(false); }}
+                onClick={() => { 
+                  setMobileMenuOpen(false); 
+                  navigate('/flowchart');
+                }}
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <rect x="2.5" y="2.5" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.5"/>
@@ -1116,11 +1128,87 @@ const Dashboard = () => {
                 </svg>
                 <span>Analytics</span>
               </button>
+              <button 
+                className="mobile-nav-item"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  navigate('/settings');
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" fill="currentColor"/>
+                  <path fillRule="evenodd" clipRule="evenodd" d="M8.39 2.3a2 2 0 013.22 0l.77 1.05c.18.24.46.4.77.43l1.28.14a2 2 0 012.28 2.28l-.14 1.28a1.2 1.2 0 00.43.77l1.05.77a2 2 0 010 3.22l-1.05.77c-.24.18-.4.46-.43.77l-.14 1.28a2 2 0 01-2.28 2.28l-1.28-.14a1.2 1.2 0 00-.77.43l-.77 1.05a2 2 0 01-3.22 0l-.77-1.05a1.2 1.2 0 00-.77-.43l-1.28.14a2 2 0 01-2.28-2.28l.14-1.28a1.2 1.2 0 00-.43-.77L2.3 11.61a2 2 0 010-3.22l1.05-.77c.24-.18.4-.46.43-.77L3.92 5.57a2 2 0 012.28-2.28l1.28.14c.31.03.59-.19.77-.43L8.39 2.3zM10 14a4 4 0 100-8 4 4 0 000 8z" fill="currentColor"/>
+                </svg>
+                <span>Settings</span>
+              </button>
+
+              {/* Mobile Workspaces List */}
+              <div className="mobile-workspaces">
+                <div className="mobile-workspaces-header">Workspaces</div>
+                
+                {/* Mobile Add Workspace Form */}
+                {showAddWorkspace && (
+                  <form className="mobile-workspace-add-form" onSubmit={handleAddWorkspace}>
+                    <input
+                      type="text"
+                      value={newWorkspaceName}
+                      onChange={(e) => setNewWorkspaceName(e.target.value)}
+                      placeholder="Workspace name"
+                      className="mobile-workspace-input"
+                      autoFocus
+                    />
+                    <div className="mobile-workspace-form-actions">
+                      <button type="submit" className="mobile-workspace-submit-btn">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M11.6667 3.5L5.25 9.91667L2.33333 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                      <button 
+                        type="button" 
+                        className="mobile-workspace-cancel-btn"
+                        onClick={() => {
+                          setShowAddWorkspace(false);
+                          setNewWorkspaceName('');
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M10.5 3.5L3.5 10.5M3.5 3.5L10.5 10.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </form>
+                )}
+                
+                <div className="mobile-workspaces-list">
+                  {workspaces.length === 0 && (
+                    <div className="mobile-workspace-empty">No workspaces yet</div>
+                  )}
+                  {workspaces.map((ws) => (
+                    <button
+                      key={ws.id}
+                      className={`mobile-workspace-item ${currentWorkspace?.id === ws.id ? 'active' : ''}`}
+                      onClick={() => { setCurrentWorkspace(ws); setMobileMenuOpen(false); }}
+                    >
+                      <span className="mobile-workspace-name">{ws.name?.substring(0,20) || 'Untitled'}</span>
+                      {ws.isDefault && <span className="mobile-workspace-badge">Default</span>}
+                    </button>
+                  ))}
+                </div>
+                {!showAddWorkspace && (
+                  <button
+                    className="mobile-workspace-add"
+                    onClick={() => setShowAddWorkspace(true)}
+                  >
+                    + Add Workspace
+                  </button>
+                )}
+              </div>
             </div>
             
             <div className="mobile-menu-footer">
               <div className="mobile-user-info">
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userInfo?.email}`} alt="Profile" className="mobile-menu-avatar" />
+                {/* <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userInfo?.email}`} alt="Profile" className="mobile-menu-avatar" /> */}
+                ✨
                 <div>
                   <div className="mobile-username">{userInfo?.fullName || 'User'}</div>
                   <div className="mobile-user-email">{userInfo?.email}</div>
@@ -1843,7 +1931,7 @@ const Dashboard = () => {
                 <button className="view-all-btn" onClick={() => setActiveSection('tasks')}>View All</button>
               </div>
               <div className="recent-tasks-list">
-                {recentTasks.map(task => (
+                {recentTasks?.slice(0,5)?.map(task => (
                   <div key={task.id} className="recent-task-item">
                     <div className={`recent-task-status status-${task.status}`}></div>
                     <div className="recent-task-content">
@@ -2248,7 +2336,7 @@ const Dashboard = () => {
                   const percentage = Math.min(100, Math.max(0, Math.round((current / safeTarget) * 100)));
                   console.log("Goals List Rendering: ", goals);
                   return (
-                    <div key={goal._id || goal.id} className="goal-card">
+                    <div key={goal._id || goal.id} className={`goal-card ${editingGoal === goal.id ? 'editing' : ''}`}>
                       {/* Edit mode - shows when pencil icon is clicked */}
                       {editingGoal === goal.id ? (
                         <div className="goal-edit-form">

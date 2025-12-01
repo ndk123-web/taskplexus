@@ -28,6 +28,14 @@
   width: 80px;
 }
 
+.dashboard-sidebar.collapsed .sidebar-logo img {
+  display: none;
+}
+
+.dashboard-sidebar.collapsed .sidebar-logo span {
+  display: none;
+}
+
 .sidebar-header {
   padding: 24px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -789,32 +797,40 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .npm-analytics-chart {
-    padding: 20px;
-    margin-top: 24px;
+    padding: 16px;
+    margin-top: 20px;
+    border-radius: 16px;
   }
   
   .npm-chart-header {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
   
   .npm-stats {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
   
   .npm-stat {
     flex-direction: row;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
   
   .npm-stat-number {
-    font-size: 24px;
+    font-size: 20px;
     margin-bottom: 0;
+    min-width: 40px;
   }
   
   .npm-stat-label {
-    font-size: 12px;
+    font-size: 11px;
+    opacity: 0.8;
   }
   
   .npm-divider {
@@ -822,16 +838,62 @@
   }
   
   .npm-chart-container {
-    height: 200px;
-    padding: 16px;
+    height: 180px;
+    padding: 12px;
+    touch-action: pan-x;
+  }
+  
+  .npm-chart-svg {
+    min-height: 150px;
   }
   
   .npm-chart-empty {
-    height: 160px;
+    height: 140px;
   }
   
   .npm-chart-empty .empty-icon {
-    font-size: 40px;
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+  
+  .npm-chart-empty p {
+    font-size: 14px;
+  }
+  
+  .npm-chart-empty span {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .npm-analytics-chart {
+    padding: 12px;
+    margin-top: 16px;
+  }
+  
+  .npm-stats {
+    gap: 8px;
+  }
+  
+  .npm-stat {
+    padding: 6px 12px;
+  }
+  
+  .npm-stat-number {
+    font-size: 18px;
+  }
+  
+  .npm-stat-label {
+    font-size: 10px;
+  }
+  
+  .npm-chart-container {
+    height: 160px;
+    padding: 8px;
+  }
+  
+  .npm-chart-svg {
+    min-height: 130px;
   }
 }
 
@@ -1930,6 +1992,50 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  position: relative;
+  z-index: 50;
+}
+
+@media (max-width: 768px) {
+  .goal-edit-form {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+    max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
+    background: rgba(15, 15, 30, 0.98);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+  }
+
+  .goal-edit-form::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .goal-edit-form {
+    width: 95vw;
+    max-width: 350px;
+    padding: 20px;
+    border-radius: 16px;
+    z-index: 10000
+  }
 }
 
 .goal-edit-input {
@@ -1952,6 +2058,12 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .goal-edit-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .goal-edit-actions {
@@ -2478,6 +2590,48 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ============================================ */
+/* GOAL EDITING LAYERING & CONTAINMENT FIXES    */
+/* ============================================ */
+/* Ensure goals list can layer editing card above others */
+.goals-list { position: relative; }
+
+/* Add elevated z-index and shadow when editing */
+.goal-card.editing {
+  z-index: 1000;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 0 2px rgba(102,126,234,0.35);
+  outline: none;
+}
+
+/* Desktop (grid) editing: keep edit form contained inside card */
+@media (min-width: 769px) {
+  .goal-card.editing .goal-edit-form {
+    position: absolute;
+    inset: 0; /* top:0; right:0; bottom:0; left:0 */
+    width: 100%;
+    height: 100%;
+    background: rgba(15,15,30,0.92);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 1010; /* higher than card */
+  }
+
+  /* Prevent fixed overlay behavior on desktop if previously applied */
+  .goal-card.editing .goal-edit-form::before { display: none; }
+}
+
+/* Improve stacking for nested elements while editing */
+.goal-card.editing .goal-header,
+.goal-card.editing .goal-actions { position: relative; z-index: 1020; }
+
+/* Slightly increase min-height when editing to avoid overflow jump */
+.goal-card.editing { min-height: 240px; }
 
 /* Responsive */
 @media (max-width: 1200px) {
@@ -3091,6 +3245,162 @@
   padding: 20px 0;
 }
 
+/* Mobile Workspaces Section */
+.mobile-workspaces {
+  margin: 8px 16px 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.mobile-workspaces-header {
+  padding: 14px 16px;
+  font-weight: 700;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mobile-workspaces-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-workspace-item {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.mobile-workspace-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.mobile-workspace-item.active {
+  background: rgba(102, 126, 234, 0.12);
+  color: #a5b4fc;
+}
+
+.mobile-workspace-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-workspace-badge {
+  font-size: 11px;
+  color: #a5b4fc;
+  background: rgba(102, 126, 234, 0.15);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.mobile-workspace-empty {
+  padding: 14px 16px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+.mobile-workspace-add {
+  width: calc(100% - 32px);
+  margin: 10px 16px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobile-workspace-add:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(102, 126, 234, 0.45);
+}
+
+/* Mobile Workspace Add Form */
+.mobile-workspace-add-form {
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mobile-workspace-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: white;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.mobile-workspace-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.mobile-workspace-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.mobile-workspace-form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.mobile-workspace-submit-btn {
+  background: #667eea;
+  border: none;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: background 0.2s ease;
+}
+
+.mobile-workspace-submit-btn:hover {
+  background: #5a67d8;
+}
+
+.mobile-workspace-cancel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s ease;
+}
+
+.mobile-workspace-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
 .mobile-nav-item {
   width: 100%;
   background: none;
@@ -3169,33 +3479,195 @@
 }
 
 /* Additional responsive improvements */
-@media (max-width: 480px) {
-  .mobile-header {
-    padding: 8px 16px;
-    height: 56px;
+/* Goals responsive fixes */
+.goal-card {
+  position: relative;
+  overflow: visible;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    gap: 24px;
   }
   
-  .mobile-logo span {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .todos-list,
+  .goals-list {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .analytics-row {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .analytics-card,
+  .recent-tasks-card {
+    width: 100%;
+  }
+  
+  .welcome-section {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  
+  .welcome-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .quick-stats {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+  
+  /* Mobile todos and goals optimization */
+  .todos-list,
+  .goals-list {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .todo-item {
+    padding: 16px;
+    border-radius: 12px;
+    min-height: 60px;
+    touch-action: manipulation;
+  }
+  
+  .todo-checkbox {
+    width: 24px;
+    height: 24px;
+    touch-action: manipulation;
+  }
+  
+  .todo-text {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  
+  .todo-priority {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  
+  .goal-card {
+    padding: 20px;
+    border-radius: 12px;
+    touch-action: manipulation;
+  }
+  
+  .goal-title {
     font-size: 16px;
+    margin-bottom: 6px;
   }
   
-  .mobile-user-avatar {
-    width: 28px;
-    height: 28px;
+  .goal-percentage {
+    font-size: 22px;
   }
   
-  .dashboard-main {
-    padding-top: 76px;
-    padding-left: 16px;
-    padding-right: 16px;
+  .goal-action-btn {
+    width: 40px;
+    height: 40px;
+    touch-action: manipulation;
   }
   
+  .section-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .section-header-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
   .dashboard-content {
-    padding: 16px 0;
+    padding: 20px 16px;
+    gap: 20px;
   }
   
-  .dashboard-title {
-    font-size: 24px;
+  .section-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .section-header-actions {
+    justify-content: space-between;
+  }
+  
+  .add-btn {
+    padding: 12px 16px;
+    font-size: 13px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  .layout-toggle-sm {
+    width: 44px;
+    height: 44px;
+    touch-action: manipulation;
+  }
+  
+  .dashboard-top-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    padding: 16px;
+  }
+  
+  .current-workspace-display {
+    justify-content: center;
+    padding: 12px;
+  }
+  
+  .dashboard-section {
+    padding: 20px 16px;
+  }
+  
+  .section-title {
+    font-size: 22px;
+  }
+  
+  /* Better touch targets */
+  .todo-actions button,
+  .goal-edit-icon,
+  .goal-delete-icon {
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Form improvements */
+  .add-input {
+    padding: 14px 16px;
+    font-size: 16px; /* Prevent zoom on iOS */
+    min-height: 44px;
+  }
+  
+  .priority-option {
+    padding: 8px 12px;
+    min-height: 44px;
+    touch-action: manipulation;
   }
 }
 
