@@ -808,6 +808,7 @@ const useWorkspaceStore = create<WorkspaceState>()(
               id: todoId,
               toggle,
               userId,
+              workspaceId: workspaceId,
             },
             timestamp: Date.now(),
             retryCount: 0,

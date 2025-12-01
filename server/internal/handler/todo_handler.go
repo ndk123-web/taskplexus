@@ -57,9 +57,10 @@ func (h *todoHandler) GetTodos(w http.ResponseWriter, r *http.Request) {
 }
 
 type toggleBody struct {
-	Toggle string `json:"toggle"`
-	ID     string `json:"id"`
-	UserId string `json:"userId"`
+	Toggle      string `json:"toggle"`
+	ID          string `json:"id"`
+	UserId      string `json:"userId"`
+	WorkspaceId string `json:"workspaceId"`
 }
 
 func (h *todoHandler) ToogleTodo(w http.ResponseWriter, r *http.Request) {
@@ -73,12 +74,16 @@ func (h *todoHandler) ToogleTodo(w http.ResponseWriter, r *http.Request) {
 
 	// redis caching for removing key of analytics
 	rdb := config.RedisClient
-	redisKey := fmt.Sprintf("analytics:%s:%s", reqBody.UserId, "2025") // assuming current year is 2025
-	err := rdb.Del(context.Background(), redisKey).Err()
-	if err != redis.Nil {
-		fmt.Println("Redis error:", err)
+	if rdb == nil {
+		fmt.Println("Redis client is not initialized")
 	} else {
-		fmt.Printf(" ToogleTodo: Deleted cache key %s\n", redisKey)
+		redisKey := fmt.Sprintf("analytics:%s:%s:%s", reqBody.UserId, "2025", reqBody.WorkspaceId) // assuming current year is 2025
+		err := rdb.Del(context.Background(), redisKey).Err()
+		if err != nil {
+			fmt.Printf("Redis DELETE error for key %s: %v\n", redisKey, err)
+		} else {
+			fmt.Printf("ToogleTodo: Deleted cache key %s\n", redisKey)
+		}
 	}
 
 	ok, err := h.service.ToggleTodo(context.Background(), reqBody.ID, reqBody.Toggle, reqBody.UserId)
@@ -227,28 +232,38 @@ func (h *todoHandler) AnalyticsOfTodos(w http.ResponseWriter, r *http.Request) {
 	year := r.PathValue("year")
 	userId := r.PathValue("userId")
 
-	// initialize redis client
-	rdb := config.RedisClient
-
-	// Added Redis Caching Layer
-	redisKey := fmt.Sprintf("analytics:%s:%s", userId, year)
-	result, err := rdb.Get(context.Background(), redisKey).Result()
-	if err != redis.Nil {
-		fmt.Printf("Analytics: Redis GET error: %v\n", err)
-	}
-	if err == nil {
-		fmt.Printf("Analytics: Cache hit for key %s\n", redisKey)
-		// fmt.Print("Result: ", result)
-		json.NewEncoder(w).Encode(map[string]any{"success": "true", "response": result})
-		return
-	}
-
 	// Get request body for workspaceId
 	var reqBody analyticsRequest
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
 		fmt.Printf("❌ Analytics: Error decoding request body: %v\n", err)
 		json.NewEncoder(w).Encode(map[string]any{"success": "false", "Error": "Invalid request body"})
 		return
+	}
+
+	if reqBody.WorkspaceId == "" {
+		fmt.Println("❌ Analytics: WorkspaceId is empty in request body")
+		json.NewEncoder(w).Encode(map[string]any{"success": "false", "Error": "WorkspaceId is empty"})
+		return
+	}
+
+	// initialize redis client
+	rdb := config.RedisClient
+	var redisKey string
+
+	if rdb == nil {
+		fmt.Println("Redis client is not initialized, skipping cache")
+	} else {
+		// Added Redis Caching Layer
+		redisKey = fmt.Sprintf("analytics:%s:%s:%s", userId, year, reqBody.WorkspaceId)
+		result, err := rdb.Get(context.Background(), redisKey).Result()
+		if err == nil {
+			fmt.Printf("Analytics: Cache hit for key %s\n", redisKey)
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]any{"success": "true", "response": result})
+			return
+		} else if err != redis.Nil {
+			fmt.Printf("Analytics: Redis GET error: %v\n", err)
+		}
 	}
 
 	fmt.Printf("Analytics Request - Year: %s, UserId: %s, WorkspaceId: %s\n", year, userId, reqBody.WorkspaceId)
@@ -266,19 +281,22 @@ func (h *todoHandler) AnalyticsOfTodos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Cache the result in Redis
-	analyticsJSON, err := json.Marshal(analytics)
-	if err != nil {
-		fmt.Printf("Analytics: Error marshaling analytics data: %v\n", err)
+	if rdb != nil {
+		analyticsJSON, err := json.Marshal(analytics)
+		if err != nil {
+			fmt.Printf("Analytics: Error marshaling analytics data: %v\n", err)
+		} else {
+			// Set cache with an expiration time of 24 hours
+			err = rdb.Set(context.Background(), redisKey, analyticsJSON, 24*time.Hour).Err()
+			if err != nil {
+				fmt.Printf("Analytics: Redis SET error: %v\n", err)
+			} else {
+				fmt.Printf("Analytics: Cached result with key %s\n", redisKey)
+			}
+		}
 	}
 
-	// Set cache with an expiration time of 24 hours
-	err = rdb.Set(context.Background(), redisKey, analyticsJSON, 24*time.Hour).Err()
-	if err != nil {
-		fmt.Printf(" Analytics: Redis SET error: %v\n", err)
-	} else {
-		fmt.Printf(" Analytics: Cached result with key %s\n", redisKey)
-	}
-
-	fmt.Printf(" Analytics: Returning data: %+v\n", analytics)
+	fmt.Printf("Analytics: Returning data: %+v\n", analytics)
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{"success": "true", "response": analytics})
 }

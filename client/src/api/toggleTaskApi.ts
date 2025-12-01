@@ -4,6 +4,7 @@ interface UpdateTaskReq {
   id: string;
   toggle: string;
   userId: string;
+  workspaceId?: string;
 }
 
 const toggleTodoApi = async (data: UpdateTaskReq) => {
