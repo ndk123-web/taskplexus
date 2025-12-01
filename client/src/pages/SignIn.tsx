@@ -69,10 +69,10 @@ const SignIn = () => {
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Error during sign in:', error);
-      showToast('Password / Username is Invalid', 'error');
+      showToast(error.message || 'Password / Username is Invalid', 'error');
     }
 
-      showToast('Google sign-in success', 'success');
+      // showToast('Google sign-in success', 'success');
       // If you want to immediately treat this as a backend sign-in, call an API here with idToken.
       // navigate('/dashboard');
     } catch (err: any) {
