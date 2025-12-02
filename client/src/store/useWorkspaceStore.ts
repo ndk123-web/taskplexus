@@ -5,7 +5,6 @@ import type { PersistStorage } from "zustand/middleware";
 import useUserStore from "./useUserInfo";
 import { addPendingOperation } from "./indexDB/pendingOps/usePendingOps";
 import type { CreateTaskReq } from "../types/createTaskType";
-import { useToast } from "../components/ToastProvider";
 
 // Todo interface
 export interface Todo {
@@ -215,12 +214,9 @@ const useWorkspaceStore = create<WorkspaceState>()(
       },
 
       addWorkspace: async (name: string) => {
-        const { showToast } = useToast();
-
-        // need to check for duplicate names ?
+        // Validate duplicate names here, UI should handle messaging
         if (get().workspaces.find((ws) => ws.name === name)) {
-          // alert("Workspace with this name already exists.");
-          showToast("Workspace with this name already exists.", "error");
+          console.warn("Workspace with this name already exists.");
           return;
         }
 
