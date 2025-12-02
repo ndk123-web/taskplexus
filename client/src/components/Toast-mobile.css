@@ -1,0 +1,19 @@
+/* Mobile-specific toast improvements */
+@media (max-width: 639px) {
+  .toast-portal {
+    top: 20px !important;
+    padding: 16px !important;
+    /* Ensure it's above mobile menu overlays */
+    z-index: 999999 !important;
+  }
+
+  .toast {
+    /* Better mobile touch target and readability */
+    font-size: 15px !important;
+    padding: 16px 18px !important;
+    margin-bottom: 4px !important;
+    /* Improve mobile rendering */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}

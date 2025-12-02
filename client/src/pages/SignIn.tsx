@@ -34,7 +34,7 @@ const SignIn = () => {
       }
       signinUser(response.response);
       showToast('Signed in successfully', 'success');
-      navigate('/dashboard');
+      setTimeout(() => navigate('/dashboard'), 120);
     } catch (error: any) {
       console.error('Error during sign in:', error);
       showToast('Password / Username is Invalid', 'error');
@@ -68,7 +68,7 @@ const SignIn = () => {
       }
       signinUser(response.response);
       showToast('Signed in successfully', 'success');
-      navigate('/dashboard');
+      setTimeout(() => navigate('/dashboard'), 160);
     } catch (error: any) {
       console.error('Error during sign in:', error);
       showToast(error.message || 'Password / Username is Invalid', 'error');

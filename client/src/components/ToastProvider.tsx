@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 import './Toast.css';
+import './Toast-mobile.css';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -30,7 +31,33 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const showToast = useCallback((message: string, type: ToastType = 'info', durationMs: number = 4000) => {
-    const id = crypto.randomUUID();
+    // Generate a robust ID that works on older mobile browsers (no crypto.randomUUID)
+    let id: string;
+    try {
+      const g: any = (globalThis as any);
+      if (g.crypto && typeof g.crypto.randomUUID === 'function') {
+        id = g.crypto.randomUUID();
+      } else if (g.crypto && typeof g.crypto.getRandomValues === 'function') {
+        const buf = new Uint8Array(16);
+        g.crypto.getRandomValues(buf);
+        // RFC4122 v4-like fallback
+        buf[6] = (buf[6] & 0x0f) | 0x40;
+        buf[8] = (buf[8] & 0x3f) | 0x80;
+        const toHex = (n: number) => n.toString(16).padStart(2, '0');
+        id = (
+          toHex(buf[0]) + toHex(buf[1]) + toHex(buf[2]) + toHex(buf[3]) + '-' +
+          toHex(buf[4]) + toHex(buf[5]) + '-' +
+          toHex(buf[6]) + toHex(buf[7]) + '-' +
+          toHex(buf[8]) + toHex(buf[9]) + '-' +
+          toHex(buf[10]) + toHex(buf[11]) + toHex(buf[12]) + toHex(buf[13]) + toHex(buf[14]) + toHex(buf[15])
+        );
+      } else {
+        id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+      }
+    } catch {
+      id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    }
+
     const toast: ToastItem = { id, type, message, duration: durationMs, createdAt: Date.now() };
     setToasts(prev => [...prev, toast]);
     timeouts.current[id] = window.setTimeout(() => removeToast(id), durationMs);
