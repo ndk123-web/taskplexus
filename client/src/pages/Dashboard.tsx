@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import useUserStore from '../store/useUserInfo';
 import useWorkspaceStore , {type Workspace} from '../store/useWorkspaceStore';
 import TrelloLogo from '../components/TrelloLogo';
@@ -488,9 +489,23 @@ const Dashboard = () => {
   },[]);
 
   // Sidebar state
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(window.innerWidth < 1024);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('overview');
+
+  // Handle window resize for responsive sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setSidebarCollapsed(true);
+      } else {
+        setSidebarCollapsed(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Workspace states
   const [showWorkspaceMenu, setShowWorkspaceMenu] = useState<string | null>(null);
@@ -557,8 +572,6 @@ const Dashboard = () => {
   const GOALS_DISPLAY_LIMIT = 6;
   
   // Analytics chart state
-  const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [analyticsData, setAnalyticsData] = useState<any[]>([]);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
@@ -619,7 +632,7 @@ const Dashboard = () => {
     fetchAnalyticsData();
   }, [selectedYear, userInfo?.userId, currentWorkspace?.id]);
   
-  const maxCompleted = (Array.isArray(analyticsData) && analyticsData.length > 0) ? Math.max(...analyticsData.map(d => d.completed)) : 0;
+
   
   // Scroll to section function
   const scrollToSection = (sectionId: string) => {
@@ -1159,10 +1172,8 @@ const Dashboard = () => {
                       autoFocus
                     />
                     <div className="mobile-workspace-form-actions">
-                      <button type="submit" className="mobile-workspace-submit-btn">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                          <path d="M11.6667 3.5L5.25 9.91667L2.33333 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                      <button type="submit" className="mobile-workspace-submit-btn-text">
+                        Add
                       </button>
                       <button 
                         type="button" 
@@ -1185,14 +1196,43 @@ const Dashboard = () => {
                     <div className="mobile-workspace-empty">No workspaces yet</div>
                   )}
                   {workspaces.map((ws) => (
-                    <button
-                      key={ws.id}
-                      className={`mobile-workspace-item ${currentWorkspace?.id === ws.id ? 'active' : ''}`}
-                      onClick={() => { setCurrentWorkspace(ws); setMobileMenuOpen(false); }}
-                    >
-                      <span className="mobile-workspace-name">{ws.name?.substring(0,20) || 'Untitled'}</span>
-                      {ws.isDefault && <span className="mobile-workspace-badge">Default</span>}
-                    </button>
+                    <div key={ws.id} className={`mobile-workspace-item-container ${currentWorkspace?.id === ws.id ? 'active' : ''}`}>
+                      {editingWorkspaceId === ws.id ? (
+                        <div className="mobile-workspace-edit-form">
+                          <input
+                            type="text"
+                            value={editingWorkspaceName}
+                            onChange={(e) => setEditingWorkspaceName(e.target.value)}
+                            className="mobile-workspace-input"
+                            autoFocus
+                          />
+                          <div className="mobile-workspace-edit-actions">
+                            <button onClick={handleSaveEditWorkspace} className="mobile-workspace-save-btn">Save</button>
+                            <button onClick={() => { setEditingWorkspaceId(null); setEditingWorkspaceName(''); }} className="mobile-workspace-cancel-btn">Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mobile-workspace-row">
+                          <button
+                            className="mobile-workspace-btn"
+                            onClick={() => { setCurrentWorkspace(ws); setMobileMenuOpen(false); }}
+                          >
+                            <span className="mobile-workspace-name">{ws.name?.substring(0,20) || 'Untitled'}</span>
+                            {ws.isDefault && <span className="mobile-workspace-badge">Default</span>}
+                          </button>
+                          {!ws.isDefault && (
+                            <div className="mobile-workspace-actions">
+                              <button onClick={() => handleEditWorkspace(ws.id, ws.name || '')} className="mobile-action-btn edit">
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M10.2083 1.75004C10.3588 1.59958 10.5385 1.48061 10.7367 1.40024C10.9349 1.31986 11.1477 1.27954 11.3625 1.27954C11.5773 1.27954 11.7901 1.31986 11.9883 1.40024C12.1865 1.48061 12.3662 1.59958 12.5167 1.75004C12.6671 1.9005 12.7861 2.08019 12.8665 2.27839C12.9469 2.47659 12.9872 2.68938 12.9872 2.90421C12.9872 3.11903 12.9469 3.33182 12.8665 3.53002C12.7861 3.72822 12.6671 3.90791 12.5167 4.05837L4.66667 11.9084L1.75 12.6667L2.50833 9.75004L10.2083 1.75004Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                              </button>
+                              <button onClick={() => handleDeleteWorkspace(ws.id)} className="mobile-action-btn delete">
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1.75 3.5H12.25M11.0833 3.5V11.6667C11.0833 12.25 10.5 12.8333 9.91667 12.8333H4.08333C3.5 12.8333 2.91667 12.25 2.91667 11.6667V3.5M4.66667 3.5V2.33333C4.66667 1.75 5.25 1.16667 5.83333 1.16667H8.16667C8.75 1.16667 9.33333 1.75 9.33333 2.33333V3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
                 {!showAddWorkspace && (
@@ -1654,273 +1694,95 @@ const Dashboard = () => {
                     <p>Loading analytics...</p>
                   </div>
                 ) : (
-                  <div className="wave-analytics-chart">
-                    {/* Chart Header with Key Metrics */}
-                    <div className="wave-chart-header">
-                      <div className="wave-stats">
-                        <div className="wave-stat">
-                          <span className="wave-stat-number">{Array.isArray(analyticsData) ? analyticsData.reduce((sum, data) => sum + data.completed, 0) : 0}</span>
-                          <span className="wave-stat-label">tasks completed this year</span>
+                  <>
+                    {/* Desktop Chart */}
+                    <div className="wave-analytics-chart desktop-chart">
+                      {Array.isArray(analyticsData) && analyticsData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart
+                            data={analyticsData}
+                            margin={{
+                              top: 10,
+                              right: 30,
+                              left: 0,
+                              bottom: 0,
+                            }}
+                          >
+                            <defs>
+                              <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#667eea" stopOpacity={0.8}/>
+                                <stop offset="95%" stopColor="#667eea" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                            <XAxis 
+                              dataKey="month" 
+                              axisLine={false} 
+                              tickLine={false} 
+                              tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }} 
+                              dy={10}
+                            />
+                            <YAxis 
+                              axisLine={false} 
+                              tickLine={false} 
+                              tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
+                              domain={[0, 15]}
+                            />
+                            <Tooltip 
+                              contentStyle={{ backgroundColor: 'rgba(20, 20, 35, 0.9)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
+                              itemStyle={{ color: '#fff' }}
+                              cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 2 }}
+                            />
+                            <Area 
+                              type="monotone" 
+                              dataKey="completed" 
+                              stroke="#667eea" 
+                              strokeWidth={3}
+                              fillOpacity={1} 
+                              fill="url(#colorCompleted)" 
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="wave-chart-empty">
+                          <div className="empty-icon">📊</div>
+                          <p>No data available for {selectedYear}</p>
+                          <span>Complete some tasks to see analytics</span>
                         </div>
-                        <div className="wave-divider">•</div>
-                        <div className="wave-stat">
-                          <span className="wave-stat-number">
-                            {Array.isArray(analyticsData) && analyticsData.length > 0 
-                              ? Math.round(analyticsData.reduce((sum, data) => sum + data.completed, 0) / 12)
-                              : 0
-                            }
-                          </span>
-                          <span className="wave-stat-label">average per month</span>
-                        </div>
-                      </div>
+                      )}
                     </div>
 
-                    {/* Wave-Style Chart */}
-                    <div className="wave-chart-container">
-                      <svg className="wave-chart-svg" viewBox="0 0 800 240" preserveAspectRatio="xMidYMid meet" style={{ pointerEvents: 'auto' }}>
-                        <defs>
-                          <linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#667eea" stopOpacity="0.35"/>
-                            <stop offset="50%" stopColor="#667eea" stopOpacity="0.15"/>
-                            <stop offset="100%" stopColor="#667eea" stopOpacity="0.02"/>
-                          </linearGradient>
-                          <linearGradient id="waveLineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#667eea"/>
-                            <stop offset="50%" stopColor="#764ba2"/>
-                            <stop offset="100%" stopColor="#667eea"/>
-                          </linearGradient>
-                          <filter id="waveShadow" x="-50%" y="-50%" width="200%" height="200%">
-                            <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.15"/>
-                          </filter>
-                        </defs>
-                        
-                        {/* Subtle Background Grid */}
-                        <g className="wave-grid">
-                          {[...Array(5)].map((_, i) => (
-                            <line 
-                              key={`grid-h-${i}`}
-                              x1="80" 
-                              y1={50 + (i * 36)} 
-                              x2="760" 
-                              y2={50 + (i * 36)}
-                              stroke="rgba(255,255,255,0.05)" 
-                              strokeWidth="1"
-                              strokeDasharray="4,4"
-                            />
-                          ))}
-                        </g>
-                        
-                        {/* Y-axis labels */}
-                        <g className="wave-y-axis">
-                          {[...Array(5)].map((_, i) => {
-                            const scaleMax = Math.max(maxCompleted, 10); // Minimum scale of 10
-                            const value = Math.round((scaleMax / 4) * (4 - i));
+                    {/* Mobile Chart - Bar Chart */}
+                    <div className="mobile-analytics-chart">
+                      {Array.isArray(analyticsData) && analyticsData.length > 0 ? (
+                        <div className="mobile-chart-bars">
+                          {analyticsData.map((data, index) => {
+                            const maxValue = 15; // Set max to 15 tasks
+                            const heightPercent = Math.min((data.completed / maxValue) * 100, 100);
                             return (
-                              <text 
-                                key={`y-${i}`}
-                                x="70" 
-                                y={57 + (i * 36)} 
-                                fill="rgba(255,255,255,0.5)" 
-                                fontSize="12" 
-                                fontWeight="500"
-                                textAnchor="end"
-                                dominantBaseline="middle"
-                              >
-                                {value}
-                              </text>
+                              <div key={index} className="mobile-bar-item">
+                                <div className="mobile-bar-wrapper">
+                                  <div 
+                                    className="mobile-bar-fill"
+                                    style={{ height: `${heightPercent}%` }}
+                                  >
+                                    <span className="mobile-bar-value">{data.completed}</span>
+                                  </div>
+                                </div>
+                                <span className="mobile-bar-label">{data.month}</span>
+                              </div>
                             );
                           })}
-                        </g>
-                        
-                        {/* Wave Chart with Smooth Curve */}
-                        {Array.isArray(analyticsData) && analyticsData.length > 0 && (
-                          <>
-                            {/* Generate smooth curve path */}
-                            {(() => {
-                              const scaleMax = Math.max(maxCompleted, 10); // Minimum scale of 10
-                              const points = analyticsData.map((data, index) => {
-                                const x = 80 + (index * (680 / 11));
-                                const y = 196 - ((data.completed / scaleMax) * 140);
-                                return { x, y, data };
-                              });
-                              
-                              // Generate smooth curve using cubic bezier
-                              let pathData = `M ${points[0].x} ${points[0].y}`;
-                              for (let i = 0; i < points.length - 1; i++) {
-                                const p0 = points[Math.max(0, i - 1)];
-                                const p1 = points[i];
-                                const p2 = points[i + 1];
-                                const p3 = points[Math.min(points.length - 1, i + 2)];
-                                
-                                const cp1x = p1.x + (p2.x - p0.x) / 6;
-                                const cp1y = p1.y + (p2.y - p0.y) / 6;
-                                const cp2x = p2.x - (p3.x - p1.x) / 6;
-                                const cp2y = p2.y - (p3.y - p1.y) / 6;
-                                
-                                pathData += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
-                              }
-                              
-                              return (
-                                <>
-                                  {/* Gradient Area Fill */}
-                                  <path
-                                    d={`${pathData} L ${points[points.length - 1].x} 196 L 80 196 Z`}
-                                    fill="url(#waveGradient)"
-                                    className="wave-area"
-                                  />
-                                  
-                                  {/* Wave Line */}
-                                  <path
-                                    d={pathData}
-                                    stroke="url(#waveLineGradient)"
-                                    strokeWidth="3.5"
-                                    fill="none"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="wave-line"
-                                    filter="url(#waveShadow)"
-                                  />
-                                  
-                                  {/* Interactive Data Points */}
-                                  {points.map((point, index) => (
-                                    <g key={`point-${index}`} className="wave-point-group">
-                                      <circle
-                                        cx={point.x}
-                                        cy={point.y}
-                                        r="8"
-                                        fill="transparent"
-                                        stroke="transparent"
-                                        className="wave-point-hit"
-                                        style={{ cursor: 'pointer', pointerEvents: 'auto' }}
-                                        onMouseEnter={() => setHoveredMonth(index)}
-                                        onMouseLeave={() => setHoveredMonth(null)}
-                                      />
-                                      
-                                      {/* Data Point Indicator */}
-                                      <circle
-                                        cx={point.x}
-                                        cy={point.y}
-                                        r="3.5"
-                                        fill="#667eea"
-                                        stroke="white"
-                                        strokeWidth="2.5"
-                                        className={`wave-point ${hoveredMonth === index ? 'active' : ''}`}
-                                      />
-                                      
-                                      {/* Hover Glow */}
-                                      {hoveredMonth === index && (
-                                        <>
-                                          <circle
-                                            cx={point.x}
-                                            cy={point.y}
-                                            r="8"
-                                            fill="rgba(102, 126, 234, 0.2)"
-                                            className="wave-glow"
-                                          />
-                                          <circle
-                                            cx={point.x}
-                                            cy={point.y}
-                                            r="12"
-                                            fill="rgba(102, 126, 234, 0.1)"
-                                            className="wave-glow-outer"
-                                          />
-                                        </>
-                                      )}
-                                      
-                                      {/* Tooltip */}
-                                      {hoveredMonth === index && (
-                                        <g className="wave-tooltip">
-                                          <rect
-                                            x={Math.max(50, Math.min(point.x - 60, 715))}
-                                            y={point.y - 85}
-                                            width="120"
-                                            height="75"
-                                            rx="12"
-                                            fill="rgba(0, 0, 0, 0.98)"
-                                            stroke="rgba(102, 126, 234, 0.7)"
-                                            strokeWidth="2.5"
-                                            filter="url(#waveShadow)"
-                                          />
-                                          <text
-                                            x={Math.max(60, Math.min(point.x, 770))}
-                                            y={point.y - 65}
-                                            fill="rgba(255, 255, 255, 0.8)"
-                                            fontSize="13"
-                                            fontWeight="700"
-                                            textAnchor="middle"
-                                            dominantBaseline="middle"
-                                          >
-                                            {point.data.label}
-                                          </text>
-                                          <text
-                                            x={Math.max(60, Math.min(point.x, 770))}
-                                            y={point.y - 45}
-                                            fill="#667eea"
-                                            fontSize="20"
-                                            fontWeight="900"
-                                            textAnchor="middle"
-                                            dominantBaseline="middle"
-                                          >
-                                            {point.data.completed}
-                                          </text>
-                                          <text
-                                            x={Math.max(60, Math.min(point.x, 770))}
-                                            y={point.y - 25}
-                                            fill="rgba(255, 255, 255, 0.6)"
-                                            fontSize="12"
-                                            textAnchor="middle"
-                                            dominantBaseline="middle"
-                                          >
-                                            tasks completed
-                                          </text>
-                                          <line
-                                            x1={Math.max(60, Math.min(point.x - 45, 725))}
-                                            y1={point.y - 15}
-                                            x2={Math.max(60, Math.min(point.x + 45, 800))}
-                                            y2={point.y - 15}
-                                            stroke="rgba(102, 126, 234, 0.3)"
-                                            strokeWidth="1"
-                                          />
-                                        </g>
-                                      )}
-                                    </g>
-                                  ))}
-                                </>
-                              );
-                            })()}
-                          </>
-                        )}
-                        
-                        {/* X-axis labels */}
-                        <g className="wave-x-axis">
-                          {Array.isArray(analyticsData) && analyticsData.length > 0 && analyticsData.map((data, index) => {
-                            const x = 80 + (index * (680 / 11));
-                            return (
-                              <text 
-                                key={`x-${data.month}`}
-                                x={x} 
-                                y="260" 
-                                fill="rgba(255, 255, 255, 0.6)" 
-                                fontSize="12" 
-                                fontWeight="500"
-                                textAnchor="middle"
-                              >
-                                {data.month}
-                              </text>
-                            );
-                          })}
-                        </g>
-                      </svg>
+                        </div>
+                      ) : (
+                        <div className="wave-chart-empty">
+                          <div className="empty-icon">📊</div>
+                          <p>No data available for {selectedYear}</p>
+                          <span>Complete some tasks to see analytics</span>
+                        </div>
+                      )}
                     </div>
-                    
-                    {(!Array.isArray(analyticsData) || analyticsData.length === 0) && (
-                      <div className="wave-chart-empty">
-                        <div className="empty-icon">📊</div>
-                        <p>No data available for {selectedYear}</p>
-                        <span>Complete some tasks to see analytics</span>
-                      </div>
-                    )}
-                  </div>
+                  </>
                 )}
               </div>
             </div>

@@ -2645,25 +2645,7 @@
 }
 
 @media (max-width: 1024px) {
-  .dashboard-sidebar {
-    width: 80px;
-  }
-  
-  .sidebar-logo span,
-  .sidebar-nav-item span,
-  .sidebar-logout span,
-  .user-profile-info {
-    display: none;
-  }
-  
-  .user-profile {
-    justify-content: center;
-    padding: 8px;
-  }
-  
-  .dashboard-main {
-    margin-left: 80px;
-  }
+  /* Sidebar responsiveness is now handled by React state and .collapsed class */
 
   .dashboard-grid {
     grid-template-columns: 1fr;
@@ -2680,27 +2662,31 @@
 
 @media (max-width: 768px) {
   .dashboard-sidebar {
+    display: none;
     width: 0;
     border: none;
   }
   
-  .dashboard-main {
-    margin-left: 0;
-    padding: 24px 20px;
+  /* Override the collapsed sidebar margin rule with !important to ensure it takes precedence */
+  .dashboard-main,
+  .dashboard-sidebar.collapsed ~ .dashboard-main {
+    margin-left: 0 !important;
+    padding: 80px 16px 24px 16px; /* Top padding for fixed header */
+    width: 100%;
   }
   
   .stats-grid {
     grid-template-columns: 1fr;
   }
 
-  .dashboard-content,
-  .dashboard-main {
-    padding-left: 20px;
-    padding-right: 20px;
+  .dashboard-content {
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
   }
 
   .dashboard-title {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   .quick-stats {
@@ -2736,9 +2722,25 @@
     padding: 10px 16px;
   }
 
-  .analytics-chart {
-    height: 180px;
-    margin-top: 24px;
+  /* Fix Chart Visibility */
+  .analytics-card {
+    width: 100%;
+    overflow: hidden;
+    padding: 16px;
+  }
+
+  .wave-analytics-chart {
+    margin-top: 16px;
+    padding: 10px;
+    height: 300px !important;
+    width: 100%;
+    display: block;
+  }
+  
+  /* Ensure Recharts container takes full space */
+  .recharts-responsive-container {
+    width: 100% !important;
+    height: 100% !important;
   }
 
   .chart-bars {
@@ -2830,6 +2832,8 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(30px);
   box-shadow: 0 12px 60px rgba(0, 0, 0, 0.15);
+  height: 300px; /* Default height for desktop */
+  width: 100%;
 }
 
 /* Wave Chart Header with Metrics */
@@ -3243,6 +3247,7 @@
 .mobile-menu-nav {
   flex: 1;
   padding: 20px 0;
+  overflow-y: auto;
 }
 
 /* Mobile Workspaces Section */
@@ -3668,6 +3673,235 @@
     padding: 8px 12px;
     min-height: 44px;
     touch-action: manipulation;
+  }
+}
+
+
+/* Mobile Workspace Actions */
+.mobile-workspace-item-container {
+  width: 100%;
+  transition: background 0.2s ease;
+}
+
+.mobile-workspace-item-container:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-workspace-item-container.active {
+  background: rgba(102, 126, 234, 0.12);
+}
+
+.mobile-workspace-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-right: 12px;
+}
+
+.mobile-workspace-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.mobile-workspace-item-container.active .mobile-workspace-btn {
+  color: #a5b4fc;
+}
+
+.mobile-workspace-actions {
+  display: flex;
+  gap: 8px;
+  opacity: 0.7;
+}
+
+.mobile-action-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.mobile-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.mobile-action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Mobile Workspace Edit Form */
+.mobile-workspace-edit-form {
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-workspace-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+
+.mobile-workspace-save-btn {
+  background: #667eea;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: white;
+  cursor: pointer;
+}
+
+.mobile-workspace-submit-btn-text {
+  background: #667eea;
+  border: none;
+  border-radius: 6px;
+  padding: 0 16px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+
+.mobile-workspace-submit-btn-text:hover {
+  background: #5a67d8;
+}
+
+/* Desktop Chart - Hidden on Mobile */
+.desktop-chart {
+  display: block;
+}
+
+.mobile-analytics-chart {
+  display: none;
+}
+
+/* Mobile Chart Styles */
+@media (max-width: 768px) {
+  /* Hide desktop chart on mobile */
+  .desktop-chart {
+    display: none !important;
+  }
+  
+  /* Show mobile chart */
+  .mobile-analytics-chart {
+    display: block;
+    width: 100%;
+    margin-top: 16px;
+  }
+  
+  .analytics-card {
+    width: 100%;
+    padding: 16px;
+    display: block;
+  }
+  
+  .analytics-chart-container {
+    width: 100%;
+    display: block;
+    position: relative;
+  }
+  
+  /* Mobile Bar Chart */
+  .mobile-chart-bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 200px;
+    gap: 4px;
+    padding: 20px 12px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .mobile-bar-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  
+  .mobile-bar-wrapper {
+    width: 100%;
+    height: 160px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .mobile-bar-fill {
+    width: 100%;
+    max-width: 28px;
+    background: linear-gradient(180deg, #667eea 0%, rgba(102, 126, 234, 0.6) 100%);
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 6px;
+    min-height: 8px;
+    box-shadow: 0 -2px 12px rgba(102, 126, 234, 0.3);
+  }
+  
+  .mobile-bar-fill::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    border-radius: 6px 6px 0 0;
+  }
+  
+  .mobile-bar-value {
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    z-index: 1;
+  }
+  
+  .mobile-bar-label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+  }
+  
+  /* Active state for bars */
+  .mobile-bar-item:active .mobile-bar-fill {
+    background: linear-gradient(180deg, #7c8ef5 0%, rgba(124, 142, 245, 0.7) 100%);
+    transform: scaleY(1.02);
+    box-shadow: 0 -4px 16px rgba(102, 126, 234, 0.5);
   }
 }
 
