@@ -13,6 +13,7 @@ import createWorkspaceAPI from '../api/createWorkspaceApi';
 import getAnalyticsApi from '../api/analyticsApi';
 import { addPendingOperation, clearPendingOperations, getPendingOperations } from '../store/indexDB/pendingOps/usePendingOps';
 import { useToast } from '../components/ToastProvider';
+import AiChat from '../components/AiChat';
 
 // Goal interface - defines structure for goal items
 // Align Goal interface with store (id not _id)
@@ -39,6 +40,9 @@ const Dashboard = () => {
   // Wait for hydration from IndexedDB
   const [isHydrated, setIsHydrated] = useState(false);
   const [workspacesFetched, setWorkspacesFetched] = useState(false);
+  
+  // AI Chat state
+  const [isChatOpen, setIsChatOpen] = useState(false);
   
   // Function to normalize malformed MongoDB Key-Value data
   const normalizeMongoData = (data: any) => {
@@ -2341,6 +2345,22 @@ const Dashboard = () => {
           </div>
         </div>
      </main>
+
+      {/* AI Chat Floating Button */}
+      <button 
+        className="ai-chat-fab"
+        onClick={() => setIsChatOpen(true)}
+        title="Open AI Assistant"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+
+      {/* AI Chat Component */}
+      <AiChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
 
       {/* Animated background elements */}
       <div className="dashboard-background">
