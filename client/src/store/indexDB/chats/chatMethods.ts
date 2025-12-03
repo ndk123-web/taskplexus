@@ -2,15 +2,22 @@ import { getDB } from "./chatIndexDB";
 
 const STORE_NAME: string = "userChatsStore";
 
-interface Chat {
+interface Message {
   id: string;
-  workspaceId: string;
-  userId: string;
-  messages: Array<any>;
+  prompt: string;
+  response: string;
   timestamp: Date;
 }
 
-export async function addChat(chat: Chat) {
+interface WorkspaceBasedChat {
+  chatId: string;
+  workspaceId: string;
+  userId: string;
+  messages: Array<Message>;
+  timestamp: Date;
+}
+
+export async function addChat(chat: WorkspaceBasedChat) {
   const db = await getDB();
   return db.put(STORE_NAME, chat);
 }
@@ -19,27 +26,26 @@ export async function getChat(workspaceId: string, userId: string) {
   const db = await getDB();
   const allChats = await db.getAll(STORE_NAME);
 
-  const workspaceChat =
-    allChats.find(
-      (chat) => chat.workspaceId === workspaceId && chat.userId === userId
-    ) || [];
+  const workspaceChat = allChats.find(
+    (chat) => chat.workspaceId === workspaceId && chat.userId === userId
+  );
 
-  return workspaceChat;
+  return workspaceChat || null;
 }
 
 export async function deleteWorkspaceChat(workspaceId: string) {
   const db = await getDB();
   const allChats = await db.getAll(STORE_NAME);
 
-  const filteredChats = allChats.filter(
-    (chat) => chat.workspaceId !== workspaceId
+  // Find and delete the specific workspace chat
+  const chatToDelete = allChats.find(
+    (chat) => chat.workspaceId === workspaceId
   );
 
-  // clear the store
-  await db.clear(STORE_NAME);
-
-  // re-add the filtered chats
-  await db.put(STORE_NAME, filteredChats);
+  if (chatToDelete && chatToDelete.chatId) {
+    await db.delete(STORE_NAME, chatToDelete.chatId);
+    console.log("✅ Workspace chat deleted:", workspaceId);
+  }
 }
 
 export async function clearAllWorkspace() {

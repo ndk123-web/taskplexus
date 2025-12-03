@@ -14,7 +14,7 @@ interface SendMessageResponse {
 
 const sendAiMessage = async (data: SendMessageRequest): Promise<SendMessageResponse> => {
   try {
-    const response = await api.post('/chat/ai-message', data);
+    const response = await api.post('/chat/send-chat', data);
     return response.data;
   } catch (error: any) {
     console.error('Error sending AI message:', error);

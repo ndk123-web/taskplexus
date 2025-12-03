@@ -7,7 +7,9 @@ export async function getDB() {
   return openDB(DATABASE_NAME, 1, {
     upgrade(db) {
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: "chatId" });
+        const store = db.createObjectStore(STORE_NAME, { keyPath: "chatId" });
+        store.createIndex("workspaceId", "workspaceId", { unique: false });
+        store.createIndex("userId", "userId", { unique: false });
       }
     },
   });

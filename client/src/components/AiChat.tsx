@@ -3,7 +3,7 @@ import './AiChat.css';
 import useWorkspaceStore from '../store/useWorkspaceStore';
 import useUserStore from '../store/useUserInfo';
 import sendAiMessage from '../api/sendAiMessageApi';
-// import { getChatMessages, saveChatMessage, clearWorkspaceChat, type ChatMessage } from '../store/indexDB/chats/chatIndexDB';
+import { getChat, addChat, deleteWorkspaceChat } from '../store/indexDB/chats/chatMethods';
 
 interface Message {
   id: string;
@@ -21,7 +21,7 @@ interface AiChatProps {
 const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
   const { currentWorkspace } = useWorkspaceStore();
   const { userInfo } = useUserStore();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -44,26 +44,30 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
     const loadChatHistory = async () => {
       if (currentWorkspace?.id && userInfo?.userId) {
         try {
-          const chatMessages = await getChatMessages(currentWorkspace.id, userInfo.userId);
+          const workspaceChat: any = await getChat(currentWorkspace.id, userInfo.userId);
           
-          if (chatMessages.length > 0) {
-            // Convert ChatMessage format to Message format for UI
+          if (workspaceChat && workspaceChat.messages && workspaceChat.messages.length > 0) {
+            // Convert stored messages to UI Message format
             const uiMessages: Message[] = [];
-            chatMessages.forEach(msg => {
-              // Add user message
+            workspaceChat.messages.forEach((msg: any) => {
+              // Add user message (prompt)
               uiMessages.push({
                 id: `${msg.id}_user`,
                 text: msg.prompt,
                 sender: 'user',
                 timestamp: new Date(msg.timestamp)
               });
-              // Add AI response
+              // Add AI response - extract text from object if needed
               if (msg.response) {
+                const responseText = typeof msg.response === 'string' 
+                  ? msg.response 
+                  : msg.response?.response || JSON.stringify(msg.response);
+                
                 uiMessages.push({
                   id: `${msg.id}_ai`,
-                  text: msg.response,
+                  text: responseText,
                   sender: 'ai',
-                  timestamp: new Date(msg.timestamp + 100) // Slight offset for ordering
+                  timestamp: new Date(msg.timestamp)
                 });
               }
             });
@@ -121,7 +125,7 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
     }]);
 
     try {
-      const data = await sendAiMessage({
+      const data: any = await sendAiMessage({
         workspaceId: currentWorkspace.id,
         prompt: inputMessage.trim(),
         userId: userInfo.userId
@@ -131,25 +135,51 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
       setMessages(prev => prev.filter(m => m.id !== loadingId));
 
       if (data.success === 'true' && data.response) {
+        // Extract the actual response text - backend returns response as string
+        const responseText = typeof data.response === 'string' 
+          ? data.response 
+          : data.response?.response || JSON.stringify(data.response);
+        
         const aiMessage: Message = {
           id: `ai_${Date.now()}`,
-          text: data.response,
+          text: responseText,  // ✅ Now it's a string, not an object
           sender: 'ai',
           timestamp: new Date()
         };
         setMessages(prev => [...prev, aiMessage]);
         
-        // Save to IndexedDB (like ChatGPT)
-        const chatMessage: ChatMessage = {
-          id: `chat_${Date.now()}`,
-          workspaceId: currentWorkspace.id,
-          userId: userInfo.userId,
-          prompt: userMessage.text,
-          response: data.response,
-          timestamp: Date.now(),
-          sender: 'user' // This stores the conversation pair
-        };
-        await saveChatMessage(chatMessage);
+        // Save to IndexedDB with your Chat structure
+        try {
+          // Get existing chat or create new one
+          const existingChat: any = await getChat(currentWorkspace.id, userInfo.userId);
+          
+          const newMessage = {
+            id: `msg_${Date.now()}`,
+            prompt: userMessage.text,
+            response: responseText,  // ✅ Save as string
+            timestamp: new Date()
+          };
+          
+          if (existingChat && existingChat.messages) {
+            // Update existing chat with new message
+            existingChat.messages.push(newMessage);
+            await addChat(existingChat);
+          } else {
+            // Create new chat
+            const newChat = {
+              id: `${currentWorkspace.id}_${userInfo.userId}`,
+              chatId: `${currentWorkspace.id}_${userInfo.userId}`,
+              workspaceId: currentWorkspace.id,
+              userId: userInfo.userId,
+              messages: [newMessage],
+              timestamp: new Date()
+            };
+            await addChat(newChat);
+          }
+          console.log('✅ Message saved to IndexedDB');
+        } catch (saveError) {
+          console.error('❌ Error saving message to IndexedDB:', saveError);
+        }
       } else {
         throw new Error(data.Error || 'Failed to get AI response');
       }
@@ -182,9 +212,9 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
       setMessages([welcomeMessage]);
       
       // Clear from IndexedDB
-      if (currentWorkspace?.id && userInfo?.userId) {
+      if (currentWorkspace?.id) {
         try {
-          await clearWorkspaceChat(currentWorkspace.id, userInfo.userId);
+          await deleteWorkspaceChat(currentWorkspace.id);
           console.log('✅ Chat history cleared from IndexedDB');
         } catch (error) {
           console.error('❌ Error clearing chat from IndexedDB:', error);
@@ -261,12 +291,12 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
                 {message.isLoading ? (
                   <div className="ai-chat-loading">
                     <span></span>
-                    <span></span>
+                      <span></span>
                     <span></span>
                   </div>
                 ) : (
                   <>
-                    <p>{message.text}</p>
+                    <p>{message?.text || "Unknown"}</p>
                     <span className="ai-chat-message-time">
                       {message.timestamp.toLocaleTimeString('en-US', { 
                         hour: 'numeric', 
