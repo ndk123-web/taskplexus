@@ -24,13 +24,19 @@ export async function addChat(chat: WorkspaceBasedChat) {
 
 export async function getChat(workspaceId: string, userId: string) {
   const db = await getDB();
-  const allChats = await db.getAll(STORE_NAME);
+  // const allChats = await db.getAll(STORE_NAME);
 
-  const workspaceChat = allChats.find(
-    (chat) => chat.workspaceId === workspaceId && chat.userId === userId
-  );
+  // const workspaceChat = allChats.find(
+  //   (chat) => chat.workspaceId === workspaceId && chat.userId === userId
+  // );
 
-  return workspaceChat || null;
+  // return workspaceChat || null;
+
+  const tx = db.transaction(STORE_NAME, "readonly");
+  const index = tx.store.index("workspaceId");
+  const chats = await index.getAll(workspaceId);
+
+  return chats[0] || [];
 }
 
 export async function deleteWorkspaceChat(workspaceId: string) {
