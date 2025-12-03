@@ -12,14 +12,16 @@ type Server struct {
 	userHandler      handler.UserHandler
 	goalHandler      handler.GoalHandler
 	workspaceHandler handler.WorkspaceHandler
+	chatHandler      handler.ChatHandler
 }
 
-func NewServer(todoHandler handler.TodoHandler, userHandler handler.UserHandler, goalHandler handler.GoalHandler, workspaceHandler handler.WorkspaceHandler) *Server {
+func NewServer(todoHandler handler.TodoHandler, userHandler handler.UserHandler, goalHandler handler.GoalHandler, workspaceHandler handler.WorkspaceHandler, chatHandler handler.ChatHandler) *Server {
 	return &Server{
 		todoHandler:      todoHandler,
 		userHandler:      userHandler,
 		goalHandler:      goalHandler,
 		workspaceHandler: workspaceHandler,
+		chatHandler:      chatHandler,
 	}
 }
 
@@ -62,6 +64,9 @@ func (s *Server) Start(port string) error {
 	mux.Handle("PUT /api/v1/workspaces/update-workspace", middleware.AuthMiddleware(http.HandlerFunc(s.workspaceHandler.UpdateWorkspace)))
 	mux.Handle("DELETE /api/v1/workspaces/delete-workspace", middleware.AuthMiddleware(http.HandlerFunc(s.workspaceHandler.DeleteWorkspace)))
 	mux.Handle("PUT /api/v1/workspaces/{workspaceId}/layout", middleware.AuthMiddleware(http.HandlerFunc(s.workspaceHandler.UpdateWorkspaceLayout)))
+
+	// chat handlers
+	mux.Handle("POST /api/v1/chat/send-chat", middleware.AuthMiddleware(http.HandlerFunc(s.chatHandler.HandleAiMessage)))
 
 	// it means cors -> log -> actual handler(mux)
 	// global logging and cors middleware

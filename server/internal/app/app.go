@@ -43,6 +43,7 @@ func Run() error {
 	userCollection := client.Database("golangdb").Collection("users")
 	goalCollection := client.Database("golangdb").Collection("goals")
 	workspaceCollection := client.Database("golangdb").Collection("workspaces")
+	chatCollection := client.Database("golangdb").Collection("chats")
 
 	// Create Indexes on Collections
 	wsModel := mongo.IndexModel{
@@ -54,6 +55,7 @@ func Run() error {
 	}
 	workspaceCollection.Indexes().CreateOne(ctx, wsModel)
 
+	//
 	userMode := mongo.IndexModel{
 		Keys: bson.D{
 			{"email", 1},
@@ -62,6 +64,7 @@ func Run() error {
 	}
 	userCollection.Indexes().CreateOne(ctx, userMode)
 
+	//
 	todoModel := mongo.IndexModel{
 		Keys: bson.D{
 			{"userId", 1},
@@ -70,7 +73,7 @@ func Run() error {
 	}
 	todoCollection.Indexes().CreateOne(ctx, todoModel)
 
-	// 
+	//
 	goalModel := mongo.IndexModel{
 		Keys: bson.D{
 			{"userId", 1},
@@ -78,6 +81,14 @@ func Run() error {
 		},
 	}
 	goalCollection.Indexes().CreateOne(ctx, goalModel)
+
+	chatModel := mongo.IndexModel{
+		Keys: bson.D{
+			{"userId", 1},
+			{"workspaceId", 1},
+		},
+	}
+	chatCollection.Indexes().CreateOne(ctx, chatModel)
 
 	// todorepos
 	todoRepo := repository.NewTodoRepository(todoCollection)
@@ -97,6 +108,10 @@ func Run() error {
 	workspaceService := service.NewWorkSpaceService(workspaceRepo)
 	workspaceHandler := handler.NewWorkspaceHandler(workspaceService)
 
-	srv := server.NewServer(todoHandler, userHandler, goalHandler, workspaceHandler)
+	chatRepo := repository.NewChatRepository(todoCollection, goalCollection, workspaceCollection, chatCollection)
+	chatService := service.NewChatService(chatRepo)
+	chatHandler := handler.NewChatHandler(chatService)
+
+	srv := server.NewServer(todoHandler, userHandler, goalHandler, workspaceHandler, chatHandler)
 	return srv.Start(cfg.Port)
 }

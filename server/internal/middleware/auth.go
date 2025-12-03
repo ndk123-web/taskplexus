@@ -107,6 +107,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		//  Inject email into context
 		ctx := context.WithValue(r.Context(), UserEmailKey, userEmail)
+		// ctx := context.WithValue(r.Context(), UserId, UserId)
 		//  Call next handler with updated context
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
