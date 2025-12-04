@@ -2,20 +2,22 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	// "github.com/ndk123-web/fast-todo/internal/middleware"
+	"strings"
+
 	"github.com/ndk123-web/fast-todo/internal/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/genai"
-	"strings"
 )
 
 type ChatRepository interface {
 	HandleAiMessage(ctx context.Context, prompt string, workspaceId string, userId string) (*model.Chat, error)
-	GetUserAiMessage()
+	GetUserAiMessage(ctx context.Context, userId string, workspaceId string) ([]model.Chat, error)
 }
 
 type chatRepository struct {
@@ -119,8 +121,38 @@ func (r *chatRepository) HandleAiMessage(ctx context.Context, userPrompt string,
 	return &insert, nil
 }
 
-func (r *chatRepository) GetUserAiMessage() {
+func (r *chatRepository) GetUserAiMessage(ctx context.Context, userId string, workspaceId string) ([]model.Chat, error) {
+	if userId == "" || workspaceId == "" {
+		return nil, errors.New("UserId/WorkspaceId are Missing")
+	}
 
+	workspaceOid, err := primitive.ObjectIDFromHex(workspaceId)
+	if err != nil {
+		return nil, err
+	}
+
+	userOid, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.M{"userId": userOid, "workspaceId": workspaceOid}
+	cursor, err := r.chatCollection.Find(ctx, filter)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var chats []model.Chat
+	for cursor.Next(ctx) {
+		var chat model.Chat
+		if err := cursor.Decode(&chat); err != nil {
+			return nil, err
+		}
+		chats = append(chats, chat)
+	}
+
+	return chats, nil
 }
 
 func NewChatRepository(todo *mongo.Collection, goal *mongo.Collection, workspace *mongo.Collection, chat *mongo.Collection) ChatRepository {
