@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import '../../styles/components/AiChat.css';
 import useWorkspaceStore from '../../store/useWorkspaceStore';
 import useUserStore from '../../store/useUserInfo';
-import sendAiMessage from '../../api/endpoints/sendAiMessageApi';
+// import sendAiMessage from '../../api/endpoints/sendAiMessageApi';
 import { getChat, addChat, deleteWorkspaceChat } from '../../store/indexDB/chats/chatMethods';
+import {sendAiMessageApi} from '../../api/';
 
 interface Message {
   id: string;
@@ -125,7 +126,7 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
     }]);
 
     try {
-      const data: any = await sendAiMessage({
+      const data: any = await sendAiMessageApi({
         workspaceId: currentWorkspace.id,
         prompt: inputMessage.trim(),
         userId: userInfo.userId
