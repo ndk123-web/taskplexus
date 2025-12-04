@@ -1,6 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from 'react';
-import './Toast.css';
-import './Toast-mobile.css';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import '../../styles/components/Toast.css';
+import '../../styles/components/Toast-mobile.css';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 

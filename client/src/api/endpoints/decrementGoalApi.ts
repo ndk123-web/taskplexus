@@ -1,12 +1,12 @@
 import type { AxiosResponse } from "axios";
 import { api } from "./globalApi";
 
-interface DecreamentGoalReq {
+interface DecrementGoalReq {
   goalId: string;
   count: string;
 }
 
-const decreamentGoalApi = async (data: DecreamentGoalReq) => {
+const decrementGoalApi = async (data: DecrementGoalReq) => {
   try {
     if (!data.goalId) {
       throw new Error("Goal ID is required");
@@ -19,7 +19,7 @@ const decreamentGoalApi = async (data: DecreamentGoalReq) => {
       }
     );
 
-    console.log("Decreament Goal API Response:", response.data);
+    console.log("Decrement Goal API Response:", response.data);
 
     if (response.status < 200 || response.status >= 300) {
       throw new Error(`API Error: ${response.statusText}`);
@@ -27,8 +27,8 @@ const decreamentGoalApi = async (data: DecreamentGoalReq) => {
 
     return response.data;
   } catch (error) {
-    console.error("Error in decreamentGoalApi:", error);
+    console.error("Error in decrementGoalApi:", error);
   }
 };
 
-export default decreamentGoalApi;
+export default decrementGoalApi;

@@ -1,5 +1,5 @@
 import { api } from "./globalApi";
-import type { CreateTaskReq } from "../types/createTaskType";
+import type { CreateTaskReq } from "../../types/createTaskType";
 
 const createTaskApi = async (data: CreateTaskReq): Promise<any> => {
   try {

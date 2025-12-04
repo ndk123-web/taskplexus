@@ -5,9 +5,9 @@ import SignUp from './pages/SignUp'
 import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
 import FlowchartViewNew from './pages/FlowchartViewNew'
-import Protected from './components/Protected'
+import { Protected } from './components/layout'
 
-import './App.css'
+import './styles/App.css'
 
 function App() {
   return (

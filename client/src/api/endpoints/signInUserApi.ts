@@ -1,4 +1,4 @@
-import type { signInType, signInResponse } from "../types/signType";
+import type { signInType, signInResponse } from "../../types/signType";
 import { api } from "./globalApi";
 
 // it means after promise the response will be of type signInResponse

@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance, type AxiosResponse } from "axios";
-import useUserStore from "../store/useUserInfo";
+import useUserStore from "../../store/useUserInfo";
 
 const originUrl = import.meta.env.VITE_GO_BACKEND_URL;
 

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import signUpUserApi from '../api/signUpUserApi';
+import signUpUserApi from '../api/endpoints/signUpUserApi';
 import useUserStore from '../store/useUserInfo';
-import './SignUp.css';
-import { useToast } from '../components/ToastProvider';
+import '../styles/pages/SignUp.css';
+import { useToast } from '../components/ui/ToastProvider';
 import { auth } from '../config/firebase';
 import { signInWithPopup , GoogleAuthProvider } from 'firebase/auth';
 

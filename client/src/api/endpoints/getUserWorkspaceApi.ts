@@ -1,5 +1,5 @@
 import { api } from "./globalApi";
-import type { GetWorkspaceType } from "../types/getWorkspaceType";
+import type { GetWorkspaceType } from "../../types/getWorkspaceType";
 
 const getUserWorkspaceApi = async (
   userId: string

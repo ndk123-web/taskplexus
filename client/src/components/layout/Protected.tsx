@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import useZustandAuth from "../hooks/useAuth"
-import "./Protected.css"
+import useUserStore from "../../store/useUserInfo"
+import "../../styles/components/Protected.css"
 
 interface ProtectedProps {
     children: React.ReactNode
@@ -9,7 +9,7 @@ interface ProtectedProps {
 
 const Protected: React.FC<ProtectedProps> = ({ children }) => {
     const navigate = useNavigate() 
-    const isAuthenticated = useZustandAuth()
+    const isAuthenticated = useUserStore()
     const [isChecking, setIsChecking] = useState(true)
 
     useEffect(() => {

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 // import { Navigate } from 'react-router-dom';
 import useUserStore from '../store/useUserInfo';
-import './Home.css';
+import '../styles/pages/Home.css';
 
 const Home = () => {
   let userInfo = useUserStore(state => state.userInfo);

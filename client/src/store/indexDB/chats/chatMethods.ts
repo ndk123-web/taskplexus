@@ -22,7 +22,7 @@ export async function addChat(chat: WorkspaceBasedChat) {
   return db.put(STORE_NAME, chat);
 }
 
-export async function getChat(workspaceId: string, userId: string) {
+export async function getChat(workspaceId: string) {
   const db = await getDB();
   // const allChats = await db.getAll(STORE_NAME);
 

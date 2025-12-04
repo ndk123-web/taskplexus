@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './AiChat.css';
-import useWorkspaceStore from '../store/useWorkspaceStore';
-import useUserStore from '../store/useUserInfo';
-import sendAiMessage from '../api/sendAiMessageApi';
-import { getChat, addChat, deleteWorkspaceChat } from '../store/indexDB/chats/chatMethods';
+import '../../styles/components/AiChat.css';
+import useWorkspaceStore from '../../store/useWorkspaceStore';
+import useUserStore from '../../store/useUserInfo';
+import sendAiMessage from '../../api/endpoints/sendAiMessageApi';
+import { getChat, addChat, deleteWorkspaceChat } from '../../store/indexDB/chats/chatMethods';
 
 interface Message {
   id: string;
@@ -44,7 +44,7 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
     const loadChatHistory = async () => {
       if (currentWorkspace?.id && userInfo?.userId) {
         try {
-          const workspaceChat: any = await getChat(currentWorkspace.id, userInfo.userId);
+          const workspaceChat: any = await getChat(currentWorkspace.id);
           
           if (workspaceChat && workspaceChat.messages && workspaceChat.messages.length > 0) {
             // Convert stored messages to UI Message format
@@ -151,7 +151,7 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
         // Save to IndexedDB with your Chat structure
         try {
           // Get existing chat or create new one
-          const existingChat: any = await getChat(currentWorkspace.id, userInfo.userId);
+          const existingChat: any = await getChat(currentWorkspace.id);
           
           const newMessage = {
             id: `msg_${Date.now()}`,

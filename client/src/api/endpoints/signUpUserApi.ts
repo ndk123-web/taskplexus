@@ -1,4 +1,4 @@
-import type { SignUpRequest, signUpResponse } from "../types/signUpType";
+import type { SignUpRequest, signUpResponse } from "../../types/signUpType";
 import { api } from "./globalApi";
 
 const signUpUserApi = async (data: SignUpRequest): Promise<signUpResponse> => {

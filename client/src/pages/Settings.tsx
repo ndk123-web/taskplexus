@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useUserStore, { type User } from '../store/useUserInfo';
-import './Settings.css';
-import updateUserNameApi from '../api/updateUserNameApi';
-import { useToast } from '../components/ToastProvider';
+import '../styles/pages/Settings.css';
+import updateUserNameApi from '../api/endpoints/updateUserNameApi';
+import { useToast } from '../components/ui/ToastProvider';
 
 const Settings = () => {
   const navigate = useNavigate();

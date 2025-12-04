@@ -15,10 +15,10 @@ import ReactFlow, {
   type Connection,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import './FlowchartViewNew.css';
+import '../styles/pages/FlowchartViewNew.css';
 import useWorkspaceStore, { type Todo, type FlowNode, type FlowEdge } from '../store/useWorkspaceStore';
 import useUserStore from '../store/useUserInfo';
-import updateWorkspaceLayoutApi from '../api/updateWorkspaceLayoutApi';
+import updateWorkspaceLayoutApi from '../api/endpoints/updateWorkspaceLayoutApi';
 // import { addPendingOperation } from '../store/indexDB/pendingOps/usePendingOps';
 // import useRunBackgroundOps from '../hooks/useRunBackgroundOps';
 import pendingOps from '../hooks/useRunBackgroundOps';

@@ -1,5 +1,5 @@
 import { api } from "./globalApi";
-import type { deleteWorkspaceReqType } from "../types/deleteWorkspaceType";
+import type { deleteWorkspaceReqType } from "../../types/deleteWorkspaceType";
 
 const deleteWorkspaceAPI = async (
   data: deleteWorkspaceReqType

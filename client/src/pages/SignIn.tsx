@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import signInUserApi from '../api/signInUserApi';
+import signInUserApi from '../api/endpoints/signInUserApi';
 import type { signInResponse } from '../types/signType';
 import useUserStore from '../store/useUserInfo';
-import './SignIn.css';
-import { useToast } from '../components/ToastProvider';
+import '../styles/pages/SignIn.css';
+import { useToast } from '../components/ui/ToastProvider';
 import { auth } from "../config/firebase";
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 

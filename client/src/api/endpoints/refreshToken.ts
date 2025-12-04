@@ -1,7 +1,7 @@
 import type { AxiosResponse } from "axios";
 import { api } from "./globalApi";
-import type { User } from "../store/useUserInfo";
-import useUserStore from "../store/useUserInfo";
+import type { User } from "../../store/useUserInfo";
+import useUserStore from "../../store/useUserInfo";
 
 const refreshTokenApi = async (data: User) => {
   try {

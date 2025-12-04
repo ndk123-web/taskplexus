@@ -3,17 +3,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import useUserStore from '../store/useUserInfo';
 import useWorkspaceStore , {type Workspace} from '../store/useWorkspaceStore';
-import TrelloLogo from '../components/TrelloLogo';
+import TrelloLogo from '../components/ui/TrelloLogo';
 import pendingOps from '../hooks/useRunBackgroundOps';
-import './Dashboard.css';
-import getUserWorkspaceApi from '../api/getUserWorkspaceApi';
+import '../styles/pages/Dashboard.css';
+import getUserWorkspaceApi from '../api/endpoints/getUserWorkspaceApi';
 import type { CreateTaskReq } from '../types/createTaskType';
 import type { Todo } from '../store/useWorkspaceStore';
-import createWorkspaceAPI from '../api/createWorkspaceApi';
-import getAnalyticsApi from '../api/analyticsApi';
+import createWorkspaceAPI from '../api/endpoints/createWorkspaceApi';
+import getAnalyticsApi from '../api/endpoints/analyticsApi';
 import { addPendingOperation, clearPendingOperations, getPendingOperations } from '../store/indexDB/pendingOps/usePendingOps';
-import { useToast } from '../components/ToastProvider';
-import AiChat from '../components/AiChat';
+import { useToast } from '../components/ui/ToastProvider';
+import AiChat from '../components/features/AiChat';
 
 // Goal interface - defines structure for goal items
 // Align Goal interface with store (id not _id)
@@ -869,8 +869,8 @@ const Dashboard = () => {
 
     // 3. ADD PENDING OPERATION - For server sync
     await addPendingOperation({
-      id: `increament_goal_${Date.now()}`,
-      type: "INCREAMENT_GOAL",
+      id: `increment_goal_${Date.now()}`,
+      type: "INCREMENT_GOAL",
       status: "PENDING",
       payload: {
         goalId: id,
@@ -910,8 +910,8 @@ const Dashboard = () => {
 
     // 3. ADD PENDING OPERATION - For server sync
     await addPendingOperation({
-      id: `decreament_goal_${Date.now()}`,
-      type: "DECREAMENT_GOAL",
+      id: `decrement_goal_${Date.now()}`,
+      type: "DECREMENT_GOAL",
       status: "PENDING",
       payload: {
         goalId: id,

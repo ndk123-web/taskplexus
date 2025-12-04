@@ -1,18 +1,18 @@
 import type { AxiosResponse } from "axios";
 import { api } from "./globalApi";
 
-interface IncreamentGoalParams {
+interface IncrementGoalParams {
   goalId: string;
   count: string;
 }
 
-const increamentGoalApi = async (goalParam: IncreamentGoalParams) => {
+const incrementGoalApi = async (goalParam: IncrementGoalParams) => {
   try {
     if (!goalParam.goalId) {
-      throw new Error("Goal ID is required to increament goal progress.");
+      throw new Error("Goal ID is required to increment goal progress.");
     }
 
-    console.log("Increamenting Goal ID:", goalParam.goalId, "by count:", goalParam.count);
+    console.log("Incrementing Goal ID:", goalParam.goalId, "by count:", goalParam.count);
 
     const response: AxiosResponse = await api.post(
       `/goals/increament/${goalParam.goalId}`,
@@ -23,14 +23,14 @@ const increamentGoalApi = async (goalParam: IncreamentGoalParams) => {
 
     if (response.status < 200 || response.status >= 300) {
       throw new Error(
-        `Error increamenting goal progress: ${response.statusText}`
+        `Error incrementing goal progress: ${response.statusText}`
       );
     }
 
     return response.data;
   } catch (error) {
-    console.error("Increament Goal API Error:", error);
+    console.error("Increment Goal API Error:", error);
   }
 };
 
-export default increamentGoalApi;
+export default incrementGoalApi;

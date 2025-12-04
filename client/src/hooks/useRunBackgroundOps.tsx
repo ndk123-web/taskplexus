@@ -1,19 +1,18 @@
 import { getPendingOperations, addPendingOperation, removePendingOperation } from "../store/indexDB/pendingOps/usePendingOps";
-import createWorkspaceAPI from "../api/createWorkspaceApi";
-import updateWorkspaceAPI from "../api/updateWorkspaceApi";
+import createWorkspaceAPI from "../api/endpoints/createWorkspaceApi";
+import updateWorkspaceAPI from "../api/endpoints/updateWorkspaceApi";
 import useWorkspaceStore from "../store/useWorkspaceStore";
-import deleteWorkspaceAPI from "../api/deleteWorkspaceApi";
-import createTaskApi from "../api/createTaskApi";
-import toggleTodoApi from "../api/toggleTaskApi";
-import updateTaskApi from "../api/updateTaskApi";
-import deleteTaskApi from "../api/deleteTaskApi";
-import addGoalApi from "../api/addGoalApi";
-import increamentGoalApi from "../api/increamentGoalApi";
-import decreamentGoalApi from "../api/decreamentGoalApi";
-import editGoalApi from "../api/editGoalApi";
+import deleteWorkspaceAPI from "../api/endpoints/deleteWorkspaceApi";
+import createTaskApi from "../api/endpoints/createTaskApi";
+import toggleTodoApi from "../api/endpoints/toggleTaskApi";
+import updateTaskApi from "../api/endpoints/updateTaskApi";
+import deleteTaskApi from "../api/endpoints/deleteTaskApi";
+import addGoalApi from "../api/endpoints/addGoalApi";
+import incrementGoalApi from "../api/endpoints/incrementGoalApi";
+import decrementGoalApi from "../api/endpoints/decrementGoalApi";
+import editGoalApi from "../api/endpoints/editGoalApi";
 
-let increamentGoalCount = 0;
-let decreamentGoalCount = 0;
+
 
 const pendingOps = async () => {
     const ops = await getPendingOperations();
@@ -393,29 +392,58 @@ const pendingOps = async () => {
                 }
             }
         }
-        else if (ops[op].type === "INCREAMENT_GOAL" && ops[op].status === "PENDING") {
+        else if (ops[op].type === "INCREMENT_GOAL" && ops[op].status === "PENDING") {
+            console.log("Processing INCREMENT_GOAL operation for goalId:", ops[op].payload.goalId);
 
-            // batching increament operations
-            if (op >= 0 && op < ops.length - 1 && (ops[op+1].payload.goalId === ops[op].payload.goalId)) {
-                removePendingOperation(ops[op].id);
-                increamentGoalCount++;
-                continue;
+            // Count all remaining increment operations for the same goalId
+            let batchCount = 1; // Current operation
+            let opsToRemove = [ops[op].id]; // IDs to remove after successful batch
+            
+            // Look for more operations with the same goalId after current index
+            for (let i = op + 1; i < ops.length; i++) {
+                if (ops[i].type === "INCREMENT_GOAL" && 
+                    ops[i].status === "PENDING" && 
+                    ops[i].payload.goalId === ops[op].payload.goalId) {
+                    batchCount++;
+                    opsToRemove.push(ops[i].id);
+                }
             }
 
+            console.log(`Batching ${batchCount} increment operations for goalId: ${ops[op].payload.goalId}`);
+
             try {
-                const response : any = await increamentGoalApi({goalId: ops[op].payload.goalId , count: String(increamentGoalCount + 1)});
-                console.log("Response from increamentGoalApi:", response);
-                console.log("Increament Goal Count:", increamentGoalCount);
+                const response : any = await incrementGoalApi({
+                    goalId: ops[op].payload.goalId, 
+                    count: String(batchCount)
+                });
+                console.log("Response from incrementGoalApi:", response);
+                console.log("Batch Count:", batchCount);
                 
                 if (response?.success !== "true") {
-                    console.error("Failed to increament goal on server");
+                    console.error("Failed to increment goal on server");
                     continue; // skip to next operation
                 }
 
-                console.log("✅ Goal increamented");
+                console.log("✅ Goal incremented successfully");
                 
-                // if success remove from pending operations
-                await removePendingOperation(ops[op].id);
+                // Remove all batched operations from pending
+                for (const opId of opsToRemove) {
+                    await removePendingOperation(opId);
+                }
+                
+                // Skip processed operations in the loop
+                let skipCount = 0;
+                for (let i = op + 1; i < ops.length; i++) {
+                    if (ops[i].type === "INCREMENT_GOAL" && 
+                        ops[i].status === "PENDING" && 
+                        ops[i].payload.goalId === ops[op].payload.goalId) {
+                        skipCount++;
+                    } else {
+                        break;
+                    }
+                }
+                op += skipCount; // Skip the processed operations
+                
             }
             catch(error) {
                 console.error("Error processing pending operation:", error);
@@ -433,29 +461,57 @@ const pendingOps = async () => {
             }
 
         }
-        else if (ops[op].type === "DECREAMENT_GOAL" && ops[op].status === "PENDING") {
-            try {
+        else if (ops[op].type === "DECREMENT_GOAL" && ops[op].status === "PENDING") {
+            console.log("Processing DECREMENT_GOAL operation for goalId:", ops[op].payload.goalId);
 
-                // batching decreament operations
-                if (op >= 0 && op < ops.length - 1 && (ops[op+1].payload.goalId === ops[op].payload.goalId)) {
-                    removePendingOperation(ops[op].id);
-                    decreamentGoalCount++;
-                    continue;
+            // Count all remaining decrement operations for the same goalId
+            let batchCount = 1; // Current operation
+            let opsToRemove = [ops[op].id]; // IDs to remove after successful batch
+            
+            // Look for more operations with the same goalId after current index
+            for (let i = op + 1; i < ops.length; i++) {
+                if (ops[i].type === "DECREMENT_GOAL" && 
+                    ops[i].status === "PENDING" && 
+                    ops[i].payload.goalId === ops[op].payload.goalId) {
+                    batchCount++;
+                    opsToRemove.push(ops[i].id);
                 }
+            }
 
-                // api call
-                const response : any = await decreamentGoalApi({goalId: ops[op].payload.goalId , count: String(decreamentGoalCount + 1)});
-                console.log("Response from decreamentGoalApi:", response);
-                console.log("Decreament Goal Count:", decreamentGoalCount);
+            console.log(`Batching ${batchCount} decrement operations for goalId: ${ops[op].payload.goalId}`);
+
+            try {
+                const response : any = await decrementGoalApi({
+                    goalId: ops[op].payload.goalId, 
+                    count: String(batchCount)
+                });
+                console.log("Response from decrementGoalApi:", response);
+                console.log("Batch Count:", batchCount);
 
                 if (response?.success !== "true") {
-                    console.error("Failed to decreament goal on server");
+                    console.error("Failed to decrement goal on server");
                     continue; // skip to next operation
                 }
-                console.log("✅ Goal decreamented");
+                console.log("✅ Goal decremented successfully");
                 
-                // if success remove from pending operations
-                await removePendingOperation(ops[op].id);
+                // Remove all batched operations from pending
+                for (const opId of opsToRemove) {
+                    await removePendingOperation(opId);
+                }
+                
+                // Skip processed operations in the loop
+                let skipCount = 0;
+                for (let i = op + 1; i < ops.length; i++) {
+                    if (ops[i].type === "DECREMENT_GOAL" && 
+                        ops[i].status === "PENDING" && 
+                        ops[i].payload.goalId === ops[op].payload.goalId) {
+                        skipCount++;
+                    } else {
+                        break;
+                    }
+                }
+                op += skipCount; // Skip the processed operations
+                
             }
             catch(error) {
                 console.error("Error processing pending operation:", error);
@@ -501,8 +557,6 @@ const pendingOps = async () => {
     }
 }
 
-// reset count after processing all ops
-increamentGoalCount = 0;
-decreamentGoalCount = 0;
+// Background operations processing completed
 
 export default pendingOps;

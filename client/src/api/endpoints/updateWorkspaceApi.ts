@@ -1,5 +1,5 @@
 import { api } from "./globalApi";
-import type { updateWorkspaceReqType } from "../types/updateWorkspaceType";
+import type { updateWorkspaceReqType } from "../../types/updateWorkspaceType";
 
 const updateWorkspaceAPI = async (
   data: updateWorkspaceReqType
