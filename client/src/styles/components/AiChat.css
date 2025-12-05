@@ -285,6 +285,8 @@
   font-size: 15px;
   outline: none;
   transition: all 0.2s ease;
+  direction: ltr;
+  text-align: left;
 }
 
 .ai-chat-input::placeholder {

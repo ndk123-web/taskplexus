@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import '../../styles/components/AiChat.css';
 import useWorkspaceStore from '../../store/useWorkspaceStore';
 import useUserStore from '../../store/useUserInfo';
-// import sendAiMessage from '../../api/endpoints/sendAiMessageApi';
 import { getChat, addChat, deleteWorkspaceChat } from '../../store/indexDB/chats/chatMethods';
 import {sendAiMessageApi} from '../../api/';
+import { formatAiResponsePlain } from '../../utils/aiResponseFormatter';
 
 interface Message {
   id: string;
@@ -136,14 +136,17 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
       setMessages(prev => prev.filter(m => m.id !== loadingId));
 
       if (data.success === 'true' && data.response) {
-        // Extract the actual response text - backend returns response as string
-        const responseText = typeof data.response === 'string' 
+        // Extract and format the actual response text
+        const rawResponseText = typeof data.response === 'string' 
           ? data.response 
           : data.response?.response || JSON.stringify(data.response);
+          
+        // Format the response to clean up markdown-like formatting
+        const formattedResponseText = formatAiResponsePlain(rawResponseText);
         
         const aiMessage: Message = {
           id: `ai_${Date.now()}`,
-          text: responseText,  // ✅ Now it's a string, not an object
+          text: formattedResponseText,  // ✅ Cleaned and formatted text
           sender: 'ai',
           timestamp: new Date()
         };
@@ -157,7 +160,7 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
           const newMessage = {
             id: `msg_${Date.now()}`,
             prompt: userMessage.text,
-            response: responseText,  // ✅ Save as string
+            response: rawResponseText,  // ✅ Save as string
             timestamp: new Date()
           };
           
