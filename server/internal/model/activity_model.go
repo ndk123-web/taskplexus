@@ -17,7 +17,7 @@ const (
 
 type Activity struct {
 	ID           primitive.ObjectID `json:"_id" bson:"_id"`
-	ActivityType string             `json:"activityType" bson:"activityType"`
-	Metadata     ActivityType       `json:"metadata" bson:"metadata"`
+	Type ActivityType       `json:"activityType" bson:"activityType"`
+	Metadata     any                `json:"metadata" bson:"metadata"`
 	TimeStamp    time.Time          `json:"timeStamp" bson:"timeStamp"`
 }
