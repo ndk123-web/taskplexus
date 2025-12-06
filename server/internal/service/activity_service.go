@@ -17,14 +17,14 @@ type HandleActivityBody struct {
 }
 
 type ActivityService interface {
-	HandleActivityEvent(ctx context.Context, data any) (any, error)
+	HandleActivityEvent(ctx context.Context, data model.HandleActivityBody) (any, error)
 }
 
 type activityService struct {
 	repo repository.ActivityRepository
 }
 
-func (s *activityService) HandleActivityEvent(ctx context.Context, data any) (any, error) {
+func (s *activityService) HandleActivityEvent(ctx context.Context, data model.HandleActivityBody) (any, error) {
 	return s.repo.HandleActivityEvent(ctx, data)
 }
 

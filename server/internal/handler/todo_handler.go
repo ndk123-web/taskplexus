@@ -28,13 +28,15 @@ type TodoHandler interface {
 
 // todoHandler implements TodoHandler with a service layer dependency
 type todoHandler struct {
-	service service.TodoService // Service layer for business logic
+	service         service.TodoService // Service layer for business logic
+	activityService service.ActivityService
 }
 
 // NewTodoHandler creates a new instance of TodoHandler with the provided service
-func NewTodoHandler(service service.TodoService) TodoHandler {
+func NewTodoHandler(service service.TodoService, activityService service.ActivityService) TodoHandler {
 	return &todoHandler{
-		service: service,
+		service:         service,
+		activityService: activityService,
 	}
 }
 
@@ -139,7 +141,24 @@ func (h *todoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 
 	if todoerr != nil {
 		json.NewEncoder(w).Encode(map[string]string{"Error": todoerr.Error(), "success": "false"})
+		return
 	}
+
+	// Go Routine for Activity Handling in Background
+	go func() {
+		var data model.HandleActivityBody
+		data.Type = "TASK_CREATED"
+		data.Metadata.Id = todores.ID.Hex()
+		data.Metadata.WorkspaceId = workspaceId
+		data.Metadata.Name = todores.Task
+
+		res, err := h.activityService.HandleActivityEvent(context.Background(), data)
+		if err != nil {
+			fmt.Print("Error In CreateTodo ")
+		}
+
+		fmt.Print("SuccessFully Acutomatic Acitivity Handled: ", res)
+	}()
 
 	fmt.Println("Todo Create : ", todores)
 	w.Header().Set("Content-Type", "application/json")

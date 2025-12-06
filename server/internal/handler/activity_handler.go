@@ -11,25 +11,15 @@ import (
 )
 
 type ActivityHandler interface {
-	HandleActivityEvent(w http.ResponseWriter, r http.Request)
+	HandleActivityEvent(w http.ResponseWriter, r *http.Request)
 }
 
 type activityHandler struct {
 	service service.ActivityService
 }
 
-type MetadataStructure struct {
-	Id          string `json:"id"`
-	WorkspaceId string `json:"workspaceId"`
-	Name        string `json:"name"`
-}
-type HandleActivityBody struct {
-	Type     model.ActivityType `json:"type"`
-	Metadata MetadataStructure  `json:"metadata"`
-}
-
-func (h *activityHandler) HandleActivityEvent(w http.ResponseWriter, r http.Request) {
-	var reqBody HandleActivityBody
+func (h *activityHandler) HandleActivityEvent(w http.ResponseWriter, r *http.Request) {
+	var reqBody model.HandleActivityBody
 
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
 		json.NewEncoder(w).Encode(map[string]string{"success": "false", "Error": err.Error()})

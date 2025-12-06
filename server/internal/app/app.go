@@ -44,6 +44,7 @@ func Run() error {
 	goalCollection := client.Database("golangdb").Collection("goals")
 	workspaceCollection := client.Database("golangdb").Collection("workspaces")
 	chatCollection := client.Database("golangdb").Collection("chats")
+	activityCollection := client.Database("golangdb").Collection("activities")
 
 	// Create Indexes on Collections
 	wsModel := mongo.IndexModel{
@@ -90,11 +91,6 @@ func Run() error {
 	}
 	chatCollection.Indexes().CreateOne(ctx, chatModel)
 
-	// todorepos
-	todoRepo := repository.NewTodoRepository(todoCollection)
-	todoService := service.NewTodoService(todoRepo)
-	todoHandler := handler.NewTodoHandler(todoService)
-
 	// userrepos
 	userRepo := repository.NewUserRepository(todoCollection, userCollection)
 	userService := service.NewUserService(userRepo)
@@ -112,6 +108,15 @@ func Run() error {
 	chatService := service.NewChatService(chatRepo)
 	chatHandler := handler.NewChatHandler(chatService)
 
-	srv := server.NewServer(todoHandler, userHandler, goalHandler, workspaceHandler, chatHandler)
+	activitiyRepo := repository.NewActivityRepository(goalCollection, todoCollection, activityCollection)
+	activityService := service.NewActivityService(activitiyRepo)
+	activityHandler := handler.NewActivityHandler(activityService)
+
+	// todorepos
+	todoRepo := repository.NewTodoRepository(todoCollection)
+	todoService := service.NewTodoService(todoRepo)
+	todoHandler := handler.NewTodoHandler(todoService, activityService)
+
+	srv := server.NewServer(todoHandler, userHandler, goalHandler, workspaceHandler, chatHandler, activityHandler)
 	return srv.Start(cfg.Port)
 }

@@ -127,6 +127,7 @@ func (r *todoRepo) CreateTodo(ctx context.Context, todo model.Todo, workspaceId 
 	}
 
 	todo.ID = insertedId.InsertedID.(primitive.ObjectID)
+
 	return todo, nil
 }
 

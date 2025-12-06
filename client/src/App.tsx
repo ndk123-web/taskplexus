@@ -5,6 +5,7 @@ import SignUp from './pages/SignUp'
 import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
 import FlowchartViewNew from './pages/FlowchartViewNew'
+import Activity from './pages/Activity'
 import { Protected } from './components/layout'
 
 import './styles/App.css'
@@ -30,6 +31,11 @@ function App() {
         <Route path="/flowchart" element={
           <Protected>
             <FlowchartViewNew />
+        </Protected>
+      } />
+        <Route path="/activity" element={
+          <Protected>
+            <Activity />
         </Protected>
       } />
         <Route path="*" element={<Navigate to="/" replace />} />

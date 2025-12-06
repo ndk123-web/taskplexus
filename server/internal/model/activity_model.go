@@ -15,9 +15,25 @@ const (
 	ActivityGoalCreated   ActivityType = "GOAL_CREATED"
 )
 
+type ModelMetaDataStructure struct {
+	Id          primitive.ObjectID `json:"id" bson:"id"`
+	WorkspaceId primitive.ObjectID `json:"workspaceId" bson:"workspaceId"`
+	Name        string             `json:"name" bson:"name"`
+}
+
 type Activity struct {
-	ID           primitive.ObjectID `json:"_id" bson:"_id"`
-	Type ActivityType       `json:"activityType" bson:"activityType"`
-	Metadata     any                `json:"metadata" bson:"metadata"`
-	TimeStamp    time.Time          `json:"timeStamp" bson:"timeStamp"`
+	ID        primitive.ObjectID     `json:"_id" bson:"_id"`
+	Type      ActivityType           `json:"activityType" bson:"activityType"`
+	Metadata  ModelMetaDataStructure `json:"metadata" bson:"metadata"`
+	TimeStamp time.Time              `json:"timeStamp" bson:"timeStamp"`
+}
+
+type MetadataStructure struct {
+	Id          string `json:"id"`
+	WorkspaceId string `json:"workspaceId"`
+	Name        string `json:"name"`
+}
+type HandleActivityBody struct {
+	Type     ActivityType      `json:"type"`
+	Metadata MetadataStructure `json:"metadata"`
 }

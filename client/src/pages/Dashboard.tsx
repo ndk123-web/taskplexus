@@ -1121,6 +1121,19 @@ const Dashboard = () => {
                 <span>Goals</span>
               </button>
               <button 
+                className={`mobile-nav-item ${activeSection === 'activity' ? 'active' : ''}`}
+                onClick={() => { 
+                  setMobileMenuOpen(false); 
+                  navigate('/activity');
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M10 6V10L13 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                <span>Activity</span>
+              </button>
+              <button 
                 className={`mobile-nav-item ${activeSection === 'flowchart' ? 'active' : ''}`}
                 onClick={() => { 
                   setMobileMenuOpen(false); 
@@ -1320,6 +1333,17 @@ const Dashboard = () => {
               <circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth="2"/>
             </svg>
             {!sidebarCollapsed && <span>Goals</span>}
+          </button>
+          
+          <button 
+            className={`sidebar-nav-item ${activeSection === 'activity' ? 'active' : ''}`}
+            onClick={() => navigate('/activity')}
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z" stroke="currentColor" strokeWidth="2"/>
+              <path d="M10 6V10L13 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            {!sidebarCollapsed && <span>Activity</span>}
           </button>
           
           <button 
