@@ -146,6 +146,12 @@ func (h *todoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 
 	// Go Routine for Activity Handling in Background
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("Recovered from panic in activity goroutine:", r)
+			}
+		}()
+
 		var data model.HandleActivityBody
 		data.Type = "TASK_CREATED"
 		data.Metadata.Id = todores.ID.Hex()
@@ -154,10 +160,11 @@ func (h *todoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 
 		res, err := h.activityService.HandleActivityEvent(context.Background(), data)
 		if err != nil {
-			fmt.Print("Error In CreateTodo ")
+			fmt.Println("Error In CreateTodo Activity:", err)
+			return
 		}
 
-		fmt.Print("SuccessFully Acutomatic Acitivity Handled: ", res)
+		fmt.Println("Successfully Activity Logged:", res)
 	}()
 
 	fmt.Println("Todo Create : ", todores)
