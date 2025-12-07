@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useWorkspaceStore from '../store/useWorkspaceStore';
+import { useToast } from '../components/ui/ToastProvider';
 import '../styles/pages/Activity.css';
+import { getActivitiesApi } from '../api/activity';
 
 interface Activity {
   id: string;
@@ -13,81 +15,83 @@ interface Activity {
     goalName?: string;
     workspaceName?: string;
     priority?: string;
+    name?: string 
+    workspaceId?: string 
+    id?: string
+    activityType?: string 
   };
 }
 
 const Activity = () => {
   const navigate = useNavigate();
   const { currentWorkspace } = useWorkspaceStore();
+  const { showToast } = useToast();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'tasks' | 'goals' | 'workspaces'>('all');
+  const [filter, setFilter] = useState<'both' | 'tasks' | 'goals'>('both');
+  const [page] = useState(1)
+  const [limit] = useState(5)
 
   useEffect(() => {
-    // Simulate loading activities
-    const loadActivities = () => {
-      setLoading(true);
+    const loadActivities = async () => {
+      if (!currentWorkspace?.id) return;
       
-      // Mock activity data - replace with actual API call
-      const mockActivities: Activity[] = [
-        {
-          id: '1',
-          type: 'task_completed',
-          message: 'Task completed: Review pull requests',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
-          metadata: { taskName: 'Review pull requests', priority: 'high' }
-        },
-        {
-          id: '2',
-          type: 'task_created',
-          message: 'New task added: Update documentation',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-          metadata: { taskName: 'Update documentation', priority: 'medium' }
-        },
-        {
-          id: '3',
-          type: 'goal_created',
-          message: 'New goal set: Complete 10 tasks this week',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
-          metadata: { goalName: 'Complete 10 tasks this week' }
-        },
-        {
-          id: '4',
-          type: 'task_deleted',
-          message: 'Task removed: Old meeting notes',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-          metadata: { taskName: 'Old meeting notes' }
-        },
-        {
-          id: '5',
-          type: 'workspace_created',
-          message: 'Workspace created: Personal Projects',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-          metadata: { workspaceName: 'Personal Projects' }
-        }
-      ];
+      setLoading(true);
 
-      setActivities(mockActivities);
-      setLoading(false);
+      try {
+        const response: any = await getActivitiesApi({
+          workspaceId: currentWorkspace.id,
+          filter: filter === 'both' ? 'both' : filter,
+          page: page,
+          limit: limit
+        });
+        
+        console.log("Activities Response:", response);
+
+        if (response?.success !== "true") {
+          showToast('Failed to fetch activities', 'error');
+          setActivities([]);
+        } else {
+          const activitiesData: any[] = response?.response || [];
+          
+          // Convert timestamp strings to Date objects
+          const processedActivities = activitiesData.map(activity => ({
+            ...activity,
+            timestamp: activity.timeStamp ? new Date(activity.timeStamp) : new Date(),
+            type: activity.activityType?.toLowerCase().replace('_', '_') || 'task_created'
+          }));
+          
+          setActivities(processedActivities);
+        }
+      } catch (error) {
+        console.error('Error fetching activities:', error);
+        showToast('Error loading activities', 'error');
+        setActivities([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    // Load activities after a short delay to simulate API call
-    setTimeout(loadActivities, 500);
-  }, [currentWorkspace?.id]);
+    loadActivities();
+  }, [currentWorkspace?.id, filter, page, limit]);
 
-  // Filter activities based on selected filter
+  // Activities are already filtered by the API based on filter parameter
+  console.log("Activities:",activities)
   const filteredActivities = activities.filter(activity => {
-    if (filter === 'all') return true;
+    if (filter === 'both') return true;
     if (filter === 'tasks') return activity.type.includes('task');
     if (filter === 'goals') return activity.type.includes('goal');
-    if (filter === 'workspaces') return activity.type.includes('workspace');
-    return true;
-  });
+  })
 
   // Format relative time
-  const formatRelativeTime = (date: Date) => {
+  const formatRelativeTime = (date: Date | undefined) => {
+    if (!date) return 'Unknown';
+    
+    const dateObj = date instanceof Date ? date : new Date(date);
+    if (isNaN(dateObj.getTime())) return 'Unknown';
+    
     const now = new Date();
-    const diffInMs = now.getTime() - date.getTime();
+    const diffInMs = now.getTime() - dateObj.getTime();
     const diffInMins = Math.floor(diffInMs / 1000 / 60);
     const diffInHours = Math.floor(diffInMins / 60);
     const diffInDays = Math.floor(diffInHours / 24);
@@ -183,10 +187,10 @@ const Activity = () => {
           <div className="activity-header-right">
             <div className="activity-filter-tabs">
               <button 
-                className={`filter-tab ${filter === 'all' ? 'active' : ''}`}
-                onClick={() => setFilter('all')}
+                className={`filter-tab ${filter === 'both' ? 'active' : ''}`}
+                onClick={() => setFilter('both')}
               >
-                All
+                Both
               </button>
               <button 
                 className={`filter-tab ${filter === 'tasks' ? 'active' : ''}`}
@@ -199,12 +203,6 @@ const Activity = () => {
                 onClick={() => setFilter('goals')}
               >
                 Goals
-              </button>
-              <button 
-                className={`filter-tab ${filter === 'workspaces' ? 'active' : ''}`}
-                onClick={() => setFilter('workspaces')}
-              >
-                Workspaces
               </button>
             </div>
           </div>
@@ -229,13 +227,13 @@ const Activity = () => {
           </div>
         ) : (
           <div className="activity-list">
-            {filteredActivities.map((activity) => (
+            {filteredActivities.slice(0,5).map((activity) => (
               <div key={activity.id} className="activity-item">
                 <div className="activity-item-icon">
-                  {getActivityIcon(activity.type)}
+                  {getActivityIcon(activity?.type)}
                 </div>
                 <div className="activity-item-content">
-                  <p className="activity-item-message">{activity.message}</p>
+                  <p className="activity-item-message">{activity.metadata?.name}</p>
                   {activity.metadata && (
                     <div className="activity-item-metadata">
                       {activity.metadata.priority && (

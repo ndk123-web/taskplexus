@@ -196,7 +196,6 @@ func (h *goalHandler) IncreamentGoalProgress(w http.ResponseWriter, r *http.Requ
 		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
 		return
 	}
-
 	json.NewEncoder(w).Encode(map[string]string{"response": "Success Increament Goal Progress", "success": "true"})
 }
 

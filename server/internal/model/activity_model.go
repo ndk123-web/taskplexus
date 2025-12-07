@@ -37,3 +37,10 @@ type HandleActivityBody struct {
 	Type     ActivityType      `json:"type"`
 	Metadata MetadataStructure `json:"metadata"`
 }
+
+type GetActivityData struct {
+	Page        int64  `json:"page"`
+	Filter      string `json:"filter"`
+	Limit       int64  `json:"limit,omitempty"`
+	WorkspaceId string `json:"workspaceId"`
+}

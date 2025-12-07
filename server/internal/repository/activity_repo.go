@@ -7,12 +7,15 @@ import (
 	"time"
 
 	"github.com/ndk123-web/fast-todo/internal/model"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type ActivityRepository interface {
 	HandleActivityEvent(ctx context.Context, data model.HandleActivityBody) (any, error)
+	GetActivities(ctx context.Context, data model.GetActivityData) ([]model.Activity, error)
 }
 
 type activityRepository struct {
@@ -69,6 +72,47 @@ func (r *activityRepository) HandleActivityEvent(ctx context.Context, data model
 	}
 
 	return insert, nil
+}
+
+func (r *activityRepository) GetActivities(ctx context.Context, data model.GetActivityData) ([]model.Activity, error) {
+	if data.Filter == "" || data.Page == 0 || data.Limit == 0 || data.WorkspaceId == "" {
+		return nil, errors.New("Get Activity Data is Invalid")
+	}
+
+	workspaceOid, err := primitive.ObjectIDFromHex(data.WorkspaceId)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.M{"metadata.workspaceId": workspaceOid}
+
+	switch data.Filter {
+	case "task":
+		filter["activityType"] = bson.M{"$in": []string{"TASK_CREATED", "TASK_COMPLETED"}}
+
+	case "goal":
+		filter["activityType"] = bson.M{"$in": []string{"GOAL_CREATED", "GOAL_COMPLETED"}}
+	}
+
+	cursor, err := r.activityCollection.Find(ctx, filter, options.Find().
+		SetSkip((data.Page-1)*data.Limit).
+		SetLimit(data.Limit).
+		SetSort(bson.M{"timestamp": -1}))
+
+	if err != nil {
+		return nil, err
+	}
+
+	var activities []model.Activity
+	for cursor.Next(ctx) {
+		var activity model.Activity
+		if err := cursor.Decode(&activity); err != nil {
+			return nil, err
+		}
+		activities = append(activities, activity)
+	}
+
+	return activities, nil
 }
 
 func NewActivityRepository(goal *mongo.Collection, todo *mongo.Collection, activity *mongo.Collection) ActivityRepository {

@@ -72,6 +72,7 @@ func (s *Server) Start(port string) error {
 
 	// activity handler
 	mux.Handle("POST /api/v1/activity/handle-activity", middleware.AuthMiddleware(http.HandlerFunc(s.activityHandler.HandleActivityEvent)))
+	mux.Handle("GET /api/v1/activity/get-activities", middleware.AuthMiddleware(http.HandlerFunc(s.activityHandler.GetActivities)))
 
 	//
 	// it means cors -> log -> actual handler(mux)
