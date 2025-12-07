@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ndk123-web/fast-todo/internal/service"
 	"net/http"
 	"strconv"
+
+	"github.com/ndk123-web/fast-todo/internal/model"
+	"github.com/ndk123-web/fast-todo/internal/service"
 )
 
 type GoalHandler interface {
@@ -19,7 +21,8 @@ type GoalHandler interface {
 }
 
 type goalHandler struct {
-	service service.GoalService
+	service          service.GoalService
+	activitieservice service.ActivityService
 }
 
 func (h *goalHandler) GetUserGoals(w http.ResponseWriter, r *http.Request) {
@@ -69,6 +72,29 @@ func (h *goalHandler) CreateUserGoal(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
 		return
 	}
+
+	go func() {
+
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("Recovered in f", r)
+			}
+		}()
+
+		var data model.HandleActivityBody
+		data.Type = model.ActivityGoalCreated
+		data.Metadata.Id = goal.ID.Hex()
+		data.Metadata.WorkspaceId = workspaceId
+		data.Metadata.Name = goal.Title
+
+		res, err := h.activitieservice.HandleActivityEvent(context.Background(), data)
+		if err != nil {
+			fmt.Println("Error while creating activity for goal creation: ", err)
+			panic(err)
+		}
+
+		fmt.Println("Activity created for goal creation: ", res)
+	}()
 
 	json.NewEncoder(w).Encode(map[string]any{"response": goal, "success": "true"})
 }
@@ -209,8 +235,9 @@ func (h *goalHandler) DecreamentGoalProgress(w http.ResponseWriter, r *http.Requ
 	json.NewEncoder(w).Encode(map[string]string{"response": "Success Decreament Goal Progress", "success": "true"})
 }
 
-func NewGoalHandler(service service.GoalService) GoalHandler {
+func NewGoalHandler(service service.GoalService, activityService service.ActivityService) GoalHandler {
 	return &goalHandler{
-		service: service,
+		service:          service,
+		activitieservice: activityService,
 	}
 }
