@@ -87,7 +87,7 @@ func (h *activityHandler) GetActivities(w http.ResponseWriter, r *http.Request) 
 		WorkspaceId: workspaceId,
 	}
 
-	activities, err := h.service.GetActivities(context.Background(), data)
+	activities, err, count := h.service.GetActivities(context.Background(), data)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"success": "false", "Error": err.Error()})
@@ -95,7 +95,7 @@ func (h *activityHandler) GetActivities(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]any{"response": activities, "success": "true"})
+	json.NewEncoder(w).Encode(map[string]any{"response": activities, "success": "true", "count": count})
 }
 
 func NewActivityHandler(service service.ActivityService) ActivityHandler {

@@ -15,7 +15,7 @@ import (
 
 type ActivityRepository interface {
 	HandleActivityEvent(ctx context.Context, data model.HandleActivityBody) (any, error)
-	GetActivities(ctx context.Context, data model.GetActivityData) ([]model.Activity, error)
+	GetActivities(ctx context.Context, data model.GetActivityData) ([]model.Activity, error, int64)
 }
 
 type activityRepository struct {
@@ -74,14 +74,14 @@ func (r *activityRepository) HandleActivityEvent(ctx context.Context, data model
 	return insert, nil
 }
 
-func (r *activityRepository) GetActivities(ctx context.Context, data model.GetActivityData) ([]model.Activity, error) {
+func (r *activityRepository) GetActivities(ctx context.Context, data model.GetActivityData) ([]model.Activity, error, int64) {
 	if data.Filter == "" || data.Page == 0 || data.Limit == 0 || data.WorkspaceId == "" {
-		return nil, errors.New("Get Activity Data is Invalid")
+		return nil, errors.New("Get Activity Data is Invalid"), 0
 	}
 
 	workspaceOid, err := primitive.ObjectIDFromHex(data.WorkspaceId)
 	if err != nil {
-		return nil, err
+		return nil, err, 0
 	}
 
 	filter := bson.M{"metadata.workspaceId": workspaceOid}
@@ -100,19 +100,25 @@ func (r *activityRepository) GetActivities(ctx context.Context, data model.GetAc
 		SetSort(bson.M{"timestamp": -1}))
 
 	if err != nil {
-		return nil, err
+		return nil, err, 0
 	}
 
 	var activities []model.Activity
 	for cursor.Next(ctx) {
 		var activity model.Activity
 		if err := cursor.Decode(&activity); err != nil {
-			return nil, err
+			return nil, err, 0
 		}
 		activities = append(activities, activity)
 	}
 
-	return activities, nil
+	var count int64 = 0
+	count, err = r.activityCollection.CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, err, 0
+	}
+
+	return activities, nil, count
 }
 
 func NewActivityRepository(goal *mongo.Collection, todo *mongo.Collection, activity *mongo.Collection) ActivityRepository {

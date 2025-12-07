@@ -18,7 +18,7 @@ type HandleActivityBody struct {
 
 type ActivityService interface {
 	HandleActivityEvent(ctx context.Context, data model.HandleActivityBody) (any, error)
-	GetActivities(ctx context.Context, data model.GetActivityData) ([]model.Activity, error)
+	GetActivities(ctx context.Context, data model.GetActivityData) ([]model.Activity, error,int64)
 }
 
 type activityService struct {
@@ -29,7 +29,7 @@ func (s *activityService) HandleActivityEvent(ctx context.Context, data model.Ha
 	return s.repo.HandleActivityEvent(ctx, data)
 }
 
-func (s *activityService) GetActivities(ctx context.Context, data model.GetActivityData) ([]model.Activity, error) {
+func (s *activityService) GetActivities(ctx context.Context, data model.GetActivityData) ([]model.Activity, error,int64) {
 	return s.repo.GetActivities(ctx, data)
 }
 

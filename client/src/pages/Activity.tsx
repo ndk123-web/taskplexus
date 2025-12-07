@@ -29,14 +29,21 @@ const Activity = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'both' | 'tasks' | 'goals'>('both');
-  const [page] = useState(1)
+  const [page, setPage] = useState(1)
   const [limit] = useState(5)
+  const [totalItems, setTotalItems] = useState(0)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   useEffect(() => {
     const loadActivities = async () => {
       if (!currentWorkspace?.id) return;
       
-      setLoading(true);
+      // If page is 1, show main loading, otherwise show loadingMore
+      if (page === 1) {
+        setLoading(true);
+      } else {
+        setIsLoadingMore(true);
+      }
 
       try {
         const response: any = await getActivitiesApi({
@@ -50,7 +57,7 @@ const Activity = () => {
 
         if (response?.success !== "true") {
           showToast('Failed to fetch activities', 'error');
-          setActivities([]);
+          if (page === 1) setActivities([]);
         } else {
           const activitiesData: any[] = response?.response || [];
           
@@ -61,19 +68,33 @@ const Activity = () => {
             type: activity.activityType?.toLowerCase().replace('_', '_') || 'task_created'
           }));
           
-          setActivities(processedActivities);
+          setTotalItems(response?.count || 0);
+          
+          // If page is 1, replace activities; otherwise append
+          if (page === 1) {
+            setActivities(processedActivities);
+          } else {
+            setActivities(prev => [...prev, ...processedActivities]);
+          }
         }
       } catch (error) {
         console.error('Error fetching activities:', error);
         showToast('Error loading activities', 'error');
-        setActivities([]);
+        if (page === 1) setActivities([]);
       } finally {
         setLoading(false);
+        setIsLoadingMore(false);
       }
     };
 
     loadActivities();
   }, [currentWorkspace?.id, filter, page, limit]);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setPage(1);
+    setActivities([]);
+  }, [filter]);
 
   // Activities are already filtered by the API based on filter parameter
   console.log("Activities:",activities)
@@ -82,6 +103,14 @@ const Activity = () => {
     if (filter === 'tasks') return activity.type.includes('task');
     if (filter === 'goals') return activity.type.includes('goal');
   })
+
+  // Handle Load More
+  const handleLoadMore = () => {
+    setPage(prev => prev + 1);
+  };
+
+  // Check if there are more items to load
+  const hasMore = activities.length < totalItems;
 
   // Format relative time
   const formatRelativeTime = (date: Date | undefined) => {
@@ -226,28 +255,56 @@ const Activity = () => {
             </button>
           </div>
         ) : (
-          <div className="activity-list">
-            {filteredActivities.slice(0,5).map((activity) => (
-              <div key={activity.id} className="activity-item">
-                <div className="activity-item-icon">
-                  {getActivityIcon(activity?.type)}
+          <>
+            <div className="activity-list">
+              {filteredActivities.map((activity) => (
+                <div key={activity.id} className="activity-item">
+                  <div className="activity-item-icon">
+                    {getActivityIcon(activity?.type)}
+                  </div>
+                  <div className="activity-item-content">
+                    <p className="activity-item-message">{activity.metadata?.name}</p>
+                    {activity.metadata && (
+                      <div className="activity-item-metadata">
+                        {activity.metadata.priority && (
+                          <span className={`priority-badge priority-${activity.metadata.priority}`}>
+                            {activity.metadata.priority}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <span className="activity-item-time">{formatRelativeTime(activity.timestamp)}</span>
+                  </div>
                 </div>
-                <div className="activity-item-content">
-                  <p className="activity-item-message">{activity.metadata?.name}</p>
-                  {activity.metadata && (
-                    <div className="activity-item-metadata">
-                      {activity.metadata.priority && (
-                        <span className={`priority-badge priority-${activity.metadata.priority}`}>
-                          {activity.metadata.priority}
-                        </span>
-                      )}
-                    </div>
+              ))}
+            </div>
+            
+            {/* Load More Button */}
+            {hasMore && (
+              <div className="load-more-container">
+                <button 
+                  className="load-more-btn"
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <div className="load-more-spinner"></div>
+                      <span>Loading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 4V16M4 10H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                      <span>Load More</span>
+                      <span className="load-more-count">({activities.length} / {totalItems})</span>
+                    </>
                   )}
-                  <span className="activity-item-time">{formatRelativeTime(activity.timestamp)}</span>
-                </div>
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
 
