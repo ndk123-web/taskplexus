@@ -1,13 +1,18 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 // import { Navigate } from 'react-router-dom';
 import useUserStore from '../store/useUserInfo';
 import '../styles/pages/Home.css';
+import { dynamicRazorPayLoad } from '../utils/razorpay';
 
 const Home = () => {
   let userInfo = useUserStore(state => state.userInfo);
   const [showTerms, setShowTerms] = useState(false);
   const [showPolicy, setShowPolicy] = useState(false);
+
+  useEffect(() => {
+     dynamicRazorPayLoad();
+  },[])
 
   return (
     <div className="home-container">
@@ -224,7 +229,7 @@ const Home = () => {
                 <li>✓ AI-Powered Suggestions</li>
                 <li>✓ Priority Support</li>
               </ul>
-              <button className="plan-cta disabled" disabled>Coming Soon</button>
+              <button className="plan-cta">{userInfo?.auth ? "Buy" : <Link to={"/signin"}>Login First</Link> }</button>
             </div>
           </div>
         </div>

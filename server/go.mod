@@ -46,6 +46,7 @@ require (
 	github.com/klauspost/compress v1.18.1 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
+	github.com/razorpay/razorpay-go v1.4.0 // indirect
 	github.com/redis/go-redis/v9 v9.17.1 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.5.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect

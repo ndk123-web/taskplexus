@@ -34,6 +34,7 @@ func main() {
 
 	config.InitFirebase()
 	config.InitRedis()
+	config.InitRazorPay()
 
 	if err := app.Run(); err != nil {
 		log.Fatal("Error In Running the App")
