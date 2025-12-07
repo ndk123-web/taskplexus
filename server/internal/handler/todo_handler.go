@@ -74,6 +74,20 @@ func (h *todoHandler) ToogleTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Fetch todo details BEFORE toggling (to get task name for activity)
+	var taskName string
+	if reqBody.Toggle == "completed" {
+		todos, err := h.service.GetSpecificTodo(context.Background(), reqBody.WorkspaceId, reqBody.UserId)
+		if err == nil {
+			for _, todo := range todos {
+				if todo.ID.Hex() == reqBody.ID {
+					taskName = todo.Task
+					break
+				}
+			}
+		}
+	}
+
 	// redis caching for removing key of analytics
 	rdb := config.RedisClient
 	if rdb == nil {
@@ -100,6 +114,31 @@ func (h *todoHandler) ToogleTodo(w http.ResponseWriter, r *http.Request) {
 		}()})
 		return
 	}
+
+	// Background Activity For Toggle Todo
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("Recovered from panic in activity goroutine:", r)
+			}
+		}()
+
+		if reqBody.Toggle == "completed" && taskName != "" {
+			var data model.HandleActivityBody
+			data.Type = "TASK_COMPLETED"
+			data.Metadata.Id = reqBody.ID
+			data.Metadata.WorkspaceId = reqBody.WorkspaceId
+			data.Metadata.Name = taskName
+
+			res, err := h.activityService.HandleActivityEvent(context.Background(), data)
+			if err != nil {
+				fmt.Println("Error In ToogleTodo Activity:", err)
+				return
+			}
+			fmt.Println("Successfully Activity Logged:", res)
+		}
+	}()
+
 	json.NewEncoder(w).Encode(map[string]any{"response": "true"})
 }
 
@@ -161,7 +200,7 @@ func (h *todoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 		res, err := h.activityService.HandleActivityEvent(context.Background(), data)
 		if err != nil {
 			fmt.Println("Error In CreateTodo Activity:", err)
-			return
+			panic(err) // to be caught by defer recover()
 		}
 
 		fmt.Println("Successfully Activity Logged:", res)
