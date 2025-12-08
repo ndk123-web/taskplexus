@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 // import { Navigate } from 'react-router-dom';
 import useUserStore from '../store/useUserInfo';
 import '../styles/pages/Home.css';
-import { dynamicRazorPayLoad } from '../utils/razorpay';
+import { dynamicRazorPayLoad , openRazorpayCheckout } from '../utils/razorpay';
 
 const Home = () => {
   let userInfo = useUserStore(state => state.userInfo);
@@ -13,6 +13,10 @@ const Home = () => {
   useEffect(() => {
      dynamicRazorPayLoad();
   },[])
+
+  const handlePayment = async () => {
+    await openRazorpayCheckout({});
+  }
 
   return (
     <div className="home-container">
@@ -229,7 +233,7 @@ const Home = () => {
                 <li>✓ AI-Powered Suggestions</li>
                 <li>✓ Priority Support</li>
               </ul>
-              <button className="plan-cta">{userInfo?.auth ? "Buy" : <Link to={"/signin"}>Login First</Link> }</button>
+              <button onClick={()=>handlePayment()}  className="plan-cta">{userInfo?.auth ? "Buy" : <Link to={"/signin"}>Login First</Link> }</button>
             </div>
           </div>
         </div>

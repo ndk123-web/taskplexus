@@ -14,9 +14,10 @@ type Server struct {
 	workspaceHandler handler.WorkspaceHandler
 	chatHandler      handler.ChatHandler
 	activityHandler  handler.ActivityHandler
+	paymentHandler   handler.PayementHandler
 }
 
-func NewServer(todoHandler handler.TodoHandler, userHandler handler.UserHandler, goalHandler handler.GoalHandler, workspaceHandler handler.WorkspaceHandler, chatHandler handler.ChatHandler, activityHandler handler.ActivityHandler) *Server {
+func NewServer(todoHandler handler.TodoHandler, userHandler handler.UserHandler, goalHandler handler.GoalHandler, workspaceHandler handler.WorkspaceHandler, chatHandler handler.ChatHandler, activityHandler handler.ActivityHandler, paymentHandler handler.PayementHandler) *Server {
 	return &Server{
 		todoHandler:      todoHandler,
 		userHandler:      userHandler,
@@ -24,6 +25,7 @@ func NewServer(todoHandler handler.TodoHandler, userHandler handler.UserHandler,
 		workspaceHandler: workspaceHandler,
 		chatHandler:      chatHandler,
 		activityHandler:  activityHandler,
+		paymentHandler:   paymentHandler,
 	}
 }
 
@@ -73,6 +75,9 @@ func (s *Server) Start(port string) error {
 	// activity handler
 	mux.Handle("POST /api/v1/activity/handle-activity", middleware.AuthMiddleware(http.HandlerFunc(s.activityHandler.HandleActivityEvent)))
 	mux.Handle("GET /api/v1/activity/get-activities", middleware.AuthMiddleware(http.HandlerFunc(s.activityHandler.GetActivities)))
+
+	// payment handlers
+	mux.Handle("POST /api/v1/payment/create-order", middleware.AuthMiddleware(http.HandlerFunc(s.paymentHandler.HandleCreateOrder)))
 
 	//
 	// it means cors -> log -> actual handler(mux)

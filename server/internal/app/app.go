@@ -96,27 +96,29 @@ func Run() error {
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
 
-	
 	workspaceRepo := repository.NewWorkspaceRepository(workspaceCollection)
 	workspaceService := service.NewWorkSpaceService(workspaceRepo)
 	workspaceHandler := handler.NewWorkspaceHandler(workspaceService)
-	
+
 	chatRepo := repository.NewChatRepository(todoCollection, goalCollection, workspaceCollection, chatCollection)
 	chatService := service.NewChatService(chatRepo)
 	chatHandler := handler.NewChatHandler(chatService)
-	
+
 	activitiyRepo := repository.NewActivityRepository(goalCollection, todoCollection, activityCollection)
 	activityService := service.NewActivityService(activitiyRepo)
 	activityHandler := handler.NewActivityHandler(activityService)
-	
+
 	goalRepo := repository.NewGoalRepository(goalCollection)
 	goalService := service.NewGoalService(goalRepo)
-	goalHandler := handler.NewGoalHandler(goalService,activityService)
+	goalHandler := handler.NewGoalHandler(goalService, activityService)
 	// todorepos
 	todoRepo := repository.NewTodoRepository(todoCollection)
 	todoService := service.NewTodoService(todoRepo)
 	todoHandler := handler.NewTodoHandler(todoService, activityService)
 
-	srv := server.NewServer(todoHandler, userHandler, goalHandler, workspaceHandler, chatHandler, activityHandler)
+	paymentService := service.NewPaymentService(nil)
+	paymentHandler := handler.NewPayementHandler(paymentService)
+
+	srv := server.NewServer(todoHandler, userHandler, goalHandler, workspaceHandler, chatHandler, activityHandler, paymentHandler)
 	return srv.Start(cfg.Port)
 }
