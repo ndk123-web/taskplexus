@@ -10,14 +10,14 @@ import (
 )
 
 type PaymentService interface {
-	CreateOrder(ctx context.Context, amount float64, currency string) (string, error)
+	CreateOrder(ctx context.Context, amount string, currency string) (string, error)
 }
 
 type payementService struct {
 	repo repository.PayementRepository
 }
 
-func (p *payementService) CreateOrder(ctx context.Context, amount float64, currency string) (string, error) {
+func (p *payementService) CreateOrder(ctx context.Context, amount string, currency string) (string, error) {
 	// create order and return something
 
 	order, err := config.RazorPay.Client.Order.Create(map[string]interface{}{

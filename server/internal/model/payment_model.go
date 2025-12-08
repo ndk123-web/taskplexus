@@ -1,6 +1,12 @@
 package model
 
 type CreateOrderRequest struct {
-	Amount   float64 `json:"amount"`
-	Currency string  `json:"currency"`
+	Amount   string `json:"amount"`
+	Currency string `json:"currency"`
+}
+
+type CreateOrderResponse struct {
+	OrderId string `json:"order_id"`
+	Success bool   `json:"success"`
+	Error   string `json:"error,omitempty"`
 }

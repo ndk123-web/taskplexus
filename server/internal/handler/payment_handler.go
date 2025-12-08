@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/ndk123-web/fast-todo/internal/model"
 	"github.com/ndk123-web/fast-todo/internal/service"
@@ -26,7 +27,12 @@ func (p *payementHandler) HandleCreateOrder(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if reqBody.Amount <= 0 || reqBody.Currency == "" {
+	amount, err := strconv.ParseFloat(reqBody.Amount, 64)
+	if err != nil || amount <= 0 {
+		json.NewEncoder(w).Encode(map[string]string{"Error": "Invalid amount", "success": "false"})
+		return
+	}
+	if reqBody.Currency == "" {
 		json.NewEncoder(w).Encode(map[string]string{"Error": "Amount and Currency are required", "success": "false"})
 		return
 	}

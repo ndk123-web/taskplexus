@@ -9,13 +9,25 @@ const Home = () => {
   let userInfo = useUserStore(state => state.userInfo);
   const [showTerms, setShowTerms] = useState(false);
   const [showPolicy, setShowPolicy] = useState(false);
-
-  useEffect(() => {
-     dynamicRazorPayLoad();
-  },[])
+  const [createOrderLoader , setCreateOrderLoader] = useState(false);
 
   const handlePayment = async () => {
-    await openRazorpayCheckout({});
+    
+    // lazy load razorpay script on button click
+    await dynamicRazorPayLoad()
+
+    setCreateOrderLoader(true);
+    try {
+      const order = {
+        amount : import.meta.env.VITE_TASKPLEXUS_PREMIUM_MONEY, // amount in paise (100 INR)
+        currency : "INR",
+      }
+      await openRazorpayCheckout(order);
+    } catch (error) {
+      console.error("Payment error:", error);
+    } finally {
+      setCreateOrderLoader(false);
+    }
   }
 
   return (
@@ -233,7 +245,20 @@ const Home = () => {
                 <li>✓ AI-Powered Suggestions</li>
                 <li>✓ Priority Support</li>
               </ul>
-              <button onClick={()=>handlePayment()}  className="plan-cta">{userInfo?.auth ? "Buy" : <Link to={"/signin"}>Login First</Link> }</button>
+              <button 
+                onClick={()=>handlePayment()} 
+                className="plan-cta"
+                disabled={createOrderLoader}
+              >
+                {createOrderLoader ? (
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <span className="spinner"></span>
+                    Processing...
+                  </span>
+                ) : (
+                  userInfo?.auth ? "Buy Premium" : <Link to={"/signin"}>Login First</Link>
+                )}
+              </button>
             </div>
           </div>
         </div>

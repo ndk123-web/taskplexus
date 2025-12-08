@@ -1,4 +1,5 @@
-// why because we can load the script only when we need it
+// why because we can load the script only w
+import { createOrderApi } from "../api/payment";
 
 export function dynamicRazorPayLoad() {
   return new Promise<boolean>((resolve) => {
@@ -13,24 +14,44 @@ export function dynamicRazorPayLoad() {
 }
 
 // In your razorpay.ts utility
-export function openRazorpayCheckout(order: any) {
-  const options = {
-    key: import.meta.env.VITE_RAZORPAY_KEY,
-    amount: "100.00",
-    currency: "INR",
-    order_id: "order_Rp5DGODXvNCTey",
+export async function openRazorpayCheckout(order: any) {
+  try {
+    // This is where the loading happens - waiting for backend response
+    const response: any = await createOrderApi({
+      amount: order.amount,
+      currency: order.currency,
+    });
+    console.log("Razorpay order creation response:", response);
 
-    handler: async (response: any) => {
-      // Payment successful! Now verify
-      // await verifyPayment(response);
-      console.log("Payment successful", response);
-    },
-    modal: {
-      ondismiss: () => console.log("Payment cancelled"),
-    },
-  };
+    if (response.success !== "true") {
+      throw new Error(response?.Error || "Failed to create order");
+    }
 
-  // @ts-ignore (Razorpay is global)
-  const rzp = new window.Razorpay(options);
-  rzp.open();
+    if (response?.order_id === "" || response?.order_id === undefined) {
+      throw new Error("Invalid order ID received");
+    }
+
+    order.id = response.order_id;
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY,
+      amount: order.amount, // this doesnt matter the actual amount will be from order id
+      currency: order.currency,
+      order_id: order.id,
+
+      handler: async (response: any) => {
+        // Payment successful! Now verify
+        // await verifyPayment(response);
+        console.log("Payment successful", response);
+      },
+      modal: {
+        ondismiss: () => console.log("Payment cancelled"),
+      },
+    };
+
+    // @ts-ignore (Razorpay is global)
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  } catch (error) {
+    console.error("Error in opening Razorpay checkout:", error);
+  }
 }
