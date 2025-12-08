@@ -1,5 +1,5 @@
 // why because we can load the script only w
-import { createOrderApi } from "../api/payment";
+import { createOrderApi, verifyPaymentApi } from "../api/payment";
 
 export function dynamicRazorPayLoad() {
   return new Promise<boolean>((resolve) => {
@@ -39,9 +39,10 @@ export async function openRazorpayCheckout(order: any) {
       order_id: order.id,
 
       handler: async (response: any) => {
-        // Payment successful! Now verify
-        // await verifyPayment(response);
         console.log("Payment successful", response);
+
+        // Payment successful! Now verify
+        await verifyPayment(response);
       },
       modal: {
         ondismiss: () => console.log("Payment cancelled"),
@@ -55,3 +56,20 @@ export async function openRazorpayCheckout(order: any) {
     console.error("Error in opening Razorpay checkout:", error);
   }
 }
+
+const verifyPayment = async (data: any) => {
+  try {
+    const response = await verifyPaymentApi(data);
+
+    console.log("Payment verification response:", response);
+
+    if (response?.success !== "true") {
+      throw new Error(response?.Error || "Payment verification failed");
+    }
+
+    console.log("Payment verified successfully:", response);
+    return response;
+  } catch (error) {
+    console.error("Error verifying payment:", error);
+  }
+};

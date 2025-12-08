@@ -10,3 +10,9 @@ type CreateOrderResponse struct {
 	Success bool   `json:"success"`
 	Error   string `json:"error,omitempty"`
 }
+
+type VerifyPaymentRequest struct {
+	PaymentId string `json:"razorpay_payment_id"`
+	OrderId   string `json:"razorpay_order_id"`
+	Signature string `json:"razorpay_signature"`
+}

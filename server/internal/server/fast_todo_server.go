@@ -78,6 +78,7 @@ func (s *Server) Start(port string) error {
 
 	// payment handlers
 	mux.Handle("POST /api/v1/payment/create-order", middleware.AuthMiddleware(http.HandlerFunc(s.paymentHandler.HandleCreateOrder)))
+	mux.Handle("POST /api/v1/payment/verify-payment", middleware.AuthMiddleware(http.HandlerFunc(s.paymentHandler.HandleVerifyPayement)))
 
 	//
 	// it means cors -> log -> actual handler(mux)
