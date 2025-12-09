@@ -4,3 +4,4 @@ export * from './tasks';
 export * from './workspaces';
 export * from './goals';
 export * from './misc';
+export * from './aiplanner';
