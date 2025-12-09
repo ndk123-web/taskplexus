@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/ndk123-web/fast-todo/internal/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -84,6 +85,8 @@ func (r *goalRepository) CreateUserGoal(ctx context.Context, userId string, work
 		TargetDays:  int(targetDays),
 		Title:       goalName,
 		Category:    category,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	}
 
 	insertedRes, err := r.goalCollection.InsertOne(ctx, insert)
@@ -111,7 +114,7 @@ func (r *goalRepository) UpdateUserGoal(ctx context.Context, goalId string, upda
 	}
 
 	filter := bson.M{"_id": oid}
-	update := bson.M{"$set": bson.M{"title": updatedGoalName, "targetDays": updatedTargetDays, "category": updatedCategory}}
+	update := bson.M{"$set": bson.M{"title": updatedGoalName, "targetDays": updatedTargetDays, "category": updatedCategory, "updatedAt": time.Now()}}
 
 	updated, err := r.goalCollection.UpdateOne(ctx, filter, update)
 	if err != nil {

@@ -33,7 +33,7 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
   const {userInfo, signOutUser} = useUserStore();
-  const { workspaces, currentWorkspace, addWorkspace, editWorkspace, deleteWorkspace, setCurrentWorkspace, addTodo, toggleTodoCompleted, deleteTodo: storeDeleteTodo, updateTodo, addGoal } = useWorkspaceStore();
+  const { workspaces, currentWorkspace, addWorkspace, editWorkspace, deleteWorkspace, setCurrentWorkspace, addTodo, toggleTodoCompleted, deleteTodo: storeDeleteTodo, addGoal } = useWorkspaceStore();
   // Flag to avoid re-hydration logic firing during logout (prevents default workspace recreation)
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   
@@ -133,7 +133,8 @@ const Dashboard = () => {
           priority: t.priority || 'medium',
           status: t.done ? 'completed' : 'not-started',
           workspaceId: ws._id,
-          createdAt: t.createdAt ? new Date(t.createdAt) : undefined
+          createdAt: t.createdAt ? new Date(t.createdAt) : undefined,
+          updatedAt: t.updatedAt ? new Date(t.updatedAt) : undefined
         })),
         // Normalize server goals to have 'id'
         goals: (ws.goals || []).map((g: any) => {
@@ -149,6 +150,7 @@ const Dashboard = () => {
               currentTarget: typeof g.currentTarget === 'number' ? g.currentTarget : 0,
               status: 'SUCCESS',
               createdAt: g.createdAt ? new Date(g.createdAt) : new Date(),
+              updatedAt: g.updatedAt ? new Date(g.updatedAt) : undefined,
             } as Goal;
         }),
         initialNodes: (() => {
@@ -207,39 +209,70 @@ const Dashboard = () => {
           continue;
         }
 
-        // Merge todos by id; keep client-only todos (e.g., PENDING with temp id)
-        const serverTodos = sw.todos || [];       // all server todos that server knows about
-        const serverTodoIds = new Set(serverTodos.map((t: any) => t.id)); // all server todo ids for faster lookpup 
-        const clientOnlyTodos = (cw.todos || []).filter((t: any) => !serverTodoIds.has(t.id)); // todos that server does not know about
+        // Merge todos using timestamp-based strategy to prevent stale overwrites
+        const serverTodos = (sw.todos || []).map((t: any) => ({
+          ...t,
+          createdAt: t?.createdAt ? new Date(t.createdAt) : undefined,
+          updatedAt: t?.updatedAt ? new Date(t.updatedAt) : undefined,
+        }));
+        const clientTodos = (cw.todos || []).map((t: any) => ({
+          ...t,
+          createdAt: t?.createdAt ? new Date(t.createdAt) : t.createdAt,
+          updatedAt: t?.updatedAt ? new Date(t.updatedAt) : t.updatedAt,
+        }));
        
-        // Now merge , here we convert createdAt to Date objects
-        // dont confuse ... just converting [] of todos to object with date conversion 
-        // in last we get array of todo objects with date conversion 
-        const mergedTodos = [
-          ...serverTodos.map((t: any) => ({
-            ...t,
-            createdAt: t?.createdAt ? new Date(t.createdAt) : undefined,
-          })),
-          ...clientOnlyTodos.map((t: any) => ({
-            ...t,
-            createdAt: t?.createdAt ? new Date(t.createdAt) : t.createdAt,
-          })),
-        ];
+        // Merge logic: for each todo, keep the version with the newest updatedAt
+        const todoMap = new Map(clientTodos.map((t: any) => [t.id, t]));
+        for (const serverTodo of serverTodos) {
+          const clientTodo: any = todoMap.get(serverTodo.id);
+          if (!clientTodo) {
+            // New from server
+            todoMap.set(serverTodo.id, serverTodo);
+          } else {
+            // Compare timestamps - keep newer
+            const clientUpdatedAt = clientTodo.updatedAt ? new Date(clientTodo.updatedAt).getTime() : 0;
+            const serverUpdatedAt = serverTodo.updatedAt ? new Date(serverTodo.updatedAt).getTime() : 0;
+            if (serverUpdatedAt > clientUpdatedAt) {
+              todoMap.set(serverTodo.id, serverTodo); // Server wins
+            }
+            // else keep client (it's newer)
+          }
+        }
+        const mergedTodos = Array.from(todoMap.values());
 
-        // Merge goals (normalize id) and avoid duplicates
+        // Merge goals using timestamp-based strategy
         const serverGoals = (sw.goals || []).map((g: any) => ({
           ...g,
           id: g.id || g._id, // ensure id
           createdAt: g?.createdAt ? new Date(g.createdAt) : undefined,
+          updatedAt: g?.updatedAt ? new Date(g.updatedAt) : undefined,
         }));
-        const serverGoalIds = new Set(serverGoals.map((g: any) => g.id));
         const clientGoals = (cw.goals || []).map((g: any) => ({
           ...g,
           id: g.id || g._id, // normalize
+          createdAt: g?.createdAt ? new Date(g.createdAt) : g.createdAt,
+          updatedAt: g?.updatedAt ? new Date(g.updatedAt) : g.updatedAt,
         }));
-        const clientOnlyGoals = clientGoals.filter((g: any) => !serverGoalIds.has(g.id));
-        const mergedGoals = [...serverGoals, ...clientOnlyGoals];
-        console.log("Merged Goals (deduped): ", mergedGoals);
+        
+        // Merge logic: for each goal, keep the version with the newest updatedAt
+        const goalMap = new Map(clientGoals.map((g: any) => [g.id, g]));
+        for (const serverGoal of serverGoals) {
+          const clientGoal: any = goalMap.get(serverGoal.id);
+          if (!clientGoal) {
+            // New from server
+            goalMap.set(serverGoal.id, serverGoal);
+          } else {
+            // Compare timestamps - keep newer
+            const clientUpdatedAt = clientGoal.updatedAt ? new Date(clientGoal.updatedAt).getTime() : 0;
+            const serverUpdatedAt = serverGoal.updatedAt ? new Date(serverGoal.updatedAt).getTime() : 0;
+            if (serverUpdatedAt > clientUpdatedAt) {
+              goalMap.set(serverGoal.id, serverGoal); // Server wins
+            }
+            // else keep client (it's newer)
+          }
+        }
+        const mergedGoals = Array.from(goalMap.values());
+        console.log("Merged Goals (timestamp-based): ", mergedGoals);
 
         merged.push({
           ...sw,
@@ -554,15 +587,6 @@ const Dashboard = () => {
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [newGoal, setNewGoal] = useState({ title: '', target: '', category: '' });
   
-  // States for editing todos
-  const [editingTodo, setEditingTodo] = useState<string | null>(null);
-  const [editTodoText, setEditTodoText] = useState('');
-  const [editTodoPriority, setEditTodoPriority] = useState<'low' | 'medium' | 'high'>('medium');
-  
-  // States for editing goals
-  const [editingGoal, setEditingGoal] = useState<string | null>(null);
-  const [editGoalData, setEditGoalData] = useState({ title: '', target: '', category: '', id: '' });
-  
   // Layout view state - grid or list
   const [viewLayout, setViewLayout] = useState<'grid' | 'list'>('grid');
   const [goalsViewLayout, setGoalsViewLayout] = useState<'grid' | 'list'>('grid');
@@ -721,123 +745,9 @@ const Dashboard = () => {
     await storeDeleteTodo(currentWorkspace.id, id);
   };
 
-  // Start editing a todo - set edit mode with current values
-  const startEditTodo = (todo: Todo) => {
-    setEditingTodo(todo.id);
-    setEditTodoText(todo.text || '');
-    setEditTodoPriority(todo.priority);
-  };
-
-  // Save edited todo with updated text and priority via store
-  const saveEditTodo = async () => {
-    if (editingTodo && editTodoText.trim() && currentWorkspace) {
-      await updateTodo(currentWorkspace.id, editingTodo, { text: editTodoText, priority: editTodoPriority });
-      setEditingTodo(null);
-      setEditTodoText('');
-      setEditTodoPriority('medium');
-    }
-  };
-
-  // Cancel todo editing and reset states
-  const cancelEditTodo = () => {
-    setEditingTodo(null);
-    setEditTodoText('');
-    setEditTodoPriority('medium');
-  };
-
   // Delete a goal
   const deleteGoal = (id: string) => {
     setGoals(goals.filter((goal: any) => goal.id !== id));
-  };
-
-  // Start editing a goal - set edit mode with current values
-  const startEditGoal = (goal: Goal) => {
-    setEditingGoal(goal.id);
-    setEditGoalData({
-      title: goal.title,
-      target: goal.targetDays?.toString?.() || goal.target?.toString?.() || '',
-      category: goal.category,
-      id: goal.id
-    });
-
-    // after that add for background processs after for 2 seconds setTimeout(() => {
-
-  };
-
-  // Save edited goal with updated values
-  const saveEditGoal = async () => {
-    if (editingGoal && editGoalData.title.trim() && editGoalData.target && editGoalData.category.trim()) {
-      const nextTarget = parseInt(editGoalData.target, 10);
-      const safeTarget = isNaN(nextTarget) || nextTarget <= 0 ? 1 : nextTarget;
-      setGoals(goals.map((goal: any) => 
-        goal.id === editingGoal 
-          ? { 
-              ...goal, 
-              title: editGoalData.title,
-              targetDays: safeTarget,
-              target: safeTarget.toString(),
-              category: editGoalData.category,
-              currentTarget: Math.min(goal.currentTarget ?? 0, safeTarget)
-            }
-          : goal
-      ));
-
-      // Edit Current Workspace Store Goals 
-      const currentWS = useWorkspaceStore.getState().currentWorkspace;
-      if (currentWS) {
-        const updatedGoals = currentWS.goals.map((goal: any) => 
-          goal.id === editingGoal 
-            ? { 
-                ...goal,
-                title: editGoalData.title,
-                targetDays: safeTarget,
-                target: safeTarget.toString(),
-                category: editGoalData.category,
-                currentTarget: Math.min(goal.currentTarget ?? 0, safeTarget)
-              }
-            : goal
-        );
-
-        // Update current workspace with modified goals
-        const updatedWorkspace = {
-          ...currentWS,
-          goals: updatedGoals
-        };
-        useWorkspaceStore.getState().setCurrentWorkspace(updatedWorkspace);
-        
-        // Update the full workspaces array with the modified workspace
-        const allWorkspaces = useWorkspaceStore.getState().workspaces.map(ws => 
-          ws.id === currentWS.id ? updatedWorkspace : ws
-        );
-        useWorkspaceStore.getState().setWorkspace(allWorkspaces);
-      }
-
-        // Debug log
-        console.log("Id of editing goal:", editingGoal);
-
-        await addPendingOperation({
-          id: `edit_goal_${Date.now()}`,
-          type: "EDIT_GOAL",
-          status: "PENDING",
-          payload: {
-            goalId: editingGoal,
-            updatedGoalName: editGoalData.title,
-            updatedCategory: editGoalData.category,
-            updatedTargetDays: String(safeTarget),
-          },
-          timestamp: Date.now(),
-          retryCount: 0,
-        });
-
-      setEditingGoal(null);
-      setEditGoalData({ title: '', target: '', category: '', id: '' });
-    }
-  };
-
-  // Cancel goal editing and reset states
-  const cancelEditGoal = () => {
-    setEditingGoal(null);
-    setEditGoalData({ title: '', target: '', category: '', id: '' });
   };
 
   // Increase goal progress by 1 (max = target)
@@ -1024,6 +934,15 @@ const Dashboard = () => {
   const recentTasks = [...todos]
     .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
     .slice(0, 5);
+
+  // Navigate to edit page
+  const handleEditTodoClick = (id: string) => {
+    navigate(`/dashboard/task/${id}`);
+  };
+
+  const handleEditGoalClick = (id: string) => {
+    navigate(`/dashboard/goal/${id}`);
+  };
 
   // Show loading until hydrated and workspaces fetched
   if (!isHydrated || !workspacesFetched) {
@@ -1611,6 +1530,9 @@ const Dashboard = () => {
         </header>
         
         <div className={`dashboard-content ${isTransitioning ? 'workspace-transitioning' : ''}`}>
+          
+
+
           {/* Top Stats Cards */}
           <div className="stats-grid">
             <div className="stat-card-pro">
@@ -1693,7 +1615,35 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Analytics and Recent Tasks Row */}
+          {/* Hero / Quick Add Section */}
+          <div className="hero-quick-section">
+             <h3 className="hero-quick-heading">
+               <span className="typewriter-heading">Quick Add Task</span>
+               <span className="typewriter-cursor">|</span>
+             </h3>
+             <form className="hero-quick-add" onSubmit={(e) => {
+               e.preventDefault();
+               if (newTodo.trim()) {
+                 handleAddTodo(e);
+               }
+             }}>
+                <input 
+                  type="text" 
+                  className="hero-quick-input" 
+                  placeholder="What needs to be done?" 
+                  value={newTodo}
+                  onChange={(e) => setNewTodo(e.target.value)}
+                  required
+                />
+                <button type="submit" className="hero-quick-btn" disabled={!newTodo.trim()}>
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <path d="M9 3V15M3 9H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </button>
+             </form>
+          </div>
+
+          {/* Analytics and Recent Tasks Row */ }
           <div className="analytics-row">
             {/* Analytics Chart */}
             <div className="analytics-card">
@@ -2007,102 +1957,30 @@ const Dashboard = () => {
               {/* Todos List - displays all todos */}
               <div className={`todos-list ${viewLayout === 'list' ? 'list-view' : ''}`}>
                 {(showAllTodos ? todos : todos.slice(0, TODOS_DISPLAY_LIMIT)).map(todo => (
-                  <div key={todo.id} className={`todo-item ${todo.completed ? 'completed' : ''}`}>
-                    {/* Edit mode - shows when pencil icon is clicked */}
-                    {editingTodo === todo.id ? (
-                      <div className="todo-edit-form">
-                        <input
-                          type="text"
-                          value={editTodoText}
-                          onChange={(e) => setEditTodoText(e.target.value)}
-                          className="todo-edit-input"
-                          autoFocus
-                        />
-                        {/* Priority selector in edit mode */}
-                        <div className="priority-selector">
-                          <label className="priority-label">Priority:</label>
-                          <div className="priority-options">
-                            <button
-                              type="button"
-                              className={`priority-option ${editTodoPriority === 'low' ? 'active' : ''} priority-low`}
-                              onClick={() => setEditTodoPriority('low')}
-                            >
-                              Low
-                            </button>
-                            <button
-                              type="button"
-                              className={`priority-option ${editTodoPriority === 'medium' ? 'active' : ''} priority-medium`}
-                              onClick={() => setEditTodoPriority('medium')}
-                            >
-                              Medium
-                            </button>
-                            <button
-                              type="button"
-                              className={`priority-option ${editTodoPriority === 'high' ? 'active' : ''} priority-high`}
-                              onClick={() => setEditTodoPriority('high')}
-                            >
-                              High
-                            </button>
-                          </div>
-                        </div>
-                        {/* Save and cancel buttons for edit mode */}
-                        <div className="todo-edit-actions">
-                          <button 
-                            className="todo-save-btn"
-                            onClick={saveEditTodo}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <path d="M13.3333 4L6 11.3333L2.66667 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </button>
-                          <button 
-                            className="todo-cancel-btn"
-                            onClick={cancelEditTodo}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </button>
+                  <div key={todo.id} className={`task-card-pro ${todo.status === 'completed' ? 'completed' : ''}`}>
+                    <div className="task-card-left">
+                      <button 
+                        className={`task-checkbox ${todo.status === 'completed' ? 'checked' : ''}`}
+                        onClick={() => toggleTodo(todo.id)}
+                      >
+                        {todo.status === 'completed' && <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11.6667 3.5L5.25 9.91667L2.33333 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                      </button>
+                      <div className="task-content">
+                        <span className="task-text">{todo.text}</span>
+                        <div className="task-meta">
+                          <span className={`task-priority-badge ${todo.priority}`}>{todo.priority}</span>
+                          {todo.deadline && <span className="task-deadline">📅 {new Date(todo.deadline).toLocaleDateString()}</span>}
                         </div>
                       </div>
-                    ) : (
-                      <>
-                        {/* Normal display mode */}
-                        <div className="todo-main">
-                          {/* Checkbox to toggle completion */}
-                          <button 
-                            className="todo-checkbox"
-                            onClick={() => toggleTodo(todo.id)}
-                          >
-                            {todo.completed && <span>✓</span>}
-                          </button>
-                          <span className="todo-text">{todo.text}</span>
-                          {/* Priority badge */}
-                          <span className={`todo-priority priority-${todo.priority}`}>
-                            {todo.priority}
-                          </span>
-                        </div>
-                        {/* Edit and delete buttons */}
-                        <div className="todo-actions">
-                          <button 
-                            className="todo-edit"
-                            onClick={() => startEditTodo(todo)}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.4188 1.44775 12.6667 1.44775C12.9145 1.44775 13.1599 1.49653 13.3886 1.59129C13.6174 1.68605 13.8249 1.82494 14 2.00004C14.1751 2.17513 14.314 2.38272 14.4088 2.61146C14.5036 2.84019 14.5523 3.08555 14.5523 3.33337C14.5523 3.58119 14.5036 3.82655 14.4088 4.05529C14.314 4.28402 14.1751 4.49161 14 4.66671L5 13.6667L1.33333 14.6667L2.33333 11L11.3333 2.00004Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </button>
-                          <button 
-                            className="todo-delete"
-                            onClick={() => deleteTodo(todo.id)}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <path d="M2 4H14M12.6667 4V13.3333C12.6667 14 12 14.6667 11.3333 14.6667H4.66667C4 14.6667 3.33333 14 3.33333 13.3333V4M5.33333 4V2.66667C5.33333 2 6 1.33333 6.66667 1.33333H9.33333C10 1.33333 10.6667 2 10.6667 2.66667V4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </button>
-                        </div>
-                      </>
-                    )}
+                    </div>
+                    <div className="task-actions">
+                      <button onClick={() => handleEditTodoClick(todo.id)} className="task-action-btn edit" title="Edit">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11 2L14 5L5 14H2V11L11 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </button>
+                      <button onClick={() => deleteTodo(todo.id)} className="task-action-btn delete" title="Delete">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4H13M5 4V14H11V4M5 2H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -2225,118 +2103,38 @@ const Dashboard = () => {
                   const safeTarget = isNaN(numericTarget) || numericTarget <= 0 ? 1 : numericTarget;
                   const current = typeof goal.currentTarget === 'number' ? goal.currentTarget : 0;
                   const percentage = Math.min(100, Math.max(0, Math.round((current / safeTarget) * 100)));
-                  console.log("Goals List Rendering: ", goals);
+                  
                   return (
-                    <div key={goal._id || goal.id} className={`goal-card ${editingGoal === goal.id ? 'editing' : ''}`}>
-                      {/* Edit mode - shows when pencil icon is clicked */}
-                      {editingGoal === goal.id ? (
-                        <div className="goal-edit-form">
-                          <input
-                            type="text"
-                            value={editGoalData.title}
-                            onChange={(e) => setEditGoalData({...editGoalData, title: e.target.value})}
-                            placeholder="Goal title"
-                            className="goal-edit-input"
-                            autoFocus
-                          />
-                          <div className="goal-edit-row">
-                            <input
-                              type="number"
-                              value={editGoalData.target}
-                              onChange={(e) => setEditGoalData({...editGoalData, target: e.target.value})}
-                              placeholder="Target"
-                              className="goal-edit-input"
-                              min="1"
-                            />
-                            <input
-                              type="text"
-                              value={editGoalData.category}
-                              onChange={(e) => setEditGoalData({...editGoalData, category: e.target.value})}
-                              placeholder="Category"
-                              className="goal-edit-input"
-                            />
-                          </div>
-                          <div className="goal-edit-actions">
-                            <button 
-                              className="goal-save-btn"
-                              onClick={saveEditGoal}
-                            >
-                              Save Changes
-                            </button>
-                            <button 
-                              className="goal-cancel-btn"
-                              onClick={cancelEditGoal}
-                            >
-                              Cancel
-                            </button>
-                          </div>
+                    <div key={goal._id || goal.id} className={`goal-card-pro`}>
+                      <div className="goal-card-header">
+                        <div className="goal-info">
+                          <span className="goal-title">{goal.title}</span>
+                          <span className="goal-category">{goal.category}</span>
                         </div>
-                      ) : (
-                        <>
-                          {/* Normal display mode */}
-                          <div className="goal-header">
-                            <div>
-                              <h3 className="goal-title">{goal.title}</h3>
-                              <span className="goal-category">{goal.category}</span>
-                            </div>
-                            <div className="goal-header-actions">
-                              {/* Progress percentage */}
-                              <div className="goal-percentage">{percentage}%</div>
-                              {/* Edit button */}
-                              <button 
-                                className="goal-edit-icon"
-                                onClick={() => startEditGoal(goal)}
-                              >
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                  <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.4188 1.44775 12.6667 1.44775C12.9145 1.44775 13.1599 1.49653 13.3886 1.59129C13.6174 1.68605 13.8249 1.82494 14 2.00004C14.1751 2.17513 14.314 2.38272 14.4088 2.61146C14.5036 2.84019 14.5523 3.08555 14.5523 3.33337C14.5523 3.58119 14.5036 3.82655 14.4088 4.05529C14.314 4.28402 14.1751 4.49161 14 4.66671L5 13.6667L1.33333 14.6667L2.33333 11L11.3333 2.00004Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                              </button>
-                              {/* Delete button */}
-                              <button 
-                                className="goal-delete-icon"
-                                onClick={() => deleteGoal(goal._id)}
-                              >
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                  <path d="M2 4H14M12.6667 4V13.3333C12.6667 14 12 14.6667 11.3333 14.6667H4.66667C4 14.6667 3.33333 14 3.33333 13.3333V4M5.33333 4V2.66667C5.33333 2 6 1.33333 6.66667 1.33333H9.33333C10 1.33333 10.6667 2 10.6667 2.66667V4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                              </button>
-                            </div>
-                          </div>
-                          {/* Progress bar */}
-                          <div className="goal-progress">
-                            <div 
-                              className="goal-progress-bar"
-                              style={{ width: `${percentage}%` }}
-                            ></div>
-                          </div>
-                          {/* Progress stats and increment/decrement buttons */}
-                          <div className="goal-stats">
-                            <span className="goal-stat">{goal.currentTarget} / {goal.targetDays}</span>
-                            <div className="goal-actions">
-                              {/* Decrement button */}
-                              <button 
-                                className="goal-action-btn"
-                                onClick={() => decrementGoal(goal.id)}
-                                disabled={goal.currentTarget === 0}
-                              >
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                  <path d="M4 8H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                                </svg>
-                              </button>
-                              {/* Increment button */}
-                              <button 
-                                className="goal-action-btn primary"
-                                onClick={() => incrementGoal(goal.id)}
-                                disabled={goal.currentTarget >= goal.targetDays}
-                              >
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                  <path d="M8 4V12M4 8H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                                </svg>
-                              </button>
-                            </div>
-                          </div>
-                        </>
-                      )}
+                        <div className="goal-actions">
+                          <button onClick={() => handleEditGoalClick(goal.id)} className="goal-action-btn edit">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11 2L14 5L5 14H2V11L11 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          </button>
+                          <button onClick={() => deleteGoal(goal.id)} className="goal-action-btn delete">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4H13M5 4V14H11V4M5 2H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="goal-progress-section">
+                        <div className="goal-progress-bar-bg">
+                          <div className="goal-progress-bar-fill" style={{ width: `${percentage}%` }}></div>
+                        </div>
+                        <div className="goal-progress-text">
+                          <span>{current} / {safeTarget}</span>
+                          <span>{percentage}%</span>
+                        </div>
+                      </div>
+
+                      <div className="goal-controls">
+                        <button onClick={() => decrementGoal(goal.id)} className="goal-control-btn minus">-</button>
+                        <button onClick={() => incrementGoal(goal.id)} className="goal-control-btn plus">+</button>
+                      </div>
                     </div>
                   );
                 })}

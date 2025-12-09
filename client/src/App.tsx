@@ -6,6 +6,9 @@ import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
 import FlowchartViewNew from './pages/FlowchartViewNew'
 import Activity from './pages/Activity'
+// import ProfessionalDashboard from './components/features/ProfessionalDashboard'
+import TaskDetails from './pages/TaskDetails'
+import GoalDetails from './pages/GoalDetails'
 import { Protected } from './components/layout'
 
 import './styles/App.css'
@@ -23,6 +26,16 @@ function App() {
             <Dashboard />
         </Protected>
       } />
+        <Route path="/dashboard/task/:taskId" element={
+          <Protected>
+            <TaskDetails />
+          </Protected>
+        } />
+        <Route path="/dashboard/goal/:goalId" element={
+          <Protected>
+            <GoalDetails />
+          </Protected>
+        } />
         <Route path="/settings" element={
           <Protected>
             <Settings />

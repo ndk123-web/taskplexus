@@ -6,5 +6,7 @@ export interface CreateTaskReq {
   priority: "high" | "medium" | "low";
   status: string;
   createdAt?: Date;
-  completed?: boolean;  
+  updatedAt?: Date;
+  completed?: boolean;
+  deadline?: Date;
 }

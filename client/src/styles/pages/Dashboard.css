@@ -3969,3 +3969,1220 @@
   }
 }
 
+
+/* Hero Section */
+.dashboard-hero-section {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 24px;
+  padding: 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.dashboard-hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.5), transparent);
+}
+
+.dashboard-hero-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.dashboard-hero-input-container {
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.dashboard-hero-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
+
+.dashboard-hero-input-wrapper:focus-within {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(102, 126, 234, 0.5);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.plus-icon {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-right: 12px;
+}
+
+.dashboard-hero-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  padding: 12px 0;
+  font-family: inherit;
+}
+
+.dashboard-hero-input:focus {
+  outline: none;
+}
+
+.dashboard-hero-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.hero-priority-select {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  justify-content: center;
+  animation: slideDown 0.3s ease-out;
+}
+
+.hero-select {
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hero-select:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.hero-select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.hero-select option {
+  background: #1a1a2e;
+  color: white;
+}
+
+.hero-submit-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hero-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Task Card Pro */
+.task-card-pro {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.task-card-pro:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(102, 126, 234, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.task-card-pro.completed {
+  opacity: 0.7;
+}
+
+.task-card-pro-checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.task-card-pro.completed .task-card-pro-checkbox {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: white;
+}
+
+.task-card-pro-checkbox:hover {
+  border-color: #667eea;
+}
+
+.task-card-pro-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-card-pro-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+  line-height: 1.4;
+  transition: all 0.3s ease;
+}
+
+.task-card-pro.completed .task-card-pro-title {
+  text-decoration: line-through;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.task-card-pro-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.task-priority-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.task-priority-badge.high {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.task-priority-badge.medium {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fcd34d;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.task-priority-badge.low {
+  background: rgba(59, 130, 246, 0.1);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.task-deadline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.task-card-pro-actions {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.task-card-pro:hover .task-card-pro-actions {
+  opacity: 1;
+}
+
+.task-action-btn {
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.task-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.task-action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+}
+
+/* Goal Card Pro */
+.goal-card-pro {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.goal-card-pro:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(102, 126, 234, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.goal-card-pro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.goal-card-pro-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.goal-card-pro-category {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.goal-card-pro-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goal-progress-bar-container {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.goal-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.goal-card-pro-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.goal-card-pro-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.goal-action-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.goal-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.goal-action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+}
+
+
+/* New Hero Section Styles */
+.dashboard-hero-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  text-align: center;
+  width: 100%;
+}
+
+.typewriter-container {
+  display: inline-block;
+  margin-bottom: 24px;
+}
+
+.typewriter-text {
+  font-family: 'Space Grotesk', monospace;
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+  overflow: hidden;
+  border-right: 3px solid #667eea;
+  white-space: nowrap;
+  margin: 0 auto;
+  letter-spacing: 0.5px;
+  animation: 
+    typing 3.5s steps(40, end),
+    blink-caret 0.75s step-end infinite;
+  background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  /* Fallback for text-fill-color */
+  text-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+}
+
+/* The typing effect */
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+/* The typewriter cursor effect */
+@keyframes blink-caret {
+  from, to { border-color: transparent }
+  50% { border-color: #667eea }
+}
+
+.hero-input-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.hero-input-wrapper.simplified {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.hero-input-wrapper.simplified:focus-within {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(102, 126, 234, 0.5);
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
+  transform: translateY(-2px);
+}
+
+.hero-input-wrapper.simplified .hero-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  padding: 12px 16px;
+  font-family: 'Inter', sans-serif;
+}
+
+.hero-input-wrapper.simplified .hero-input:focus {
+  outline: none;
+}
+
+.hero-input-wrapper.simplified .hero-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.hero-submit-btn-simple {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.hero-submit-btn-simple:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  filter: brightness(1.1);
+}
+
+.hero-submit-btn-simple:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .typewriter-text {
+    font-size: 24px;
+    white-space: normal;
+    border-right: none;
+    animation: none;
+    text-align: center;
+  }
+  
+  .hero-input-wrapper.simplified {
+    flex-direction: column;
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  .hero-input-wrapper.simplified .hero-input {
+    width: 100%;
+    text-align: center;
+    padding: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .hero-submit-btn-simple {
+    width: 100%;
+  }
+}
+
+
+/* Updated Hero Section - Smaller & Sleeker */
+.hero-input-container {
+  max-width: 500px !important;
+}
+
+.hero-input-wrapper.simplified {
+  padding: 6px 12px !important;
+  border-radius: 12px !important;
+  gap: 8px !important;
+}
+
+.hero-input-wrapper.simplified .hero-input {
+  font-size: 15px !important;
+  padding: 8px !important;
+}
+
+.hero-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-date-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  max-width: 130px;
+}
+
+.hero-date-input:hover, .hero-date-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(102, 126, 234, 0.5);
+  color: white;
+  outline: none;
+}
+
+/* Custom Calendar Icon for Date Input */
+.hero-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.hero-date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.hero-submit-btn-simple {
+  padding: 8px 16px !important;
+  font-size: 14px !important;
+  border-radius: 8px !important;
+}
+
+/* Add Task Form Updates */
+.add-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+}
+
+.date-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.add-date-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: white;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.add-date-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.add-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.add-date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .hero-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .hero-date-input {
+    flex: 1;
+  }
+  
+  .add-form-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+
+/* ============================================ */
+/* NOTION/TODOIST STYLE - QUICK ADD & CARDS    */
+/* ============================================ */
+
+/* Hero Quick Add - Minimal Notion-like */
+.hero-quick-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  margin-bottom: 24px;
+}
+
+.hero-quick-section:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+.hero-quick-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.hero-quick-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.hero-quick-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 15px;
+  padding: 8px 0;
+  font-family: inherit;
+}
+
+.hero-quick-input:focus {
+  outline: none;
+}
+
+.hero-quick-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.hero-quick-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.hero-quick-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Task Card - Notion/Todoist Style */
+.task-card-pro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  gap: 12px;
+}
+
+.task-card-pro:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.task-card-pro.completed {
+  opacity: 0.6;
+}
+
+.task-card-pro.completed .task-text {
+  text-decoration: line-through;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.task-card-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  color: white;
+}
+
+.task-checkbox:hover {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.task-checkbox.checked {
+  background: #667eea;
+  border-color: #667eea;
+}
+
+.task-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.task-text {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-priority-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.task-priority-badge.low {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.task-priority-badge.medium {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.task-priority-badge.high {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.task-deadline {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.task-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.task-card-pro:hover .task-actions {
+  opacity: 1;
+}
+
+.task-action-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.task-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.task-action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+/* Goal Card - Notion/Todoist Style */
+.goal-card-pro {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.goal-card-pro:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.goal-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.goal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.goal-card-pro .goal-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.goal-card-pro .goal-category {
+  font-size: 11px;
+  color: #667eea;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.goal-card-pro .goal-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.goal-card-pro:hover .goal-actions {
+  opacity: 1;
+}
+
+.goal-card-pro .goal-action-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.goal-card-pro .goal-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.goal-card-pro .goal-action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.goal-progress-section {
+  margin-bottom: 12px;
+}
+
+.goal-progress-bar-bg {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.goal-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.goal-progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.goal-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.goal-control-btn {
+  flex: 1;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.goal-control-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.goal-control-btn.plus:hover {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.4);
+  color: #667eea;
+}
+
+.goal-control-btn.minus:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-quick-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .hero-quick-label {
+    font-size: 11px;
+  }
+  
+  .task-actions, .goal-card-pro .goal-actions {
+    opacity: 1;
+  }
+  
+  .goal-controls {
+    flex-direction: row;
+  }
+}
+
+/* ============================================ */
+/* TYPEWRITER EFFECT FOR QUICK ADD              */
+/* ============================================ */
+
+.hero-typewriter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.hero-label-icon {
+  font-size: 16px;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    opacity: 1; 
+    filter: drop-shadow(0 0 2px rgba(102, 126, 234, 0.5));
+  }
+  50% { 
+    opacity: 0.7; 
+    filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.8));
+  }
+}
+
+.typewriter-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 2px solid #667eea;
+  animation: typing 2.5s steps(15) infinite, blink-caret 0.6s step-end infinite;
+  width: 0;
+  animation-fill-mode: forwards;
+  animation-delay: 0s, 0s;
+}
+
+@keyframes typing {
+  0% { width: 0; }
+  50% { width: 100%; }
+  90% { width: 100%; }
+  100% { width: 0; }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent; }
+  50% { border-color: #667eea; }
+}
+
+/* Alternative simpler typewriter - one time */
+.hero-quick-section:hover .typewriter-text {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ============================================ */
+/* HERO QUICK ADD - VERTICAL LAYOUT             */
+/* ============================================ */
+
+/* Override previous styles */
+.hero-quick-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+  margin-bottom: 24px;
+}
+
+.hero-quick-section:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+/* Heading with typewriter effect */
+.hero-quick-heading {
+  font-size: 20px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.typewriter-heading {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  animation: slow-typing 3s steps(14) forwards;
+  letter-spacing: 0.5px;
+}
+
+@keyframes slow-typing {
+  0% { width: 0; }
+  100% { width: 12ch; }
+}
+
+.typewriter-cursor {
+  color: #667eea; 
+  font-weight: 300;
+  animation: cursor-blink 0.8s infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Form - horizontal input + button */
+.hero-quick-add {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.hero-quick-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: white;
+  font-size: 15px;
+  padding: 12px 16px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.hero-quick-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.hero-quick-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.hero-quick-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.hero-quick-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5);
+}
+
+.hero-quick-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .hero-quick-section {
+    padding: 20px 16px;
+  }
+  
+  .hero-quick-heading {
+    font-size: 18px;
+  }
+  
+  .hero-quick-add {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .hero-quick-input {
+    width: 100%;
+    padding: 14px 16px;
+  }
+  
+  .hero-quick-btn {
+    width: 100%;
+    height: 44px;
+  }
+}

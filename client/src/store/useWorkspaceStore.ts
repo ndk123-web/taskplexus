@@ -10,9 +10,12 @@ import type { CreateTaskReq } from "../types/createTaskType";
 export interface Todo {
   id: string;
   text?: string;
+  description?: string;
+  deadline?: Date;
   completed?: boolean;
   priority: "low" | "medium" | "high";
   createdAt?: Date;
+  updatedAt?: Date;
   workspaceId: string;
   status: string;
 }
@@ -22,12 +25,14 @@ export interface Goal {
   id: string; // local id (server may use _id)
   title: string;
   description?: string;
+  deadline?: Date;
   completed?: boolean;
   target: string; // original string input (days or metric)
   targetDays?: number; // normalized numeric target for progress calculations
   currentTarget?: number; // current progress value (0..targetDays)
   category: string;
   createdAt?: Date;
+  updatedAt?: Date;
   workspaceId: string;
   status: string;
 }
@@ -586,11 +591,13 @@ const useWorkspaceStore = create<WorkspaceState>()(
         const tempId = `todo_${Date.now()}`;
         const userId = data.userId;
 
+        const now = new Date();
         const todo: CreateTaskReq = {
           id: tempId,
           text: taskName,
           priority: priority,
-          createdAt: new Date(),
+          createdAt: now,
+          updatedAt: now,
           workspaceId: workspaceId,
           userId: userId,
           status: "PENDING",
@@ -646,27 +653,37 @@ const useWorkspaceStore = create<WorkspaceState>()(
         updates: Partial<Todo>
       ) => {
         const oldWorkspaces = get().workspaces;
+        const now = new Date();
+        const updatesWithTimestamp = { ...updates, updatedAt: now };
 
-        // Optimistic update
-        set({
-          workspaces: oldWorkspaces.map((ws) =>
+        // Optimistic update - atomic update for both workspaces and currentWorkspace
+        set((state) => {
+          const updatedWorkspaces = state.workspaces.map((ws) =>
             ws.id === workspaceId
               ? {
                   ...ws,
                   todos: ws.todos.map((t) =>
-                    t.id === todoId ? { ...t, ...updates } : t
+                    t.id === todoId ? { ...t, ...updatesWithTimestamp } : t
                   ),
                 }
               : ws
-          ),
-        });
-
-        if (get().currentWorkspace?.id === workspaceId) {
-          const updatedWorkspace = get().workspaces.find(
-            (ws) => ws.id === workspaceId
           );
-          if (updatedWorkspace) set({ currentWorkspace: updatedWorkspace });
-        }
+
+          const updatedCurrentWorkspace =
+            state.currentWorkspace?.id === workspaceId
+              ? {
+                  ...state.currentWorkspace!,
+                  todos: state.currentWorkspace!.todos.map((t) =>
+                    t.id === todoId ? { ...t, ...updatesWithTimestamp } : t
+                  ),
+                }
+              : state.currentWorkspace;
+
+          return {
+            workspaces: updatedWorkspaces,
+            currentWorkspace: updatedCurrentWorkspace,
+          };
+        });
 
         try {
           const task = updates.text || "";
@@ -684,13 +701,18 @@ const useWorkspaceStore = create<WorkspaceState>()(
               id: todoId,
               task,
               priority,
+              description: updates.description,
+              deadline: updates.deadline,
             },
             timestamp: Date.now(),
             retryCount: 0,
           });
-          // all good
+          
+          // Trigger immediate sync to reduce wait time
+          const pendingOps = (await import("../hooks/useRunBackgroundOps")).default;
+          pendingOps().catch(err => console.error("Immediate sync failed:", err));
 
-          console.log("✅ Todo updated");
+          console.log("✅ Todo updated and sync triggered");
         } catch (error) {
           console.error("❌ Failed to update todo:", error);
           set({ workspaces: oldWorkspaces });
@@ -701,21 +723,27 @@ const useWorkspaceStore = create<WorkspaceState>()(
       deleteTodo: async (workspaceId: string, todoId: string) => {
         const oldWorkspaces = get().workspaces;
 
-        // Optimistic update
-        set({
-          workspaces: oldWorkspaces.map((ws) =>
+        // Optimistic update - atomic
+        set((state) => {
+          const updatedWorkspaces = state.workspaces.map((ws) =>
             ws.id === workspaceId
               ? { ...ws, todos: ws.todos.filter((t) => t.id !== todoId) }
               : ws
-          ),
-        });
-
-        if (get().currentWorkspace?.id === workspaceId) {
-          const updatedWorkspace = get().workspaces.find(
-            (ws) => ws.id === workspaceId
           );
-          if (updatedWorkspace) set({ currentWorkspace: updatedWorkspace });
-        }
+
+          const updatedCurrentWorkspace =
+            state.currentWorkspace?.id === workspaceId
+              ? {
+                  ...state.currentWorkspace!,
+                  todos: state.currentWorkspace!.todos.filter((t) => t.id !== todoId),
+                }
+              : state.currentWorkspace;
+
+          return {
+            workspaces: updatedWorkspaces,
+            currentWorkspace: updatedCurrentWorkspace,
+          };
+        });
 
         try {
           // API call
@@ -833,6 +861,7 @@ const useWorkspaceStore = create<WorkspaceState>()(
         const parsedTarget = parseInt(goalTarget, 10);
         const safeTargetDays =
           isNaN(parsedTarget) || parsedTarget <= 0 ? 1 : parsedTarget;
+        const now = new Date();
         const newGoal: Goal = {
           title: goalTitle,
           target: goalTarget,
@@ -841,7 +870,8 @@ const useWorkspaceStore = create<WorkspaceState>()(
           category: goalCategory,
           id: tempId,
           workspaceId,
-          createdAt: new Date(),
+          createdAt: now,
+          updatedAt: now,
           status: "PENDING",
         };
 
@@ -905,32 +935,59 @@ const useWorkspaceStore = create<WorkspaceState>()(
         updates: Partial<Goal>
       ) => {
         const oldWorkspaces = get().workspaces;
+        const now = new Date();
+        const updatesWithTimestamp = { ...updates, updatedAt: now };
 
-        // Optimistic update
-        set({
-          workspaces: oldWorkspaces.map((ws) =>
+        // Optimistic update - atomic update for both workspaces and currentWorkspace
+        set((state) => {
+          const updatedWorkspaces = state.workspaces.map((ws) =>
             ws.id === workspaceId
               ? {
                   ...ws,
                   goals: ws.goals.map((g) =>
-                    g.id === goalId ? { ...g, ...updates } : g
+                    g.id === goalId ? { ...g, ...updatesWithTimestamp } : g
                   ),
                 }
               : ws
-          ),
+          );
+
+          const updatedCurrentWorkspace =
+            state.currentWorkspace?.id === workspaceId
+              ? {
+                  ...state.currentWorkspace!,
+                  goals: state.currentWorkspace!.goals.map((g) =>
+                    g.id === goalId ? { ...g, ...updatesWithTimestamp } : g
+                  ),
+                }
+              : state.currentWorkspace;
+
+          return {
+            workspaces: updatedWorkspaces,
+            currentWorkspace: updatedCurrentWorkspace,
+          };
         });
 
-        if (get().currentWorkspace?.id === workspaceId) {
-          const updatedWorkspace = get().workspaces.find(
-            (ws) => ws.id === workspaceId
-          );
-          if (updatedWorkspace) set({ currentWorkspace: updatedWorkspace });
-        }
-
         try {
-          // API call
-          // await updateGoalAPI({ goalId, ...updates });
-          console.log("✅ Goal updated");
+          // API expects: updatedGoalName, updatedCategory, updatedTargetDays
+          await addPendingOperation({
+            id: `UPDATE_GOAL_${Date.now()}`,
+            type: "EDIT_GOAL",
+            status: "PENDING",
+            payload: {
+              goalId: goalId,
+              updatedGoalName: updates.title || "",
+              updatedCategory: updates.category || "",
+              updatedTargetDays: String(updates.targetDays || updates.target || "1"),
+            },
+            timestamp: Date.now(),
+            retryCount: 0,
+          });
+          
+          // Trigger immediate sync to reduce wait time
+          const pendingOps = (await import("../hooks/useRunBackgroundOps")).default;
+          pendingOps().catch(err => console.error("Immediate sync failed:", err));
+
+          console.log("✅ Goal updated and sync triggered");
         } catch (error) {
           console.error("❌ Failed to update goal:", error);
           set({ workspaces: oldWorkspaces });
@@ -941,21 +998,27 @@ const useWorkspaceStore = create<WorkspaceState>()(
       deleteGoal: async (workspaceId: string, goalId: string) => {
         const oldWorkspaces = get().workspaces;
 
-        // Optimistic update
-        set({
-          workspaces: oldWorkspaces.map((ws) =>
+        // Optimistic update - atomic
+        set((state) => {
+          const updatedWorkspaces = state.workspaces.map((ws) =>
             ws.id === workspaceId
               ? { ...ws, goals: ws.goals.filter((g) => g.id !== goalId) }
               : ws
-          ),
-        });
-
-        if (get().currentWorkspace?.id === workspaceId) {
-          const updatedWorkspace = get().workspaces.find(
-            (ws) => ws.id === workspaceId
           );
-          if (updatedWorkspace) set({ currentWorkspace: updatedWorkspace });
-        }
+
+          const updatedCurrentWorkspace =
+            state.currentWorkspace?.id === workspaceId
+              ? {
+                  ...state.currentWorkspace!,
+                  goals: state.currentWorkspace!.goals.filter((g) => g.id !== goalId),
+                }
+              : state.currentWorkspace;
+
+          return {
+            workspaces: updatedWorkspaces,
+            currentWorkspace: updatedCurrentWorkspace,
+          };
+        });
 
         try {
           // API call

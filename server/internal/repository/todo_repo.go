@@ -146,7 +146,7 @@ func (r *todoRepo) UpdateTodo(ctx context.Context, todoId string, updatedTask st
 
 	// always convert string -> object id
 	filter := bson.M{"_id": oid}
-	update := bson.M{"$set": bson.M{"task": updatedTask, "priority": priority}}
+	update := bson.M{"$set": bson.M{"task": updatedTask, "priority": priority, "updatedAt": time.Now()}}
 
 	_, err := r.collection.UpdateOne(ctx, filter, update)
 

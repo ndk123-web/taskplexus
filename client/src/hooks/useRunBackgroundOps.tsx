@@ -536,6 +536,9 @@ const pendingOps = async () => {
                 if (response?.success !== "true") {
                     throw new Error("Failed to edit goal on server");
                 }
+                
+                // Remove from pending operations after successful API call
+                await removePendingOperation(ops[op].id);
                 console.log("✅ Goal edited");
             }
             catch(error) {
