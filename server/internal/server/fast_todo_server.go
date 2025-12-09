@@ -8,24 +8,26 @@ import (
 )
 
 type Server struct {
-	todoHandler      handler.TodoHandler
-	userHandler      handler.UserHandler
-	goalHandler      handler.GoalHandler
-	workspaceHandler handler.WorkspaceHandler
-	chatHandler      handler.ChatHandler
-	activityHandler  handler.ActivityHandler
-	paymentHandler   handler.PayementHandler
+	todoHandler         handler.TodoHandler
+	userHandler         handler.UserHandler
+	goalHandler         handler.GoalHandler
+	workspaceHandler    handler.WorkspaceHandler
+	chatHandler         handler.ChatHandler
+	activityHandler     handler.ActivityHandler
+	paymentHandler      handler.PayementHandler
+	aiPlannerCollection handler.AiPlannerHandler
 }
 
-func NewServer(todoHandler handler.TodoHandler, userHandler handler.UserHandler, goalHandler handler.GoalHandler, workspaceHandler handler.WorkspaceHandler, chatHandler handler.ChatHandler, activityHandler handler.ActivityHandler, paymentHandler handler.PayementHandler) *Server {
+func NewServer(todoHandler handler.TodoHandler, userHandler handler.UserHandler, goalHandler handler.GoalHandler, workspaceHandler handler.WorkspaceHandler, chatHandler handler.ChatHandler, activityHandler handler.ActivityHandler, paymentHandler handler.PayementHandler, aiPlannerCollection handler.AiPlannerHandler) *Server {
 	return &Server{
-		todoHandler:      todoHandler,
-		userHandler:      userHandler,
-		goalHandler:      goalHandler,
-		workspaceHandler: workspaceHandler,
-		chatHandler:      chatHandler,
-		activityHandler:  activityHandler,
-		paymentHandler:   paymentHandler,
+		todoHandler:         todoHandler,
+		userHandler:         userHandler,
+		goalHandler:         goalHandler,
+		workspaceHandler:    workspaceHandler,
+		chatHandler:         chatHandler,
+		activityHandler:     activityHandler,
+		paymentHandler:      paymentHandler,
+		aiPlannerCollection: aiPlannerCollection,
 	}
 }
 
@@ -79,6 +81,9 @@ func (s *Server) Start(port string) error {
 	// payment handlers
 	mux.Handle("POST /api/v1/payment/create-order", middleware.AuthMiddleware(http.HandlerFunc(s.paymentHandler.HandleCreateOrder)))
 	mux.Handle("POST /api/v1/payment/verify-payment", middleware.AuthMiddleware(http.HandlerFunc(s.paymentHandler.HandleVerifyPayement)))
+
+	// AI Planner Handler
+	mux.Handle("POST /api/v1/aiplanner/handle-planner", middleware.AuthMiddleware(http.HandlerFunc(s.aiPlannerCollection.HandleAiPlanner)))
 
 	//
 	// it means cors -> log -> actual handler(mux)

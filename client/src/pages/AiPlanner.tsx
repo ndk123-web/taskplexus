@@ -1,23 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/pages/AiPlanner.css';
+import { sendAiPlannerApi } from '../api';
+import useUserStore from '../store/useUserInfo';
+import useWorkspaceStore from '../store/useWorkspaceStore';
 
-interface PlannerTask {
-  id: string;
+interface AiPlanItem {
+  taskId: string;
   title: string;
-  time: string;
-  duration: string;
-  priority: 'high' | 'medium' | 'low';
-  category: string;
-  status: 'completed' | 'in-progress' | 'pending';
-  aiGenerated: boolean;
+  startTime: string;
+  endTime: string;
+  priority: string;
 }
 
-interface DayPlan {
+interface AiPlannerResponse {
+  id: string;
+  userId: string;
+  workspace: string;
   date: string;
-  dayName: string;
-  tasks: PlannerTask[];
-  productivity: number;
+  plan: AiPlanItem[];
+  createdAt: string;
+  updatedAt: string;
+  context: string;
+  summary: string;
 }
 
 const AiPlanner = () => {
@@ -25,55 +30,103 @@ const AiPlanner = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [userContext, setUserContext] = useState('');
   const [showContextInput, setShowContextInput] = useState(false);
+  const [planData, setPlanData] = useState<AiPlannerResponse | null>(null);
 
-  // Get today's date info
-  const today = new Date();
-  const todayDateString = today.toISOString().split('T')[0];
-  const todayDayName = today.toLocaleDateString('en-US', { weekday: 'long' });
-  
-  // Dummy data - today's schedule only
-  const todayPlan: DayPlan = {
-    date: todayDateString,
-    dayName: todayDayName,
-    productivity: 85,
-    tasks: [
-      { id: '1', title: 'Morning meditation & exercise', time: '06:00', duration: '1h', priority: 'high', category: 'Health', status: 'completed', aiGenerated: true },
-      { id: '2', title: 'Review project requirements', time: '09:00', duration: '30m', priority: 'high', category: 'Work', status: 'completed', aiGenerated: true },
-      { id: '3', title: 'Team standup meeting', time: '10:00', duration: '15m', priority: 'medium', category: 'Work', status: 'in-progress', aiGenerated: true },
-      { id: '4', title: 'Code review session', time: '11:00', duration: '2h', priority: 'high', category: 'Work', status: 'pending', aiGenerated: true },
-      { id: '5', title: 'Lunch break', time: '13:00', duration: '1h', priority: 'low', category: 'Personal', status: 'pending', aiGenerated: false },
-      { id: '6', title: 'Feature development', time: '14:00', duration: '3h', priority: 'high', category: 'Work', status: 'pending', aiGenerated: true },
-      { id: '7', title: 'Documentation update', time: '17:00', duration: '1h', priority: 'medium', category: 'Work', status: 'pending', aiGenerated: true },
-    ]
-  };
+  const userId = useUserStore(state => state.userInfo?.userId)
+  const currentWorkspace = useWorkspaceStore(state => state.currentWorkspace);
+  // Mock data for initial render (as requested by user)
+  // useEffect(() => {
+  //   const mockData: AiPlannerResponse = {
+  //     id: "69387db25dd394f84fc80751",
+  //     userId: "690ef10c901a11c6bb8d9f09",
+  //     workspace: "6922f702bc606f45d19149d8",
+  //     date: new Date().toISOString().split('T')[0], // Use today for demo
+  //     plan: [
+  //       {
+  //         taskId: "1",
+  //         title: "DSA 1",
+  //         startTime: "09:00",
+  //         endTime: "11:00",
+  //         priority: "medium"
+  //       },
+  //       {
+  //         taskId: "2",
+  //         title: "DSA 2",
+  //         startTime: "11:00",
+  //         endTime: "13:00",
+  //         priority: "medium"
+  //       },
+  //       {
+  //         taskId: "3",
+  //         title: "DSA 3",
+  //         startTime: "13:00",
+  //         endTime: "15:00",
+  //         priority: "medium"
+  //       }
+  //     ],
+  //     createdAt: "2025-12-10T01:21:14.2775181+05:30",
+  //     updatedAt: "2025-12-10T01:21:14.2775181+05:30",
+  //     context: "Its About DSA and currently I Dont have TImeLine but i have 2,3 hours for each task",
+  //     summary: "Today's plan includes 3 DSA tasks, each allocated 2 hours. The total dedicated study time is 6 hours, starting from 09:00 and concluding at 15:00."
+  //   };
+  //   setPlanData(mockData);
+  // }, []);
 
   const handleGeneratePlan = () => {
     setIsGenerating(true);
-    // Simulate AI generation with user context
-    console.log('Generating plan with context:', userContext);
+    // Simulate AI generation
+
+    const handleGeneratePlan = async () => {
+      const response: any = await sendAiPlannerApi({
+        context: userContext,
+        userId: userId || '',
+        workspaceId: currentWorkspace?.id || ''
+      })
+
+      console.log("AI Planner Response:", response);
+
+      if (response?.success !== "true") {
+        console.error("Failed to generate AI plan");
+      } 
+
+      setPlanData(response?.response || [])
+    }
+
+    handleGeneratePlan();
+
     setTimeout(() => {
       setIsGenerating(false);
       setShowContextInput(false);
-      setUserContext('');
+      // In a real app, we would fetch new data here
     }, 2000);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return '#10b981';
-      case 'in-progress': return '#f59e0b';
-      case 'pending': return '#6b7280';
-      default: return '#6b7280';
-    }
-  };
-
   const getPriorityColor = (priority: string) => {
-    switch (priority) {
+    switch (priority.toLowerCase()) {
       case 'high': return '#ef4444';
       case 'medium': return '#f59e0b';
       case 'low': return '#10b981';
       default: return '#6b7280';
     }
+  };
+
+  const calculateDuration = (start: string, end: string) => {
+    const [startH, startM] = start.split(':').map(Number);
+    const [endH, endM] = end.split(':').map(Number);
+    const startMin = startH * 60 + startM;
+    const endMin = endH * 60 + endM;
+    const diff = endMin - startMin;
+    const hours = Math.floor(diff / 60);
+    const mins = diff % 60;
+    
+    if (hours > 0 && mins > 0) return `${hours}h ${mins}m`;
+    if (hours > 0) return `${hours}h`;
+    return `${mins}m`;
+  };
+
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
   return (
@@ -94,8 +147,13 @@ const AiPlanner = () => {
               </svg>
               AI Powered
             </div>
-            <h1>Today's AI Planner</h1>
-            <p>Let AI organize your perfect day • {today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+            <h1>Daily AI Planner</h1>
+            <p>{planData ? formatDate(planData.date) : new Date().toLocaleDateString("en-US", {
+              day: "numeric",
+              month: "long",
+              year: "numeric"
+            })}
+        </p>
           </div>
         </div>
         <div className="planner-header-actions">
@@ -119,7 +177,7 @@ const AiPlanner = () => {
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path d="M10 2L12 8L18 10L12 12L10 18L8 12L2 10L8 8L10 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                Generate AI Plan
+                Regenerate Plan
               </>
             )}
           </button>
@@ -157,119 +215,83 @@ const AiPlanner = () => {
                 >
                   Deep work focus
                 </button>
-                <button 
-                  className="example-chip"
-                  onClick={() => setUserContext('Balance work with exercise and personal time throughout the day')}
-                >
-                  Balanced schedule
-                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Today's Schedule */}
-        <div className="schedule-section">
-          <div className="schedule-header">
-            <h2>{todayDayName}'s Schedule</h2>
-            <div className="schedule-stats">
-              <div className="stat-chip">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M8 4V8L11 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-                <span>8.5 hours planned</span>
-              </div>
-              <div className="stat-chip">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 2L10 6L14 7L11 10L12 14L8 12L4 14L5 10L2 7L6 6L8 2Z" fill="currentColor"/>
-                </svg>
-                <span>AI Optimized</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="timeline-container">
-            <div className="timeline-track"></div>
-            <div className="schedule-list">
-              {todayPlan.tasks.map((task) => (
-                <div key={task.id} className={`schedule-item ${task.status}`}>
-                  <div className="schedule-time">
-                    <span className="time-label">{task.time}</span>
-                    <span className="duration-label">{task.duration}</span>
+        {planData && (
+          <>
+            {/* Summary Section */}
+            <div className="insights-section" style={{ marginBottom: '30px', animationDelay: '0s' }}>
+               <div className="insight-card" style={{ borderLeft: '4px solid #667eea' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                    <div className="insight-icon" style={{ fontSize: '24px', marginBottom: 0 }}>✨</div>
+                    <h3 style={{ margin: 0 }}>Daily Summary</h3>
                   </div>
-                  <div className="schedule-card">
-                    <div className="schedule-card-header">
-                      <div className="schedule-card-title">
-                        <h3>{task.title}</h3>
-                        {task.aiGenerated && (
-                          <span className="ai-tag">
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                              <path d="M6 1L7.5 4.5L11 5L8 7.5L9 11L6 9L3 11L4 7.5L1 5L4.5 4.5L6 1Z" fill="currentColor"/>
-                            </svg>
-                            AI
-                          </span>
-                        )}
-                      </div>
-                      <div className="schedule-card-meta">
-                        <span 
-                          className="priority-badge"
-                          style={{ background: getPriorityColor(task.priority) }}
-                        >
-                          {task.priority}
-                        </span>
-                        <span className="category-badge">{task.category}</span>
-                      </div>
+                  <p style={{ fontSize: '16px', color: 'rgba(255, 255, 255, 0.9)' }}>{planData.summary}</p>
+                  {planData.context && (
+                    <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                      <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Based on context:</p>
+                      <p style={{ fontSize: '14px', fontStyle: 'italic', margin: 0 }}>"{planData.context}"</p>
                     </div>
-                    <div className="schedule-card-footer">
-                      <div className="task-status-indicator">
-                        <div 
-                          className="status-circle"
-                          style={{ background: getStatusColor(task.status) }}
-                        ></div>
-                        <span>{task.status.replace('-', ' ')}</span>
-                      </div>
-                      <div className="task-actions">
-                        <button className="task-action-btn">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M11 2L14 5L5 14H2V11L11 2Z" stroke="currentColor" strokeWidth="1.5"/>
-                          </svg>
-                        </button>
-                        <button className="task-action-btn">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
+                  )}
+               </div>
+            </div>
+
+            {/* Schedule Section */}
+            <div className="schedule-section">
+              <div className="schedule-header">
+                <h2>Timeline</h2>
+                <div className="schedule-stats">
+                  <div className="stat-chip">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="2"/>
+                      <path d="M8 4V8L11 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                    <span>{planData.plan.length} Tasks Planned</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
+              </div>
 
-        {/* AI Insights */}
-        <div className="insights-section">
-          <h2>AI Insights</h2>
-          <div className="insights-grid">
-            <div className="insight-card">
-              <div className="insight-icon">🎯</div>
-              <h3>Productivity Peak</h3>
-              <p>You're most productive between 9 AM - 12 PM. Schedule important tasks during this time.</p>
+              <div className="timeline-container">
+                <div className="timeline-track"></div>
+                <div className="schedule-list">
+                  {planData.plan.map((task, index) => (
+                    <div key={task.taskId || index} className="schedule-item" style={{ animationDelay: `${index * 0.1}s` }}>
+                      <div className="schedule-time">
+                        <span className="time-label">{task.startTime}</span>
+                        <span className="duration-label">{calculateDuration(task.startTime, task.endTime)}</span>
+                      </div>
+                      <div className="schedule-card">
+                        <div className="schedule-card-header">
+                          <div className="schedule-card-title">
+                            <h3>{task.title}</h3>
+                          </div>
+                          <div className="schedule-card-meta">
+                            <span 
+                              className="priority-badge"
+                              style={{ background: getPriorityColor(task.priority) }}
+                            >
+                              {task.priority}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="schedule-card-footer">
+                          <div className="task-status-indicator">
+                            <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
+                              Ends at {task.endTime}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="insight-card">
-              <div className="insight-icon">⚡</div>
-              <h3>Task Distribution</h3>
-              <p>Your workload is well-balanced across the week with proper breaks included.</p>
-            </div>
-            <div className="insight-card">
-              <div className="insight-icon">🌟</div>
-              <h3>Optimization Tip</h3>
-              <p>Consider grouping similar tasks together to maintain focus and reduce context switching.</p>
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

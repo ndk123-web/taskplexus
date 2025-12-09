@@ -20,6 +20,7 @@ type aiPlannerHandler struct {
 func (h *aiPlannerHandler) HandleAiPlanner(w http.ResponseWriter, r *http.Request) {
 	// need to write
 
+	w.Header().Set("Content-Type", "application/json")
 	var reqBody model.AiPlannerReqBody
 
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {

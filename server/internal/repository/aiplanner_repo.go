@@ -70,9 +70,10 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 	todoText := builder.String()
 
 	prompt := fmt.Sprintf(`
-		You are an AI Daily Planner Of TaskPlexus. 
-		Create a timeline plan for today ONLY from the provided tasks. 
-		Use priority, estimated_minutes, and deadlines to decide task order and timing.
+		You are a Professional Time Management & Productivity Planner for TaskPlexus.
+
+		Your job:
+		Create a realistic, human-friendly timeline for TODAY based on the provided tasks, user context, and productivity principles.
 
 		Tasks:
 		%s
@@ -81,28 +82,38 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 		%s
 
 		Rules:
-		- Always start the day at 09:00.
-		- Fill tasks sequentially based on estimated_minutes.
-		- Do NOT include tasks not in the input.
-		- Always output valid JSON. No explanations.
+		1. Day starts at 09:00 unless user context says otherwise.
+		2. Include important natural breaks — short breaks, lunch, mental reset periods.
+		3. Consider human energy cycles:
+		- High focus tasks earlier in the day
+		- Lighter tasks later
+		4. Use task priority, estimated_minutes, and urgency to decide ordering.
+		5. Suggest improvements if the user can boost productivity.
+		6. Do NOT invent new tasks, but you *may* insert:
+		- "Break"
+		- "Lunch"
+		- "Stretch"
+		- "Planning / Review"
+		7. Always output valid JSON only. No explanations.
 
-		Return only this JSON format:
+		Return JSON ONLY in this exact format:
 
 		{
 		"date": "...",
 		"plan": [
 			{
 			"taskId": "...",
-			"title": "...",
+			"title": "...",      // Break/Lunch allowed
 			"startTime": "HH:MM",
 			"endTime": "HH:MM",
-			"priority": "..."
+			"priority": "..."    // For break/lunch use "none"
 			}
 		],
 		"summary": "..."
 		}
-
 	`, todoText, data.Context)
+
+	fmt.Println("Ai Planner Prompt: ", prompt)
 
 	client, err := genai.NewClient(context.Background(), nil)
 	if err != nil {
@@ -123,8 +134,17 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 
 	responseText := response.Text()
 
+	clean := strings.TrimSpace(responseText)
+	clean = strings.TrimPrefix(clean, "```json")
+	clean = strings.TrimPrefix(clean, "```JSON")
+	clean = strings.TrimPrefix(clean, "```")
+	clean = strings.TrimSuffix(clean, "```")
+	clean = strings.TrimSpace(clean)
+
+	fmt.Println("CLEANED JSON:", clean)
+
 	var planResponse model.AiPlannerLLMResponse
-	if err := json.Unmarshal([]byte(responseText), &planResponse); err != nil {
+	if err := json.Unmarshal([]byte(clean), &planResponse); err != nil {
 		return nil, err
 	}
 
@@ -132,11 +152,12 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 		ID:          primitive.NewObjectID(),
 		UserID:      userOid,
 		WorkspaceId: workspaceOid,
-		Date:        planResponse.Date,
+		Date:        time.Now().Format("2006-01-02"), // why 2006-01-02 bc go time format
 		Context:     data.Context,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 		Plan:        planResponse.Plan,
+		Summary:     planResponse.Summary,
 	}
 
 	inserted, err := r.aiPlannerCollection.InsertOne(ctx, insert)

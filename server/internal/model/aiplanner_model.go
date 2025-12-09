@@ -15,6 +15,7 @@ type AiPlanner struct {
 	CreatedAt   time.Time          `json:"createdAt" bson:"createdAt"`
 	UpdatedAt   time.Time          `json:"updatedAt" bson:"updatedAt"`
 	Context     string             `json:"context" bson:"context"`
+	Summary     string             `json:"summary" bson:"summary"`
 }
 
 type AiPlanItem struct {

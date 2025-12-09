@@ -45,6 +45,7 @@ func Run() error {
 	workspaceCollection := client.Database("golangdb").Collection("workspaces")
 	chatCollection := client.Database("golangdb").Collection("chats")
 	activityCollection := client.Database("golangdb").Collection("activities")
+	aiPlannerCollection := client.Database("golangdb").Collection("aiplanners")
 
 	// Create Indexes on Collections
 	wsModel := mongo.IndexModel{
@@ -91,6 +92,14 @@ func Run() error {
 	}
 	chatCollection.Indexes().CreateOne(ctx, chatModel)
 
+	aiPlannerMode := mongo.IndexModel{
+		Keys: bson.D{
+			{"userId", 1},
+			{"workspaceId", 1},
+		},
+	}
+	aiPlannerCollection.Indexes().CreateOne(ctx, aiPlannerMode)
+
 	// userrepos
 	userRepo := repository.NewUserRepository(todoCollection, userCollection)
 	userService := service.NewUserService(userRepo)
@@ -119,6 +128,10 @@ func Run() error {
 	paymentService := service.NewPaymentService(nil)
 	paymentHandler := handler.NewPayementHandler(paymentService)
 
-	srv := server.NewServer(todoHandler, userHandler, goalHandler, workspaceHandler, chatHandler, activityHandler, paymentHandler)
+	aiPlannerRepo := repository.NewAiPlannerRepository(aiPlannerCollection, todoCollection, goalCollection)
+	aiPlannerService := service.NewAiPlannerService(aiPlannerRepo)
+	aiPlannerHandler := handler.NewAiPlannerHandler(aiPlannerService)
+
+	srv := server.NewServer(todoHandler, userHandler, goalHandler, workspaceHandler, chatHandler, activityHandler, paymentHandler, aiPlannerHandler)
 	return srv.Start(cfg.Port)
 }
