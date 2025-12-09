@@ -1069,6 +1069,18 @@ const Dashboard = () => {
                 <span>Flowchart</span>
               </button>
               <button 
+                className={`mobile-nav-item ${activeSection === 'ai-planner' ? 'active' : ''}`}
+                onClick={() => { 
+                  setMobileMenuOpen(false); 
+                  navigate('/ai-planner');
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 2L12 8L18 10L12 12L10 18L8 12L2 10L8 8L10 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>AI Planner</span>
+              </button>
+              <button 
                 className={`mobile-nav-item ${activeSection === 'analytics' ? 'active' : ''}`}
                 onClick={() => { setActiveSection('analytics'); setMobileMenuOpen(false); }}
               >
@@ -1275,6 +1287,16 @@ const Dashboard = () => {
               <path d="M8 6.5H12M10 9V11M10 11L3 11M10 11L17 11" stroke="currentColor" strokeWidth="2"/>
             </svg>
             {!sidebarCollapsed && <span>Flowchart</span>}
+          </button>
+          
+          <button 
+            className={`sidebar-nav-item ${activeSection === 'ai-planner' ? 'active' : ''}`}
+            onClick={() => navigate('/ai-planner')}
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 2L12 8L18 10L12 12L10 18L8 12L2 10L8 8L10 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {!sidebarCollapsed && <span>AI Planner</span>}
           </button>
           
           {/* Workspaces Section */}

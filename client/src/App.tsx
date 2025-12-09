@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
 import FlowchartViewNew from './pages/FlowchartViewNew'
 import Activity from './pages/Activity'
+import AiPlanner from './pages/AiPlanner'
 // import ProfessionalDashboard from './components/features/ProfessionalDashboard'
 import TaskDetails from './pages/TaskDetails'
 import GoalDetails from './pages/GoalDetails'
@@ -49,6 +50,11 @@ function App() {
         <Route path="/activity" element={
           <Protected>
             <Activity />
+        </Protected>
+      } />
+        <Route path="/ai-planner" element={
+          <Protected>
+            <AiPlanner />
         </Protected>
       } />
         <Route path="*" element={<Navigate to="/" replace />} />
