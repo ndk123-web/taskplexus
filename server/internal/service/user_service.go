@@ -39,20 +39,35 @@ func (s *userService) SignUpUser(ctx context.Context, email string, password str
 		return nil, err
 	}
 
-	response, err := s.repo.SignUpUser(ctx, email, hashedPassword, fullName)
+	// store the user in postgres first
+	_, err = s.repo.SignUpUserPostgres(ctx, email, hashedPassword, fullName)
 	if err != nil {
 		return nil, err
 	}
 
+	// store the user in mongo as well
+	mongoResponse, err := s.repo.SignUpUserMongo(ctx, email, hashedPassword, fullName)
+	if err != nil {
+		// ROLLBACK: Mongo failed, delete from Postgres to maintain consistency
+		deleteErr := s.repo.DeleteUserByEmail(ctx, email)
+		if deleteErr != nil {
+			// Log this critical error - manual intervention needed
+			fmt.Printf("CRITICAL: Failed to rollback Postgres user after Mongo failure. Email: %s, Error: %v\n", email, deleteErr)
+		}
+		return nil, fmt.Errorf("mongo signup failed and postgres rolled back: %w", err)
+	}
+
+	// create access token and refresh token for the user based on email
 	accessString, refreshString, err := njwt.CreateAccessAndRefreshToken(email)
 	if err != nil {
 		return nil, err
 	}
-	// inject tokens with response
-	response.AccessToken = accessString
-	response.RefreshToken = refreshString
 
-	return response, nil
+	// inject tokens with response (use mongo response since it's the primary)
+	mongoResponse.AccessToken = accessString
+	mongoResponse.RefreshToken = refreshString
+
+	return mongoResponse, nil
 }
 
 func (s *userService) SignUpWithGoogle(ctx context.Context, email string, fullName string) (*repository.SignUpResponse, error) {

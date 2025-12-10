@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/ndk123-web/fast-todo/internal/config"
 	"github.com/ndk123-web/fast-todo/internal/model"
 	"github.com/ndk123-web/fast-todo/pkg/nbcrypt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,11 +24,13 @@ type UserStruct struct {
 
 type UserRepository interface {
 	GetUserTodos(ctx context.Context, userId string) ([]model.Todo, error)
-	SignUpUser(ctx context.Context, email string, password string, fullName string) (*SignUpResponse, error)
+	SignUpUserMongo(ctx context.Context, email string, password string, fullName string) (*SignUpResponse, error)
+	SignUpUserPostgres(ctx context.Context, email string, password string, fullName string) (*SignUpResponse, error)
 	SignInUser(ctx context.Context, email string, password string) (*SignUpResponse, error)
 	UpdateUserName(ctx context.Context, userId string, newName string) (bool, error)
 	SignInGoogleUser(ctx context.Context, email string, fullName string) (*SignUpResponse, error)
 	SignUpWithGoogle(ctx context.Context, email string, fullName string) (*SignUpResponse, error)
+	DeleteUserByEmail(ctx context.Context, email string) error
 }
 
 type userRepo struct {
@@ -83,7 +86,7 @@ type SignUpResponse struct {
 	FullName     string `json:"fullName,omitempty"`
 }
 
-func (r *userRepo) SignUpUser(ctx context.Context, email string, password string, fullName string) (*SignUpResponse, error) {
+func (r *userRepo) SignUpUserMongo(ctx context.Context, email string, password string, fullName string) (*SignUpResponse, error) {
 
 	var user UserStruct
 	// before we need to find if email already exist
@@ -109,6 +112,35 @@ func (r *userRepo) SignUpUser(ctx context.Context, email string, password string
 	oid := inserted.InsertedID.(primitive.ObjectID)
 	userId := oid.Hex()
 
+	return &SignUpResponse{
+		Email:    email,
+		UserId:   userId,
+		FullName: fullName,
+	}, nil
+}
+
+func (r *userRepo) SignUpUserPostgres(ctx context.Context, email string, password string, fullName string) (*SignUpResponse, error) {
+	// Check if user already exists
+	var exists bool
+	checkQuery := `SELECT EXISTS(SELECT 1 FROM users WHERE email=$1)`
+	err := config.PostgresPool.QueryRow(ctx, checkQuery, email).Scan(&exists)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return nil, errors.New("User Already Exists")
+	}
+	// Insert new user
+	insertQuery := `
+		INSERT INTO users (id, email, name, password, created_at, updated_at, plan_limit, is_premium)
+		VALUES ($1, $2, $3, $4, NOW(), NOW(), $5, $6)
+		RETURNING id
+	`
+	userId := primitive.NewObjectID().Hex()
+	_, err = config.PostgresPool.Exec(ctx, insertQuery, userId, email, fullName, password, 10, false)
+	if err != nil {
+		return nil, err
+	}
 	return &SignUpResponse{
 		Email:    email,
 		UserId:   userId,
@@ -245,6 +277,36 @@ func (r *userRepo) UpdateUserName(ctx context.Context, userId string, newName st
 	}
 
 	return updated.ModifiedCount > 0, nil
+}
+
+// DeleteUserByEmail deletes a user from both MongoDB and PostgreSQL by email
+// Used for rollback when signup fails in one database
+func (r *userRepo) DeleteUserByEmail(ctx context.Context, email string) error {
+	if email == "" {
+		return errors.New("email is empty")
+	}
+
+	// Delete from MongoDB
+	filter := bson.M{"email": email}
+	result, err := r.userColletion.DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+	if result.DeletedCount == 0 {
+		return errors.New("user not found in MongoDB")
+	}
+
+	// Delete from PostgreSQL
+	deleteQuery := `DELETE FROM users WHERE email = $1`
+	pgResult, err := config.PostgresPool.Exec(ctx, deleteQuery, email)
+	if err != nil {
+		return err
+	}
+	if pgResult.RowsAffected() == 0 {
+		return errors.New("user not found in PostgreSQL")
+	}
+
+	return nil
 }
 
 func NewUserRepository(todoCol *mongo.Collection, userCol *mongo.Collection) UserRepository {

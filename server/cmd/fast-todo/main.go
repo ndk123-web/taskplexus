@@ -35,10 +35,7 @@ func main() {
 	config.InitFirebase()
 	config.InitRedis()
 	config.InitRazorPay()
-	_, err := config.ConnectPostgresDB()
-	if err != nil {
-		log.Fatalf("Failed to connect to Postgres: %v", err)
-	}
+	config.ConnectPostgresDB()
 
 	if err := app.Run(); err != nil {
 		log.Fatal("Error In Running the App")

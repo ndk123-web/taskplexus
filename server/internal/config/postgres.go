@@ -3,25 +3,29 @@ package config
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func ConnectPostgresDB() (*pgxpool.Pool, error) {
-	connStr := "postgres://ndk:ndk123@localhost:5432/taskplexus?sslmode=disable"
+var PostgresPool *pgxpool.Pool
 
-	fmt.Println("Connecting to Postgres...")
-	
+func ConnectPostgresDB() {
+	connStr := os.Getenv("POSTGRES_URL")
+
+	// fmt.Println("Connecting to Postgres...")
+
 	pool, err := pgxpool.New(context.Background(), connStr)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect postgres: %w", err)
+		fmt.Println("failed to connect postgres: %w", err)
 	}
-	
+
 	err = pool.Ping(context.Background())
 	if err != nil {
-		return nil, fmt.Errorf("failed to ping postgres: %w", err)
+		fmt.Println("failed to ping postgres: %w", err)
 	}
-	
+
 	fmt.Println("Connected to Postgres successfully")
-	return pool, nil
+
+	PostgresPool = pool
 }
