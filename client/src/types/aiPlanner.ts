@@ -19,7 +19,7 @@ export interface AiPlannerData {
 export interface AiPlannerSidebarItem {
   id: string;
   date: string;
-  summaryPreview: string;
+  summary: string;
   fullData: AiPlannerData;
 }
 
@@ -29,6 +29,7 @@ export interface AiPlannerHeaderProps {
   onBackClick?: () => void;
   onRefreshClick?: () => void;
   onNewPlanClick?: () => void;
+  showRegenerate?: boolean;
 }
 
 export interface ContextInputProps {

@@ -4,12 +4,13 @@ import AiPlannerHeader from '../components/features/AiPlannerHeader';
 import AiPlannerSidebar from '../components/features/AiPlannerSidebar';
 import AiPlannerTimeline from '../components/features/AiPlannerTimeline';
 import ContextInput from '../components/features/ContextInput';
-import type { AiPlannerData, AiPlannerSidebarItem } from '../types/aiPlanner';
+import type { AiPlannerSidebarItem } from '../types/aiPlanner';
 import type { AiPlannerResponse } from '../api/aiplanner';
 import { sendAiPlannerApi } from '../api/aiplanner';
 import '../styles/pages/AiPlanner.css';
 import useWorkspaceStore from '../store/useWorkspaceStore';
 import useUserStore from '../store/useUserInfo';
+import getAiPlannerById from '../api/endpoints/getAiPlannerByIdApi';
 
 const AiPlanner: React.FC = () => {
   const navigate = useNavigate();
@@ -18,56 +19,59 @@ const AiPlanner: React.FC = () => {
   const [isGeneratingPlan, setIsGeneratingPlan] = useState<boolean>(false);
   const [isInGenerationMode, setIsInGenerationMode] = useState<boolean>(false);
   const [planData, setPlanData] = useState<AiPlannerResponse | null>(null);
+  const [allPlans, setAllPlans] = useState<AiPlannerSidebarItem[]>([]);
+  const [isFetchingPlanDetails, setIsFetchingPlanDetails] = useState<boolean>(false);
 
   const userId = useUserStore(state => state.userInfo?.userId);
   const currentWorkspace = useWorkspaceStore(state => state.currentWorkspace);
   const workspaceName = currentWorkspace?.name || 'My Workspace';
 
-  // Transform API plan data to sidebar items
-  const sidebarItems: AiPlannerSidebarItem[] = planData
-    ? [
-        {
-          id: planData.id,
-          date: planData.date,
-          summaryPreview: planData.summary.slice(0, 50) + '…',
-          fullData: {
-            id: planData.id,
-            date: planData.date,
-            plan: planData.plan as any,
-            summary: planData.summary,
-            context: planData.context,
-            createdAt: planData.createdAt,
-            updatedAt: planData.updatedAt,
-          },
-        },
-      ]
-    : [];
+  // Add new plan to sidebar when generated
+  const addNewPlanToSidebar = (newPlan: AiPlannerResponse) => {
+    const newItem: AiPlannerSidebarItem = {
+      id: newPlan.id,
+      date: newPlan.date,
+      summary: newPlan.summary.slice(0, 50) + '…',
+      fullData: {
+        id: newPlan.id,
+        date: newPlan.date,
+        plan: newPlan.plan as any,
+        summary: newPlan.summary,
+        context: newPlan.context,
+        createdAt: newPlan.createdAt,
+        updatedAt: newPlan.updatedAt,
+      },
+    };
+    setAllPlans([newItem, ...allPlans]);
+  };
 
-  // Get selected plan data from API response
-  const selectedPlan = planData
-    ? ({
-        id: planData.id,
-        date: planData.date,
-        plan: planData.plan,
-        summary: planData.summary,
-        context: planData.context,
-        createdAt: planData.createdAt,
-        updatedAt: planData.updatedAt,
-      } as AiPlannerData)
-    : null;
+  // Fetch plan details using ID
+  const fetchPlanDetails = async (planId: string) => {
+    setIsFetchingPlanDetails(true);
+    try {
+      const response: any = await getAiPlannerById(planId);
+      console.log('Fetched plan details:', response);
+      
+      if (response?.success === 'true' && response?.response) {
+        setPlanData(response.response);
+      } else {
+        console.error('Failed to fetch plan details or invalid response format');
+      }
+    } catch (error) {
+      console.error('Error fetching plan details:', error);
+    } finally {
+      setIsFetchingPlanDetails(false);
+    }
+  };
 
   const handleSelectPlan = (item: AiPlannerSidebarItem) => {
     setSelectedPlanId(item.id);
-  };
-
-  const handleBackClick = () => {
-    navigate('/dashboard');
+    // Fetch plan details using the API
+    fetchPlanDetails(item.id);
   };
 
   const handleRefreshClick = () => {
-    if (planData) {
-      handleGeneratePlanClick();
-    }
+    window.location.reload();
   };
 
   const handleNewPlanClick = () => {
@@ -92,8 +96,11 @@ const AiPlanner: React.FC = () => {
       console.log('AI Planner Response:', response);
 
       if (response?.success === 'true' && response?.response) {
-        setPlanData(response.response);
-        setSelectedPlanId(response.response.id);
+        const newPlan = response.response;
+        setPlanData(newPlan);
+        setSelectedPlanId(newPlan.id);
+        // Add new plan to sidebar
+        addNewPlanToSidebar(newPlan);
         setIsInGenerationMode(false);
       } else {
         console.error('Failed to generate AI plan:', response);
@@ -105,20 +112,26 @@ const AiPlanner: React.FC = () => {
     }
   };
 
+  const handleBackClick = () => {
+    navigate('/dashboard');
+  };
+
   return (
     <div className="ai-planner-page">
       <AiPlannerHeader
-        selectedDate={selectedPlan?.date}
+        selectedDate={planData?.date}
         workspaceName={workspaceName}
         onBackClick={handleBackClick}
         onRefreshClick={handleRefreshClick}
         onNewPlanClick={handleNewPlanClick}
+        showRegenerate={!!planData}
       />
       <div className="ai-planner-container">
         <AiPlannerSidebar
-          items={sidebarItems}
+          items={allPlans}
           selectedId={selectedPlanId}
           onSelectItem={handleSelectPlan}
+          isLoading={isFetchingPlanDetails}
         />
         <main className="ai-planner-main">
           <div className="ai-planner-workspace-header">
@@ -134,7 +147,10 @@ const AiPlanner: React.FC = () => {
                 isGenerating={isGeneratingPlan}
               />
             )}
-            <AiPlannerTimeline data={selectedPlan} isLoading={isGeneratingPlan} />
+            <AiPlannerTimeline 
+              data={planData as any} 
+              isLoading={isGeneratingPlan || isFetchingPlanDetails} 
+            />
           </div>
         </main>
       </div>

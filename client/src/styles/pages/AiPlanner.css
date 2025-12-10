@@ -157,6 +157,12 @@
   border-color: rgba(102, 126, 234, 0.6);
 }
 
+.ai-planner-header-btn-secondary {
+  background: rgba(102, 126, 234, 0.1);
+  border-color: rgba(102, 126, 234, 0.2);
+  color: rgba(167, 139, 250, 0.8);
+}
+
 /* ============================================
    MAIN CONTAINER
    ============================================ */
@@ -421,6 +427,47 @@
   font-size: 13px;
   color: rgba(224, 224, 224, 0.4);
   margin: 0;
+}
+
+/* Sidebar Loading State */
+
+.ai-planner-sidebar-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 32px 16px;
+}
+
+.ai-planner-sidebar-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-planner-loader-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(102, 126, 234, 0.2);
+  border-top-color: #a78bfa;
+  border-right-color: #667eea;
+  border-radius: 50%;
+  animation: ai-planner-spin 1s linear infinite;
+}
+
+@keyframes ai-planner-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ai-planner-loader-text {
+  font-size: 12px;
+  color: rgba(224, 224, 224, 0.6);
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
 /* ============================================
