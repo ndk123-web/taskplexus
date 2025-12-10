@@ -4,12 +4,16 @@ import { api } from "./globalApi";
 interface GetAllAiPlannerReq {
   userId: string;
   workspaceId: string;
+  page?: number;
+  limit?: number;
 }
 
-const getAllAiPlannerApi = async (date: GetAllAiPlannerReq) => {
+const getAllAiPlannerApi = async (data: GetAllAiPlannerReq) => {
   try {
+    const page = data.page || 1;
+    const limit = data.limit || 5;
     const response: AxiosResponse = await api.get(
-      `/aiplanner/get-all-planner/u/${date.userId}/w/${date.workspaceId}`
+      `/aiplanner/get-all-planner/u/${data.userId}/w/${data.workspaceId}?page=${page}&limit=${limit}`
     );
 
     console.log("Get All AI Planner API Response:", response);

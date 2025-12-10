@@ -11,7 +11,7 @@ import (
 type AiPlannerService interface {
 	HandleAiPlanner(ctx context.Context, data model.AiPlannerReqBody) (*model.AiPlanner, error)
 	GetAiPlannerById(ctx context.Context, id string) (*model.AiPlanner, error)
-	GetAllAiPlanners(ctx context.Context, userId string, workspaceId string) ([]model.GetAllAiPlannerResponse, error)
+	GetAllAiPlanners(ctx context.Context, userId string, workspaceId string, page string, limit string) ([]model.GetAllAiPlannerResponse, error, int64)
 }
 
 type aiPlannerService struct {
@@ -34,11 +34,11 @@ func (s *aiPlannerService) GetAiPlannerById(ctx context.Context, id string) (*mo
 	return s.repo.GetAiPlannerById(ctx, id)
 }
 
-func (s *aiPlannerService) GetAllAiPlanners(ctx context.Context, userId string, workspaceId string) ([]model.GetAllAiPlannerResponse, error) {
+func (s *aiPlannerService) GetAllAiPlanners(ctx context.Context, userId string, workspaceId string, page string, limit string) ([]model.GetAllAiPlannerResponse, error, int64) {
 	if userId == "" || workspaceId == "" {
-		return nil, errors.New("UserId/WorkspaceId Can't Be Empty")
+		return nil, errors.New("UserId/WorkspaceId Can't Be Empty"),0
 	}
-	return s.repo.GetAllAiPlanners(ctx, userId, workspaceId)
+	return s.repo.GetAllAiPlanners(ctx, userId, workspaceId, page, limit)
 }
 
 func NewAiPlannerService(repo repository.AiPlannerRepository) AiPlannerService {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strconv"
 	"time"
 
 	"fmt"
@@ -20,7 +21,7 @@ import (
 type AiPlannerRepository interface {
 	HandleAiPlanner(ctx context.Context, data model.AiPlannerReqBody) (*model.AiPlanner, error)
 	GetAiPlannerById(ctx context.Context, id string) (*model.AiPlanner, error)
-	GetAllAiPlanners(ctx context.Context, userId string, workspaceId string) ([]model.GetAllAiPlannerResponse, error)
+	GetAllAiPlanners(ctx context.Context, userId string, workspaceId string, page string, limit string) ([]model.GetAllAiPlannerResponse, error, int64)
 }
 
 type aiPlannerRepository struct {
@@ -196,38 +197,59 @@ func (r *aiPlannerRepository) GetAiPlannerById(ctx context.Context, id string) (
 
 }
 
-func (r *aiPlannerRepository) GetAllAiPlanners(ctx context.Context, userId string, workspaceId string) ([]model.GetAllAiPlannerResponse, error) {
+func (r *aiPlannerRepository) GetAllAiPlanners(ctx context.Context, userId string, workspaceId string, page string, limit string) ([]model.GetAllAiPlannerResponse, error, int64) {
 	if userId == "" || workspaceId == "" {
-		return nil, errors.New("UserId/WorkspaceId Can't Be Empty")
+		return nil, errors.New("UserId/WorkspaceId Can't Be Empty"), 0
+	}
+
+	if page == "" {
+		page = "1"
+	}
+	if limit == "" {
+		limit = "7"
+	}
+
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		return nil, err, 0
+	}
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		return nil, err, 0
 	}
 
 	userOid, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
-		return nil, err
+		return nil, err, 0
 	}
 
 	workspaceOid, err := primitive.ObjectIDFromHex(workspaceId)
 	if err != nil {
-		return nil, err
+		return nil, err, 0
 	}
 
 	filter := bson.M{"userId": userOid, "workspace": workspaceOid}
 	var aiPlanners []model.GetAllAiPlannerResponse
 
-	cursor, err := r.aiPlannerCollection.Find(ctx, filter, options.Find().SetSort(bson.D{{"createdAt", -1}}).SetProjection(bson.M{"summary": 1, "_id": 1, "date": 1}))
+	count, err := r.aiPlannerCollection.CountDocuments(ctx, filter)
 	if err != nil {
-		return nil, err
+		return nil, err, 0
+	}
+
+	cursor, err := r.aiPlannerCollection.Find(ctx, filter, options.Find().SetSort(bson.D{{"createdAt", -1}}).SetProjection(bson.M{"summary": 1, "_id": 1, "date": 1}).SetSkip(int64((pageInt-1)*limitInt)).SetLimit(int64(limitInt)))
+	if err != nil {
+		return nil, err, 0
 	}
 
 	for cursor.Next(ctx) {
 		var aiPlanner model.GetAllAiPlannerResponse
 		if err := cursor.Decode(&aiPlanner); err != nil {
-			return nil, err
+			return nil, err, 0
 		}
 		aiPlanners = append(aiPlanners, aiPlanner)
 	}
 
-	return aiPlanners, nil
+	return aiPlanners, nil, count
 }
 
 func NewAiPlannerRepository(aiPlannerCollection *mongo.Collection, todoCollection *mongo.Collection, goalCollection *mongo.Collection) AiPlannerRepository {

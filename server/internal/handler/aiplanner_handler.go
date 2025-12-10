@@ -65,6 +65,16 @@ func (h *aiPlannerHandler) GetAllAiPlanners(w http.ResponseWriter, r *http.Reque
 	userId := r.PathValue("userId")
 	workspaceHandlerId := r.PathValue("workspaceId")
 
+	page := r.URL.Query().Get("page")
+	limit := r.URL.Query().Get("limit")
+
+	if page == "" {
+		page = "1"
+	}
+	if limit == "" {
+		limit = "7"
+	}
+
 	reqBody := model.GetAllAiPlannersReq{
 		UserId:      userId,
 		WorkspaceId: workspaceHandlerId,
@@ -75,13 +85,13 @@ func (h *aiPlannerHandler) GetAllAiPlanners(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	response, err := h.service.GetAllAiPlanners(context.Background(), reqBody.UserId, reqBody.WorkspaceId)
+	response, err, count := h.service.GetAllAiPlanners(context.Background(), reqBody.UserId, reqBody.WorkspaceId, page, limit)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]any{"response": response, "success": "true"})
+	json.NewEncoder(w).Encode(map[string]any{"response": response, "success": "true", "count": count})
 }
 
 func NewAiPlannerHandler(service service.AiPlannerService) AiPlannerHandler {

@@ -429,6 +429,41 @@
   margin: 0;
 }
 
+/* Load More Button */
+.ai-planner-sidebar-load-more {
+  padding: 8px 4px;
+  display: flex;
+  justify-content: center;
+}
+
+.ai-planner-load-more-btn {
+  width: 100%;
+  padding: 10px;
+  background: rgba(102, 126, 234, 0.08);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 8px;
+  color: #a78bfa;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ai-planner-load-more-btn:hover:not(:disabled) {
+  background: rgba(102, 126, 234, 0.15);
+  border-color: rgba(102, 126, 234, 0.4);
+  color: #fff;
+}
+
+.ai-planner-load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Sidebar Loading State */
 
 .ai-planner-sidebar-loading {
