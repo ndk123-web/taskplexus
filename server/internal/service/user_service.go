@@ -48,8 +48,8 @@ func (s *userService) SignUpUser(ctx context.Context, email string, password str
 	// store the user in mongo as well
 	mongoResponse, err := s.repo.SignUpUserMongo(ctx, email, hashedPassword, fullName)
 	if err != nil {
-		// ROLLBACK: Mongo failed, delete from Postgres to maintain consistency
-		deleteErr := s.repo.DeleteUserByEmail(ctx, email)
+		// ROLLBACK: Mongo failed, delete from Postgres only (Mongo doesn't have user yet)
+		deleteErr := s.repo.DeleteUserFromPostgres(ctx, email)
 		if deleteErr != nil {
 			// Log this critical error - manual intervention needed
 			fmt.Printf("CRITICAL: Failed to rollback Postgres user after Mongo failure. Email: %s, Error: %v\n", email, deleteErr)

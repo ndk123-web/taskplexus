@@ -31,6 +31,7 @@ type UserRepository interface {
 	SignInGoogleUser(ctx context.Context, email string, fullName string) (*SignUpResponse, error)
 	SignUpWithGoogle(ctx context.Context, email string, fullName string) (*SignUpResponse, error)
 	DeleteUserByEmail(ctx context.Context, email string) error
+	DeleteUserFromPostgres(ctx context.Context, email string) error
 }
 
 type userRepo struct {
@@ -280,7 +281,7 @@ func (r *userRepo) UpdateUserName(ctx context.Context, userId string, newName st
 }
 
 // DeleteUserByEmail deletes a user from both MongoDB and PostgreSQL by email
-// Used for rollback when signup fails in one database
+// Used for complete cleanup when needed
 func (r *userRepo) DeleteUserByEmail(ctx context.Context, email string) error {
 	if email == "" {
 		return errors.New("email is empty")
@@ -297,6 +298,25 @@ func (r *userRepo) DeleteUserByEmail(ctx context.Context, email string) error {
 	}
 
 	// Delete from PostgreSQL
+	deleteQuery := `DELETE FROM users WHERE email = $1`
+	pgResult, err := config.PostgresPool.Exec(ctx, deleteQuery, email)
+	if err != nil {
+		return err
+	}
+	if pgResult.RowsAffected() == 0 {
+		return errors.New("user not found in PostgreSQL")
+	}
+
+	return nil
+}
+
+// DeleteUserFromPostgres deletes a user from PostgreSQL only
+// Used for rollback when Mongo signup fails (Postgres already has user, Mongo doesn't)
+func (r *userRepo) DeleteUserFromPostgres(ctx context.Context, email string) error {
+	if email == "" {
+		return errors.New("email is empty")
+	}
+
 	deleteQuery := `DELETE FROM users WHERE email = $1`
 	pgResult, err := config.PostgresPool.Exec(ctx, deleteQuery, email)
 	if err != nil {
