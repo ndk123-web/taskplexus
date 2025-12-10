@@ -7,7 +7,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
 
 		AllowedOrigins := []string{
 			"http://localhost:5173",
-			"http://192.168.0.102:5173",
+			"http://192.168.0.103:5173",
 		}
 
 		origins := r.Header.Get("origin")

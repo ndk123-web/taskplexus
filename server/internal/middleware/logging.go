@@ -9,8 +9,9 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Request: ", r.Method, " ", r.URL.Path)
 
+		w.Header().Set("Content-Type", "application/json")
+
 		// call actual Handler
 		next.ServeHTTP(w, r)
 	})
 }
-

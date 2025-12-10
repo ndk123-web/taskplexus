@@ -37,3 +37,12 @@ type AiPlannerLLMResponse struct {
 	Plan    []AiPlanItem `json:"plan"`
 	Summary string       `json:"summary"`
 }
+
+type GetAiPlannerByIdReq struct {
+	AiPlannerId string `json:"aiPlannerId"`
+}
+
+type GetAllAiPlannersReq struct {
+	UserId      string `json:"userId"`
+	WorkspaceId string `json:"workspaceId"`
+}

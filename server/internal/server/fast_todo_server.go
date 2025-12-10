@@ -84,8 +84,9 @@ func (s *Server) Start(port string) error {
 
 	// AI Planner Handler
 	mux.Handle("POST /api/v1/aiplanner/handle-planner", middleware.AuthMiddleware(http.HandlerFunc(s.aiPlannerCollection.HandleAiPlanner)))
+	mux.Handle("GET /api/v1/aiplanner/get-plannerbyid/{aiPlannerId}", middleware.AuthMiddleware(http.HandlerFunc(s.aiPlannerCollection.GetAiPlannerById)))
+	mux.Handle("GET /api/v1/aiplanner/get-all-planner/u/{userId}/w/{workspaceId}", middleware.AuthMiddleware(http.HandlerFunc(s.aiPlannerCollection.GetAllAiPlanners)))
 
-	//
 	// it means cors -> log -> actual handler(mux)
 	// global logging and cors middleware
 	wrappedMux := middleware.LoggingMiddleware(middleware.CorsMiddleware(mux))

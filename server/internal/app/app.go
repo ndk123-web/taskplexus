@@ -95,7 +95,7 @@ func Run() error {
 	aiPlannerMode := mongo.IndexModel{
 		Keys: bson.D{
 			{"userId", 1},
-			{"workspaceId", 1},
+			{"workspace", 1},
 		},
 	}
 	aiPlannerCollection.Indexes().CreateOne(ctx, aiPlannerMode)

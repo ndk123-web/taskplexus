@@ -18,6 +18,8 @@ import (
 
 type AiPlannerRepository interface {
 	HandleAiPlanner(ctx context.Context, data model.AiPlannerReqBody) (*model.AiPlanner, error)
+	GetAiPlannerById(ctx context.Context, id string) (*model.AiPlanner, error)
+	GetAllAiPlanners(ctx context.Context, userId string, workspaceId string) ([]model.AiPlanner, error)
 }
 
 type aiPlannerRepository struct {
@@ -170,6 +172,61 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 	}
 
 	return &insert, nil
+}
+
+func (r *aiPlannerRepository) GetAiPlannerById(ctx context.Context, id string) (*model.AiPlanner, error) {
+	if id == "" {
+		return nil, errors.New("AiPlanner ID Can't Be Empty")
+	}
+
+	aiPlannerOid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.M{"_id": aiPlannerOid}
+	var aiPlanner model.AiPlanner
+	err = r.aiPlannerCollection.FindOne(ctx, filter).Decode(&aiPlanner)
+	if err != nil {
+		return nil, err
+	}
+
+	return &aiPlanner, nil
+
+}
+
+func (r *aiPlannerRepository) GetAllAiPlanners(ctx context.Context, userId string, workspaceId string) ([]model.AiPlanner, error) {
+	if userId == "" || workspaceId == "" {
+		return nil, errors.New("UserId/WorkspaceId Can't Be Empty")
+	}
+
+	userOid, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	workspaceOid, err := primitive.ObjectIDFromHex(workspaceId)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.M{"userId": userOid, "workspace": workspaceOid}
+	var aiPlanners []model.AiPlanner
+
+	cursor, err := r.aiPlannerCollection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	for cursor.Next(ctx) {
+		var aiPlanner model.AiPlanner
+		if err := cursor.Decode(&aiPlanner); err != nil {
+			return nil, err
+		}
+		aiPlanners = append(aiPlanners, aiPlanner)
+	}
+
+	return aiPlanners, nil
 }
 
 func NewAiPlannerRepository(aiPlannerCollection *mongo.Collection, todoCollection *mongo.Collection, goalCollection *mongo.Collection) AiPlannerRepository {

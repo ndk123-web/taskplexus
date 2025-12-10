@@ -11,6 +11,8 @@ import (
 
 type AiPlannerHandler interface {
 	HandleAiPlanner(w http.ResponseWriter, r *http.Request)
+	GetAiPlannerById(w http.ResponseWriter, r *http.Request)
+	GetAllAiPlanners(w http.ResponseWriter, r *http.Request)
 }
 
 type aiPlannerHandler struct {
@@ -40,6 +42,46 @@ func (h *aiPlannerHandler) HandleAiPlanner(w http.ResponseWriter, r *http.Reques
 	}
 
 	json.NewEncoder(w).Encode(map[string]any{"response": result, "success": "true"})
+}
+
+func (h *aiPlannerHandler) GetAiPlannerById(w http.ResponseWriter, r *http.Request) {
+	aiPlannerId := r.PathValue("aiPlannerId")
+
+	if aiPlannerId == "" {
+		json.NewEncoder(w).Encode(map[string]string{"Error": "AiPlanner ID Can't Be Empty", "success": "false"})
+		return
+	}
+
+	response, err := h.service.GetAiPlannerById(context.Background(), aiPlannerId)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]any{"response": response, "success": "true"})
+}
+
+func (h *aiPlannerHandler) GetAllAiPlanners(w http.ResponseWriter, r *http.Request) {
+	userId := r.PathValue("userId")
+	workspaceHandlerId := r.PathValue("workspaceId")
+
+	reqBody := model.GetAllAiPlannersReq{
+		UserId:      userId,
+		WorkspaceId: workspaceHandlerId,
+	}
+
+	if reqBody.UserId == "" || reqBody.WorkspaceId == "" {
+		json.NewEncoder(w).Encode(map[string]string{"Error": "UserId/WorkspaceId Can't Be Empty", "success": "false"})
+		return
+	}
+
+	response, err := h.service.GetAllAiPlanners(context.Background(), reqBody.UserId, reqBody.WorkspaceId)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]any{"response": response, "success": "true"})
 }
 
 func NewAiPlannerHandler(service service.AiPlannerService) AiPlannerHandler {
