@@ -13,13 +13,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/genai"
 )
 
 type AiPlannerRepository interface {
 	HandleAiPlanner(ctx context.Context, data model.AiPlannerReqBody) (*model.AiPlanner, error)
 	GetAiPlannerById(ctx context.Context, id string) (*model.AiPlanner, error)
-	GetAllAiPlanners(ctx context.Context, userId string, workspaceId string) ([]model.AiPlanner, error)
+	GetAllAiPlanners(ctx context.Context, userId string, workspaceId string) ([]model.GetAllAiPlannerResponse, error)
 }
 
 type aiPlannerRepository struct {
@@ -195,7 +196,7 @@ func (r *aiPlannerRepository) GetAiPlannerById(ctx context.Context, id string) (
 
 }
 
-func (r *aiPlannerRepository) GetAllAiPlanners(ctx context.Context, userId string, workspaceId string) ([]model.AiPlanner, error) {
+func (r *aiPlannerRepository) GetAllAiPlanners(ctx context.Context, userId string, workspaceId string) ([]model.GetAllAiPlannerResponse, error) {
 	if userId == "" || workspaceId == "" {
 		return nil, errors.New("UserId/WorkspaceId Can't Be Empty")
 	}
@@ -211,15 +212,15 @@ func (r *aiPlannerRepository) GetAllAiPlanners(ctx context.Context, userId strin
 	}
 
 	filter := bson.M{"userId": userOid, "workspace": workspaceOid}
-	var aiPlanners []model.AiPlanner
+	var aiPlanners []model.GetAllAiPlannerResponse
 
-	cursor, err := r.aiPlannerCollection.Find(ctx, filter)
+	cursor, err := r.aiPlannerCollection.Find(ctx, filter, options.Find().SetSort(bson.D{{"createdAt", -1}}).SetProjection(bson.M{"summary": 1, "_id": 1, "date": 1}))
 	if err != nil {
 		return nil, err
 	}
 
 	for cursor.Next(ctx) {
-		var aiPlanner model.AiPlanner
+		var aiPlanner model.GetAllAiPlannerResponse
 		if err := cursor.Decode(&aiPlanner); err != nil {
 			return nil, err
 		}

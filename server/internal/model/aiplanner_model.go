@@ -46,3 +46,9 @@ type GetAllAiPlannersReq struct {
 	UserId      string `json:"userId"`
 	WorkspaceId string `json:"workspaceId"`
 }
+
+type GetAllAiPlannerResponse struct {
+	Id      string `json:"id" bson:"_id"`
+	Summary string `json:"summary" bson:"summary"`
+	Date    string `json:"date" bson:"date"`
+}
