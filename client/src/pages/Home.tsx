@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useState } from 'react';
 // import { Navigate } from 'react-router-dom';
 import useUserStore from '../store/useUserInfo';
@@ -13,21 +13,25 @@ const Home = () => {
 
   const handlePayment = async () => {
     
-    // lazy load razorpay script on button click
-    await dynamicRazorPayLoad()
+    // // lazy load razorpay script on button click
+    // await dynamicRazorPayLoad()
 
-    setCreateOrderLoader(true);
-    try {
-      const order = {
-        amount : import.meta.env.VITE_TASKPLEXUS_PREMIUM_MONEY, // amount in paise (100 INR)
-        currency : "INR",
-      }
-      await openRazorpayCheckout(order);
-    } catch (error) {
-      console.error("Payment error:", error);
-    } finally {
-      setCreateOrderLoader(false);
-    }
+    // setCreateOrderLoader(true);
+    // try {
+    //   const order = {
+    //     amount : import.meta.env.VITE_TASKPLEXUS_PREMIUM_MONEY, // amount in paise (100 INR)
+    //     currency : "INR",
+    //   }
+    //   await openRazorpayCheckout(order);
+    // } catch (error) {
+    //   console.error("Payment error:", error);
+    // } finally {
+    //   setCreateOrderLoader(false);
+    // }
+
+    if (!userInfo?.auth) return
+
+    Navigate({to:"/settings", replace:true});
   }
 
   return (
@@ -262,14 +266,7 @@ const Home = () => {
                 className="plan-cta"
                 disabled={createOrderLoader}
               >
-                {createOrderLoader ? (
-                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <span className="spinner"></span>
-                    Processing...
-                  </span>
-                ) : (
-                  userInfo?.auth ? "Buy Premium" : <Link to={"/signin"}>Login First</Link>
-                )}
+                  {userInfo?.auth ? <Link to={"/settings"}>"Buy Premium"</Link> : <Link to={"/signin"}>Login First</Link>}
               </button>
             </div>
           </div>
