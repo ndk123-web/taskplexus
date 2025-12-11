@@ -1,9 +1,10 @@
 CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,                  -- Firebase UID or UUID
+    id TEXT PRIMARY KEY,                  
     name VARCHAR(100) NOT NULL,
     email TEXT UNIQUE NOT NULL,
     image_link TEXT,
-    plan_limit BIGINT DEFAULT 10,        -- your custom limit
+
+    plan_limit BIGINT DEFAULT 10,        
     is_premium BOOLEAN DEFAULT FALSE,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
