@@ -6,6 +6,8 @@ interface EditGoalReq {
   updatedGoalName: string;
   updatedCategory: string;
   updatedTargetDays: string;
+  description?: string;
+  deadline?: string;
 }
 
 const editGoalApi = async (data: EditGoalReq) => {
@@ -16,6 +18,8 @@ const editGoalApi = async (data: EditGoalReq) => {
         updatedGoalName: data.updatedGoalName,
         updatedCategory: data.updatedCategory,
         updatedTargetDays: data.updatedTargetDays,
+        description: data.description,
+        deadline: data.deadline,
       }
     );
 

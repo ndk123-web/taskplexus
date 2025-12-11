@@ -103,6 +103,8 @@ type updateGoalBody struct {
 	UpdatedGoalName   string `json:"updatedGoalName"`
 	UpdatedTargetDays string `json:"updatedTargetDays"`
 	UpdatedCategory   string `json:"updatedCategory"`
+	Description       string `json:"description"`
+	Deadline          string `json:"deadline"`
 }
 
 func (h *goalHandler) UpdateUserGoal(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +131,7 @@ func (h *goalHandler) UpdateUserGoal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ok, err := h.service.UpdateUserGoal(context.Background(), goalId, reqBody.UpdatedGoalName, newTargetDays, reqBody.UpdatedCategory)
+	ok, err := h.service.UpdateUserGoal(context.Background(), goalId, reqBody.UpdatedGoalName, newTargetDays, reqBody.UpdatedCategory, reqBody.Description,reqBody.Deadline)
 	if err != nil || !ok {
 		json.NewEncoder(w).Encode(map[string]any{"Error": err.Error(), "success": "false"})
 		return

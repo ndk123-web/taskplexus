@@ -15,6 +15,11 @@ const GoalDetails = () => {
   const [category, setCategory] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
+    const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
   useEffect(() => {
     if (currentWorkspace && goalId) {
       const goal = currentWorkspace.goals.find(g => g.id === goalId);
@@ -120,6 +125,7 @@ const GoalDetails = () => {
                value={deadline} 
                onChange={(e) => setDeadline(e.target.value)} 
                className="details-input"
+               min={getTodayDate()}
              />
           </div>
 

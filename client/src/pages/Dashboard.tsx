@@ -139,6 +139,7 @@ const Dashboard = () => {
           description: t.description || '',
           estimatedTime: t.estimatedTime !== undefined ? t.estimatedTime : undefined,
         })),
+
         // Normalize server goals to have 'id'
         goals: (ws.goals || []).map((g: any) => {
           const rawTarget = g.targetDays ?? g.target ?? 0;
@@ -151,9 +152,12 @@ const Dashboard = () => {
               target: rawTarget?.toString?.() || safeTargetDays.toString(),
               targetDays: safeTargetDays,
               currentTarget: typeof g.currentTarget === 'number' ? g.currentTarget : 0,
+              completed: g.done || false,
               status: 'SUCCESS',
               createdAt: g.createdAt ? new Date(g.createdAt) : new Date(),
               updatedAt: g.updatedAt ? new Date(g.updatedAt) : undefined,
+              description: g.description || '',
+              deadline: g.deadline ? new Date(g.deadline) : undefined,
             } as Goal;
         }),
         initialNodes: (() => {
@@ -249,12 +253,15 @@ const Dashboard = () => {
           id: g.id || g._id, // ensure id
           createdAt: g?.createdAt ? new Date(g.createdAt) : undefined,
           updatedAt: g?.updatedAt ? new Date(g.updatedAt) : undefined,
+          deadline: g?.deadline ? new Date(g.deadline) : undefined,
+          completed: g.done || g.completed || false,
         }));
         const clientGoals = (cw.goals || []).map((g: any) => ({
           ...g,
           id: g.id || g._id, // normalize
           createdAt: g?.createdAt ? new Date(g.createdAt) : g.createdAt,
           updatedAt: g?.updatedAt ? new Date(g.updatedAt) : g.updatedAt,
+          deadline: g?.deadline ? new Date(g.deadline) : g.deadline,
         }));
         
         // Merge logic: for each goal, keep the version with the newest updatedAt
@@ -270,12 +277,20 @@ const Dashboard = () => {
             const serverUpdatedAt = serverGoal.updatedAt ? new Date(serverGoal.updatedAt).getTime() : 0;
             if (serverUpdatedAt > clientUpdatedAt) {
               goalMap.set(serverGoal.id, serverGoal); // Server wins
+            } else {
+               // Client wins (is newer), BUT we should preserve server fields if client is missing them (e.g. schema migration)
+               const merged = { ...clientGoal };
+               if (!merged.deadline && serverGoal.deadline) {
+                   merged.deadline = serverGoal.deadline;
+               }
+               if (!merged.description && serverGoal.description) {
+                   merged.description = serverGoal.description;
+               }
+               goalMap.set(serverGoal.id, merged);
             }
-            // else keep client (it's newer)
           }
         }
         const mergedGoals = Array.from(goalMap.values());
-        console.log("Merged Goals (timestamp-based): ", mergedGoals);
 
         merged.push({
           ...sw,
@@ -287,8 +302,6 @@ const Dashboard = () => {
           status: sw.status || cw.status || "SUCCESS",
           isDefault: sw.isDefault ?? cw.isDefault,
         });
-
-        // console.log("Total Merged: ",merged)
       }
 
       // Append client-only workspaces (e.g., offline-created with temp id)
@@ -299,8 +312,6 @@ const Dashboard = () => {
           merged.push(cw);
         }
       }
-
-      console.log("Total Merged: ",merged)
 
       // set updated currentWorkspace and workspaces array in store here if needed
       useWorkspaceStore.getState().setWorkspace(merged);
@@ -406,7 +417,6 @@ const Dashboard = () => {
     const clientWorkspaces = state.workspaces || [];
     const merged = mergeWorkspaces(serverWorkspaces, clientWorkspaces);
 
-    console.log("✅ Server workspaces found, using them:", merged);
     state.setWorkspace(merged);
 
     // Restore selection OR default
@@ -2135,6 +2145,7 @@ const Dashboard = () => {
                         <div className="goal-info">
                           <span className="goal-title">{goal.title}</span>
                           <span className="goal-category">{goal.category}</span>
+                          {goal.deadline && <span className="goal-deadline">📅 {new Date(goal.deadline).toLocaleDateString()}</span>}
                         </div>
                         <div className="goal-actions">
                           <button onClick={() => handleEditGoalClick(goal.id)} className="goal-action-btn edit">

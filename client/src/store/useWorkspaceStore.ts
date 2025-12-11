@@ -141,12 +141,16 @@ const indexedDBStorage: PersistStorage<WorkspaceState> = {
         todos:
           ws.todos?.map((t: any) => ({
             ...t,
-            createdAt: new Date(t.createdAt),
+            createdAt: t.createdAt ? new Date(t.createdAt) : undefined,
+            updatedAt: t.updatedAt ? new Date(t.updatedAt) : undefined,
+            deadline: t.deadline ? new Date(t.deadline) : undefined,
           })) || [],
         goals:
           ws.goals?.map((g: any) => ({
             ...g,
-            createdAt: new Date(g.createdAt),
+            createdAt: g.createdAt ? new Date(g.createdAt) : undefined,
+            updatedAt: g.updatedAt ? new Date(g.updatedAt) : undefined,
+            deadline: g.deadline ? new Date(g.deadline) : undefined,
           })) || [],
         initialNodes: ws.initialNodes || [],
         initialEdges: ws.initialEdges || [],
@@ -159,12 +163,16 @@ const indexedDBStorage: PersistStorage<WorkspaceState> = {
         todos:
           parsed.state.currentWorkspace.todos?.map((t: any) => ({
             ...t,
-            createdAt: new Date(t.createdAt),
+            createdAt: t.createdAt ? new Date(t.createdAt) : undefined,
+            updatedAt: t.updatedAt ? new Date(t.updatedAt) : undefined,
+            deadline: t.deadline ? new Date(t.deadline) : undefined,
           })) || [],
         goals:
           parsed.state.currentWorkspace.goals?.map((g: any) => ({
             ...g,
-            createdAt: new Date(g.createdAt),
+            createdAt: g.createdAt ? new Date(g.createdAt) : undefined,
+            updatedAt: g.updatedAt ? new Date(g.updatedAt) : undefined,
+            deadline: g.deadline ? new Date(g.deadline) : undefined,
           })) || [],
         initialNodes: parsed.state.currentWorkspace.initialNodes || [],
         initialEdges: parsed.state.currentWorkspace.initialEdges || [],
@@ -710,10 +718,13 @@ const useWorkspaceStore = create<WorkspaceState>()(
             timestamp: Date.now(),
             retryCount: 0,
           });
-          
+
           // Trigger immediate sync to reduce wait time
-          const pendingOps = (await import("../hooks/useRunBackgroundOps")).default;
-          pendingOps().catch(err => console.error("Immediate sync failed:", err));
+          const pendingOps = (await import("../hooks/useRunBackgroundOps"))
+            .default;
+          pendingOps().catch((err) =>
+            console.error("Immediate sync failed:", err)
+          );
 
           console.log("✅ Todo updated and sync triggered");
         } catch (error) {
@@ -738,7 +749,9 @@ const useWorkspaceStore = create<WorkspaceState>()(
             state.currentWorkspace?.id === workspaceId
               ? {
                   ...state.currentWorkspace!,
-                  todos: state.currentWorkspace!.todos.filter((t) => t.id !== todoId),
+                  todos: state.currentWorkspace!.todos.filter(
+                    (t) => t.id !== todoId
+                  ),
                 }
               : state.currentWorkspace;
 
@@ -980,15 +993,22 @@ const useWorkspaceStore = create<WorkspaceState>()(
               goalId: goalId,
               updatedGoalName: updates.title || "",
               updatedCategory: updates.category || "",
-              updatedTargetDays: String(updates.targetDays || updates.target || "1"),
+              updatedTargetDays: String(
+                updates.targetDays || updates.target || "1"
+              ),
+              description: updates.description || "",
+              deadline: updates.deadline || null,
             },
             timestamp: Date.now(),
             retryCount: 0,
           });
-          
+
           // Trigger immediate sync to reduce wait time
-          const pendingOps = (await import("../hooks/useRunBackgroundOps")).default;
-          pendingOps().catch(err => console.error("Immediate sync failed:", err));
+          const pendingOps = (await import("../hooks/useRunBackgroundOps"))
+            .default;
+          pendingOps().catch((err) =>
+            console.error("Immediate sync failed:", err)
+          );
 
           console.log("✅ Goal updated and sync triggered");
         } catch (error) {
@@ -1013,7 +1033,9 @@ const useWorkspaceStore = create<WorkspaceState>()(
             state.currentWorkspace?.id === workspaceId
               ? {
                   ...state.currentWorkspace!,
-                  goals: state.currentWorkspace!.goals.filter((g) => g.id !== goalId),
+                  goals: state.currentWorkspace!.goals.filter(
+                    (g) => g.id !== goalId
+                  ),
                 }
               : state.currentWorkspace;
 

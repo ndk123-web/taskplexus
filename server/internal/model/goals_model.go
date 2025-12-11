@@ -17,4 +17,6 @@ type Goals struct {
 	WorkspaceId   primitive.ObjectID `bson:"workspaceId" json:"workspaceId"`
 	CreatedAt     time.Time          `bson:"createdAt,omitempty" json:"createdAt,omitempty"`
 	UpdatedAt     time.Time          `bson:"updatedAt,omitempty" json:"updatedAt,omitempty"`
+	Description   string             `bson:"description,omitempty" json:"description,omitempty"`
+	Deadline      string             `bson:"deadline,omitempty" json:"deadline,omitempty"`
 }
