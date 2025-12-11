@@ -125,7 +125,8 @@ func Run() error {
 	todoService := service.NewTodoService(todoRepo)
 	todoHandler := handler.NewTodoHandler(todoService, activityService)
 
-	paymentService := service.NewPaymentService(nil)
+	paymentRepo := repository.NewPayementRepository()
+	paymentService := service.NewPaymentService(paymentRepo)
 	paymentHandler := handler.NewPayementHandler(paymentService)
 
 	aiPlannerRepo := repository.NewAiPlannerRepository(aiPlannerCollection, todoCollection, goalCollection)

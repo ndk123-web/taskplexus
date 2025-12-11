@@ -1,5 +1,9 @@
 // why because we can load the script only w
-import { createOrderApi, verifyPaymentApi } from "../api/payment";
+import {
+  createOrderApi,
+  verifyPaymentApi,
+  cancelOrderApi,
+} from "../api/payment";
 
 export function dynamicRazorPayLoad() {
   return new Promise<boolean>((resolve) => {
@@ -20,6 +24,7 @@ export async function openRazorpayCheckout(order: any) {
     const response: any = await createOrderApi({
       amount: order.amount,
       currency: order.currency,
+      userId: "",
     });
     console.log("Razorpay order creation response:", response);
 
@@ -44,8 +49,23 @@ export async function openRazorpayCheckout(order: any) {
         // Payment successful! Now verify
         await verifyPayment(response);
       },
+
+      // it means if user closes the form without payment
       modal: {
-        ondismiss: () => console.log("Payment cancelled"),
+        ondismiss: async () => {
+          console.log("Razorpay checkout form closed");
+
+          // api call so that order can be marked as cancelled or failed
+          const response = await cancelOrderApi(order.id);
+          console.log("Order cancellation response:", response);
+
+          if (response?.success !== "true") {
+            console.error(
+              "Order cancellation failed:",
+              response?.Error || "Unknown error"
+            );
+          }
+        },
       },
     };
 

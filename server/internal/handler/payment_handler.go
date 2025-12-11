@@ -13,6 +13,8 @@ import (
 type PayementHandler interface {
 	HandleCreateOrder(w http.ResponseWriter, r *http.Request)
 	HandleVerifyPayement(w http.ResponseWriter, r *http.Request)
+	HandlerCancelOrder(w http.ResponseWriter, r *http.Request)
+	HandlerCancelPayment(w http.ResponseWriter, r *http.Request)
 }
 
 type payementHandler struct {
@@ -38,7 +40,7 @@ func (p *payementHandler) HandleCreateOrder(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	orderId, err := p.service.CreateOrder(context.Background(), reqBody.Amount, reqBody.Currency)
+	orderId, err := p.service.CreateOrder(context.Background(), reqBody.Amount, reqBody.Currency, reqBody.UserId)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
 		return
@@ -64,6 +66,40 @@ func (p *payementHandler) HandleVerifyPayement(w http.ResponseWriter, r *http.Re
 	}
 
 	json.NewEncoder(w).Encode(map[string]string{"message": "Payment verified successfully", "success": "true"})
+}
+
+func (p *payementHandler) HandlerCancelOrder(w http.ResponseWriter, r *http.Request) {
+	var reqBody model.CancelOrderReqBody
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": "Invalid request body", "success": "false"})
+		return
+	}
+
+	// cancellation logic to be added in future
+	err := p.service.CancelOrder(context.Background(), reqBody.OrderId)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"message": "Order cancelled successfully", "success": "true"})
+}
+
+func (p *payementHandler) HandlerCancelPayment(w http.ResponseWriter, r *http.Request) {
+	var reqBody model.CancelPaymentReqBody
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": "Invalid request body", "success": "false"})
+		return
+	}
+
+	// cancellation logic to be added in future
+	err := p.service.CancelPayment(context.Background(), reqBody.PaymentId)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"message": "Payment cancelled successfully", "success": "true"})
 }
 
 func NewPayementHandler(s service.PaymentService) PayementHandler {
