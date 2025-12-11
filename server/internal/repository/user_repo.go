@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/ndk123-web/fast-todo/internal/config"
 	"github.com/ndk123-web/fast-todo/internal/model"
 	"github.com/ndk123-web/fast-todo/pkg/nbcrypt"
@@ -33,6 +34,7 @@ type UserRepository interface {
 	SignUpWithGooglePostgres(ctx context.Context, email string, fullName string, userId string) (*SignUpResponse, error)
 	DeleteUserByEmail(ctx context.Context, email string) error
 	DeleteUserFromPostgres(ctx context.Context, email string) error
+	CheckUserPremium(ctx context.Context, userId string) (*model.CheckUserPremiumResponse, error)
 }
 
 type userRepo struct {
@@ -345,6 +347,34 @@ func (r *userRepo) DeleteUserByEmail(ctx context.Context, email string) error {
 	}
 
 	return nil
+}
+
+func (r *userRepo) CheckUserPremium(ctx context.Context, userId string) (*model.CheckUserPremiumResponse, error) {
+	if userId == "" {
+		return nil, errors.New("userId is empty")
+	}
+
+	query := `SELECT is_active, started_at, expires_at, plan_name
+				FROM subscriptions
+				WHERE user_id = $1 AND is_active = true
+				ORDER BY created_at DESC
+				LIMIT 1`
+	var resp model.CheckUserPremiumResponse
+
+	err := config.PostgresPool.QueryRow(ctx, query, userId).Scan(&resp.IsActive, &resp.StartDate, &resp.EndDate, &resp.PlanName)
+	if err != nil {
+
+		// No active subscription found means switch to FREE plan
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &model.CheckUserPremiumResponse{
+				IsActive: false,
+				PlanName: "FREE",
+			}, nil
+		}
+		return nil, err
+	}
+
+	return &resp, nil
 }
 
 // DeleteUserFromPostgres deletes a user from PostgreSQL only

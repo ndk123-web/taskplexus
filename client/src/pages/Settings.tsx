@@ -99,7 +99,14 @@ const Settings = () => {
           amount : import.meta.env.VITE_TASKPLEXUS_PREMIUM_MONEY, // amount in paise (100 INR)
           currency : "INR",
         }
-        await openRazorpayCheckout(order);
+        const data: any = await openRazorpayCheckout(order);
+        if (data) {
+          showToast('Payment successful! Enjoy Premium features.', 'success');
+          signinUser({ ...userInfo!, plan: 'PRO_MONTHLY' });
+          navigate('/dashboard', { replace: true });
+        } else {
+          showToast('Payment verification failed. Please contact support.', 'error');
+        }
       } catch (error) {
         console.error("Payment error:", error);
       } finally {

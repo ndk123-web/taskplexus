@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type PlanType = "FREE" | "PREMIUM";
+export type PlanType = "FREE" | "PRO_MONTHLY";
 
 export interface User {
   fullName?: string;

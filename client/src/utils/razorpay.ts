@@ -37,43 +37,55 @@ export async function openRazorpayCheckout(order: any) {
     }
 
     order.id = response.order_id;
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY,
-      amount: order.amount, // this doesnt matter the actual amount will be from order id
-      currency: order.currency,
-      order_id: order.id,
 
-      handler: async (response: any) => {
-        console.log("Payment successful", response);
+    return new Promise((resolve) => {
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY,
+        amount: order.amount, // this doesnt matter the actual amount will be from order id
+        currency: order.currency,
+        order_id: order.id,
 
-        // Payment successful! Now verify
-        await verifyPayment(response);
-      },
+        handler: async (response: any) => {
+          console.log("Payment successful", response);
 
-      // it means if user closes the form without payment
-      modal: {
-        ondismiss: async () => {
-          console.log("Razorpay checkout form closed");
-
-          // api call so that order can be marked as cancelled or failed
-          const response = await cancelOrderApi(order.id);
-          console.log("Order cancellation response:", response);
-
-          if (response?.success !== "true") {
-            console.error(
-              "Order cancellation failed:",
-              response?.Error || "Unknown error"
-            );
+          // Payment successful! Now verify
+          const res: any = await verifyPayment(response);
+          if (res?.success === "true") {
+            console.log("Payment verified and order completed.");
+            resolve(true);
+            return;
           }
-        },
-      },
-    };
 
-    // @ts-ignore (Razorpay is global)
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+          resolve(false);
+        },
+
+        // it means if user closes the form without payment
+        modal: {
+          ondismiss: async () => {
+            console.log("Razorpay checkout form closed");
+
+            // api call so that order can be marked as cancelled or failed
+            const response = await cancelOrderApi(order.id);
+            console.log("Order cancellation response:", response);
+
+            if (response?.success !== "true") {
+              console.error(
+                "Order cancellation failed:",
+                response?.Error || "Unknown error"
+              );
+            }
+            resolve(false);
+          },
+        },
+      };
+
+      // @ts-ignore (Razorpay is global)
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    });
   } catch (error) {
     console.error("Error in opening Razorpay checkout:", error);
+    return false;
   }
 }
 

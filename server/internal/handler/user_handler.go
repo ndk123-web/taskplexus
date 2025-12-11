@@ -21,6 +21,7 @@ type UserHandler interface {
 	RefreshToken(w http.ResponseWriter, r *http.Request)
 	SignInUser(w http.ResponseWriter, r *http.Request)
 	UpdateUserName(w http.ResponseWriter, r *http.Request)
+	CheckUserPremium(w http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {
@@ -246,6 +247,22 @@ func (h *userHandler) UpdateUserName(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(map[string]string{"response": "Success Update User Name", "success": "true"})
+}
+
+func (h *userHandler) CheckUserPremium(w http.ResponseWriter, r *http.Request) {
+	userId := r.PathValue("userId")
+	if userId == "" {
+		json.NewEncoder(w).Encode(map[string]string{"Error": "User Id is Empty In Handler", "success": "false"})
+		return
+	}
+
+	response, err := h.service.CheckUserPremium(context.Background(), userId)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]any{"response": response, "success": "true"})
 }
 
 func NewUserHandler(service service.UserService) UserHandler {

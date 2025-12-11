@@ -15,6 +15,7 @@ type PayementHandler interface {
 	HandleVerifyPayement(w http.ResponseWriter, r *http.Request)
 	HandlerCancelOrder(w http.ResponseWriter, r *http.Request)
 	HandlerCancelPayment(w http.ResponseWriter, r *http.Request)
+	HandleRazorPayWebhook(w http.ResponseWriter, r *http.Request)
 }
 
 type payementHandler struct {
@@ -100,6 +101,23 @@ func (p *payementHandler) HandlerCancelPayment(w http.ResponseWriter, r *http.Re
 	}
 
 	json.NewEncoder(w).Encode(map[string]string{"message": "Payment cancelled successfully", "success": "true"})
+}
+
+func (p *payementHandler) HandleRazorPayWebhook(w http.ResponseWriter, r *http.Request) {
+	var payload model.RazorPayWebhookPayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err := p.service.HandleRazorPayWebhook(context.Background(), payload)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Acknowledging the webhook
+	w.WriteHeader(http.StatusOK)
 }
 
 func NewPayementHandler(s service.PaymentService) PayementHandler {

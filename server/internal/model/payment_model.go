@@ -25,3 +25,8 @@ type CancelOrderReqBody struct {
 type CancelPaymentReqBody struct {
 	PaymentId string `json:"paymentId"`
 }
+
+type RazorPayWebhookPayload struct {
+	Event   string         `json:"event"`
+	Payload map[string]any `json:"payload"`
+}

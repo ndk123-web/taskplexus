@@ -14,6 +14,7 @@ import getAnalyticsApi from '../api/endpoints/analyticsApi';
 import { addPendingOperation, clearPendingOperations, getPendingOperations } from '../store/indexDB/pendingOps/usePendingOps';
 import { useToast } from '../components/ui/ToastProvider';
 import AiChat from '../components/features/AiChat';
+import { checkUserPlanApi } from '../api/payment';
 
 // Goal interface - defines structure for goal items
 // Align Goal interface with store (id not _id)
@@ -32,7 +33,7 @@ interface Goal {
 const Dashboard = () => {
 
   const navigate = useNavigate();
-  const {userInfo, signOutUser} = useUserStore();
+  const {userInfo, signOutUser, signinUser} = useUserStore();
   const { workspaces, currentWorkspace, addWorkspace, editWorkspace, deleteWorkspace, setCurrentWorkspace, addTodo, toggleTodoCompleted, deleteTodo: storeDeleteTodo, addGoal } = useWorkspaceStore();
   // Flag to avoid re-hydration logic firing during logout (prevents default workspace recreation)
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -537,6 +538,45 @@ const Dashboard = () => {
     }
 
   },[]);
+
+  useEffect(() => {
+    // Optimized: Check plan status every 60 seconds
+    const checkPlanStatus = async () => {
+      if (!userInfo?.userId) return;
+
+      try {
+        const response = await checkUserPlanApi(userInfo.userId);
+        
+        if (response?.success === "true" && response?.response) {
+          const { planName, isActive, endDate } = response.response;
+          const isExpired = new Date(endDate) < new Date();
+          
+          // Determine effective plan
+          const effectivePlan = (isActive && !isExpired && planName === 'PRO_MONTHLY') ? 'PRO_MONTHLY' : 'FREE';
+          
+          // Only update if changed to avoid unnecessary re-renders
+          if (userInfo.plan !== effectivePlan) {
+            console.log(`Plan status changed: ${userInfo.plan} -> ${effectivePlan}`);
+            signinUser({ ...userInfo, plan: effectivePlan });
+            
+            // Notify user on downgrade not again and again 
+            if (effectivePlan === 'FREE' && userInfo.plan === 'PRO_MONTHLY') {
+              showToast("Your Premium subscription has expired.", "warning");
+            }
+          }
+        }
+      } catch (error) {
+        // Silent fail for background checks
+        console.warn("Background plan check failed");
+      }
+    };
+
+    // Run once on mount, then interval
+    checkPlanStatus();
+    const intervalId = setInterval(checkPlanStatus, 10000);
+
+    return () => clearInterval(intervalId);
+  }, [userInfo?.userId, userInfo?.plan]);
 
   // Sidebar state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(window.innerWidth < 1024);

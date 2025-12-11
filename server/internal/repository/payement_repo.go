@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ndk123-web/fast-todo/internal/config"
+	"github.com/ndk123-web/fast-todo/internal/model"
 )
 
 type PayementRepository interface {
@@ -13,6 +14,7 @@ type PayementRepository interface {
 	CancelOrder(ctx context.Context, orderId string) error
 	CreatePayment(ctx context.Context, orderId string, paymentId string, signature string) (string, error)
 	CancelPayment(ctx context.Context, paymentId string) error
+	RazorPayWebhook(ctx context.Context, payload model.RazorPayWebhookPayload) error
 }
 
 type payementRepository struct {
@@ -60,7 +62,35 @@ func (p *payementRepository) CreatePayment(ctx context.Context, orderId string, 
 	).Scan(&orderDbId, &amount, &currency)
 
 	query := "INSERT INTO payments (id, razorpay_order_id, razorpay_payment_id, razorpay_signature, amount, currency, status, order_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
-	_, err = config.PostgresPool.Exec(ctx, query, id, orderId, paymentId, signature, amount, currency, "captured", orderDbId)
+	_, err = config.PostgresPool.Exec(ctx, query, id, orderId, paymentId, signature, amount, currency, "pending", orderDbId)
+	if err != nil {
+		return "", err
+	}
+
+	// Just for testing, in real scenario status will be updated via webhook
+	// set payment status to 'created' in the database
+	query = "UPDATE payments SET status = $1 WHERE razorpay_payment_id = $2"
+	_, err = config.PostgresPool.Exec(ctx, query, "created", paymentId)
+	if err != nil {
+		return "", err
+	}
+
+	// get user_id from orders table
+	query = "SELECT user_id FROM orders WHERE razorpay_order_id = $1"
+	var userId string
+	err = config.PostgresPool.QueryRow(ctx, query, orderId).Scan(&userId)
+
+	// get payment_db_id from payments table
+	var paymentDbId string
+	err = config.PostgresPool.QueryRow(ctx,
+		"SELECT id FROM payments WHERE razorpay_payment_id = $1",
+		paymentId,
+	).Scan(&paymentDbId)
+
+	// add subcription entry in subscriptions table
+	query = "INSERT INTO subscriptions (id, user_id, plan_name, started_at, expires_at, is_active, order_id, payment_id) VALUES ($1, $2, $3, NOW(), NOW() + INTERVAL '1 month', $4, $5, $6)"
+	subscriptionId := uuid.New().String()
+	_, err = config.PostgresPool.Exec(ctx, query, subscriptionId, userId, "PRO_MONTHLY", true, orderDbId, paymentDbId)
 	if err != nil {
 		return "", err
 	}
@@ -76,6 +106,54 @@ func (p *payementRepository) CancelPayment(ctx context.Context, paymentId string
 		return err
 	}
 
+	return nil
+}
+
+func (p *payementRepository) RazorPayWebhook(ctx context.Context, payload model.RazorPayWebhookPayload) error {
+	eventType := payload.Event
+
+	paymentObj := payload.Payload["payment"].(map[string]any)
+	entity := paymentObj["entity"].(map[string]any)
+
+	paymentId := entity["id"].(string)
+	orderId := entity["order_id"].(string)
+	status := entity["status"].(string)
+
+	if eventType == "payment.captured" {
+		// update payment status to 'captured' in the database
+		query := "UPDATE payments SET status = $1 WHERE razorpay_payment_id = $2 AND razorpay_order_id = $3"
+		_, err := config.PostgresPool.Exec(ctx, query, status, paymentId, orderId)
+		if err != nil {
+			return err
+		}
+
+		// get user_id from orders table
+		query = "SELECT user_id FROM orders WHERE razorpay_order_id = $1"
+		var userId string
+		err = config.PostgresPool.QueryRow(ctx, query, orderId).Scan(&userId)
+
+		// get order_db_id from orders table
+		var orderDbId string
+		err = config.PostgresPool.QueryRow(ctx,
+			"SELECT id FROM orders WHERE razorpay_order_id = $1",
+			orderId,
+		).Scan(&orderDbId)
+
+		// get payment_db_id from payments table
+		var paymentDbId string
+		err = config.PostgresPool.QueryRow(ctx,
+			"SELECT id FROM payments WHERE razorpay_payment_id = $1",
+			paymentId,
+		).Scan(&paymentDbId)
+
+		// add into the subscriptions table
+		query = "INSERT INTO subscriptions (id, user_id, plan_name,started_at, expires_at, is_active, order_id, payment_id) VALUES ($1, $2, $3, NOW(), NOW() + INTERVAL '1 month', $4, $5, $6)"
+		subscriptionId := uuid.New().String()
+		_, err = config.PostgresPool.Exec(ctx, query, subscriptionId, userId, "PRO_MONTHLY", true, orderDbId, paymentDbId)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

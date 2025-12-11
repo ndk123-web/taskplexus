@@ -13,3 +13,10 @@ type User struct {
 	UpdatedAt time.Time          `json:"updatedAt,omitempty" bson:"updatedAt,omitempty"`
 	ImageLink string             `json:"imageLink,omitempty" bson:"imageLink,omitempty"`
 }
+
+type CheckUserPremiumResponse struct {
+	IsActive  bool      `json:"isActive" db:"is_active"`
+	StartDate time.Time `json:"startDate" db:"start_date"`
+	EndDate   time.Time `json:"endDate" db:"end_date"`
+	PlanName  string    `json:"planName" db:"plan_name"`
+}

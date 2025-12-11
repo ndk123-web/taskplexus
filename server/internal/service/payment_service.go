@@ -20,6 +20,7 @@ type PaymentService interface {
 	VerifyPayement(ctx context.Context, data model.VerifyPaymentRequest) (bool, error)
 	CancelOrder(ctx context.Context, orderId string) error
 	CancelPayment(ctx context.Context, paymentId string) error
+	HandleRazorPayWebhook(ctx context.Context, payload model.RazorPayWebhookPayload) error
 }
 
 type payementService struct {
@@ -109,6 +110,39 @@ func (p *payementService) CancelPayment(ctx context.Context, paymentId string) e
 	}
 
 	return p.repo.CancelPayment(ctx, paymentId)
+}
+
+func VerifyWebhookSignature(body []byte, signature, secret string) bool {
+	computed := hmac.New(sha256.New, []byte(secret))
+	computed.Write(body)
+	expected := hex.EncodeToString(computed.Sum(nil))
+	return expected == signature
+}
+
+func (p *payementService) HandleRazorPayWebhook(ctx context.Context, payload model.RazorPayWebhookPayload) error {
+	// handle webhook logic to be added in future
+
+	eventType := payload.Event
+	paymentObj := payload.Payload["payment"].(map[string]any)
+	entity := paymentObj["entity"].(map[string]any)
+
+	paymentId := entity["id"].(string)
+	orderId := entity["order_id"].(string)
+	status := entity["status"].(string)
+
+	fmt.Printf("Webhook Event: %s, PaymentID: %s, OrderID: %s, Status: %s\n", eventType, paymentId, orderId, status)
+
+	if status == "failed" {
+		if err := p.repo.CancelPayment(ctx, paymentId); err != nil {
+			return fmt.Errorf("failed to cancel payment from webhook: %v", err)
+		}
+	}
+
+	if err := p.repo.RazorPayWebhook(ctx, payload); err != nil {
+		return fmt.Errorf("failed to process webhook in repo: %v", err)
+	}
+
+	return nil
 }
 
 func NewPaymentService(repo repository.PayementRepository) PaymentService {

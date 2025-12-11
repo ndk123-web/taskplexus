@@ -21,6 +21,7 @@ type UserService interface {
 	UpdateUserName(ctx context.Context, userId string, newName string) (bool, error)
 	SignInGoogleUser(ctx context.Context, email string, fullName string) (*repository.SignUpResponse, error)
 	SignUpWithGoogle(ctx context.Context, email string, fullName string) (*repository.SignUpResponse, error)
+	CheckUserPremium(ctx context.Context, userId string) (*model.CheckUserPremiumResponse, error)
 }
 
 type userService struct {
@@ -159,6 +160,14 @@ func (s *userService) UpdateUserName(ctx context.Context, userId string, newName
 	}
 
 	return s.repo.UpdateUserName(ctx, userId, newName)
+}
+
+func (s *userService) CheckUserPremium(ctx context.Context, userId string) (*model.CheckUserPremiumResponse, error) {
+	if userId == "" {
+		return nil, fmt.Errorf("userId is empty")
+	}
+
+	return s.repo.CheckUserPremium(ctx, userId)
 }
 
 func NewUserService(repo repository.UserRepository) UserService {
