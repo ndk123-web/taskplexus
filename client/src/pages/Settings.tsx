@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import useUserStore, { type User, type PlanDetails } from '../store/useUserInfo';
+import useUserStore, { type User, type PlanDetails, type PlanType } from '../store/useUserInfo';
 import '../styles/pages/Settings.css';
 import updateUserNameApi from '../api/endpoints/updateUserNameApi';
 import { useToast } from '../components/ui/ToastProvider';
@@ -15,7 +15,7 @@ const Settings = () => {
   const [newName, setNewName] = useState(userInfo?.fullName || '');
 
   // Plan details
-  const planDetails: Record<'FREE' | 'PREMIUM', PlanDetails> = {
+  const planDetails: Record<'FREE' | 'PRO_MONTHLY', PlanDetails> = {
     FREE: {
       type: 'FREE',
       workspaces: 2,
@@ -23,23 +23,27 @@ const Settings = () => {
       goalsPerWorkspace: 'Unlimited',
       aiPlannerRequests: '5 Lifetime',
       aiChatRequests: '5 Lifetime',
+      aiPlanRequestsInDay: 5, 
+      aiChatRequestsInDay: 5, 
       features: ['2 Workspaces', 'Unlimited Todos', 'Unlimited Goals', 'Basic sync', 'AI Planner (5 lifetime)', 'AI Chat (5 lifetime)'],
     },
-    PREMIUM: {
-      type: 'PREMIUM',
+    PRO_MONTHLY: {
+      type: 'PRO_MONTHLY',
       workspaces: 10,
       todosPerWorkspace: 'Unlimited',
       goalsPerWorkspace: 'Unlimited',
       syncTime: 'Faster',
       aiPlannerRequests: '50/day',
       aiChatRequests: '100/day',
+      aiPlanRequestsInDay: 50, 
+      aiChatRequestsInDay: 100, 
       features: ['10 Workspaces', 'Unlimited Todos', 'Unlimited Goals', 'Faster sync', 'AI Planner (50/day)', 'AI Chat (100/day)'],
     },
   };
 
-  const currentPlan = userInfo?.plan || 'FREE';
+  const currentPlan: PlanType = userInfo?.plan || 'FREE';
   const currentPlanDetails: any = planDetails[currentPlan];
-  const otherPlan = currentPlan === 'FREE' ? 'PREMIUM' : 'FREE';
+  const otherPlan = currentPlan === 'FREE' ? 'PRO_MONTHLY' : 'FREE';
   const otherPlanDetails = planDetails[otherPlan];
   const [createOrderLoader , setCreateOrderLoader] = useState(false);
 
@@ -192,11 +196,11 @@ const Settings = () => {
               <div className={`plan-box plan-box-${currentPlan.toLowerCase()}`}>
                 <div className="plan-badge-container">
                   <span className={`plan-badge plan-badge-${currentPlan.toLowerCase()}`}>
-                    {currentPlan === 'PREMIUM' && '⭐ '}
+                    {currentPlan === 'PRO_MONTHLY' && '⭐ '}
                     {currentPlan}
                   </span>
                   {currentPlan === 'FREE' && <span className="plan-status">Current Plan</span>}
-                  {currentPlan === 'PREMIUM' && <span className="plan-status premium">Active</span>}
+                  {currentPlan === 'PRO_MONTHLY' && <span className="plan-status premium">Active</span>}
                 </div>
                 
                 <div className="plan-content">
@@ -227,7 +231,7 @@ const Settings = () => {
                     <span className="feature-label">AI Chat</span>
                     <span className="feature-value">{currentPlanDetails.aiChatRequests}</span>
                   </div>
-                  {currentPlan === 'PREMIUM' && (
+                  {currentPlan === 'PRO_MONTHLY' && (
                     <>
                       <div className="feature-row">
                         <span className="feature-label">Sync Speed</span>
@@ -250,7 +254,7 @@ const Settings = () => {
                       </svg>
                     </button>
                   )}
-                  {currentPlan === 'PREMIUM' && (
+                  {currentPlan === 'PRO_MONTHLY' && (
                     <div className="plan-active-badge">✓ Currently Active</div>
                   )}
                 </div>
@@ -260,7 +264,7 @@ const Settings = () => {
               <div className={`plan-box plan-box-preview plan-box-${otherPlan.toLowerCase()}-preview`}>
                 <div className="plan-badge-container">
                   <span className={`plan-badge plan-badge-${otherPlan.toLowerCase()}`}>
-                    {otherPlan === 'PREMIUM' && '⭐ '}
+                    {otherPlan === 'PRO_MONTHLY' && '⭐ '}
                     {otherPlan}
                   </span>
                 </div>
@@ -285,7 +289,7 @@ const Settings = () => {
                     <span className="feature-label">Goals per Workspace</span>
                     <span className="feature-value">{otherPlanDetails.goalsPerWorkspace}</span>
                   </div>
-                  {otherPlan === 'PREMIUM' && (
+                  {otherPlan === 'PRO_MONTHLY' && (
                     <>
                       <div className="feature-row">
                         <span className="feature-label">Sync Speed</span>
@@ -304,7 +308,7 @@ const Settings = () => {
                 </div>
 
                 <div className="plan-action">
-                  {otherPlan === 'PREMIUM' && (
+                  {otherPlan === 'PRO_MONTHLY' && (
                     <button onClick={handleUpgrade} className="btn-upgrade">
                       {createOrderLoader ? (
                         <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>

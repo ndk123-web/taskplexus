@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ndk123-web/fast-todo/internal/config"
 	"github.com/ndk123-web/fast-todo/internal/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -41,50 +42,56 @@ func (r *workspaceRepository) GetAllUserWorkspace(ctx context.Context, userId st
 		return nil, err
 	}
 
-	// // filter for finding only workspaces of user
-	// filter := bson.M{"userId": oid}
+	// check the subscription status of user
+	var plan string
+	var start_date time.Time
+	var end_date time.Time
+	var is_active bool
 
-	// // get the workspaces here
-	// cursor, err := r.workspaceCollection.Find(ctx, filter)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	query := "SELECT plan_name, is_active, started_at, expires_at FROM subscriptions WHERE user_id = $1 AND is_active = true ORDER BY created_at DESC LIMIT 1"
+	err = config.PostgresPool.QueryRow(ctx, query, userId).Scan(&plan, &is_active, &start_date, &end_date)
 
-	// // fetch workspaces
-	// var workspaces []model.Workspace
-	// for cursor.Next(ctx) {
-	// 	var workspace model.Workspace
-	// 	cursor.Decode(&workspace)
-	// 	workspaces = append(workspaces, workspace)
-	// }
+	if err != nil {
+		plan = "FREE"
+	}
 
+	fmt.Println("Plan: ", plan)
+
+	// Construct base pipeline
 	pipeline := mongo.Pipeline{
 		{
-			{"$match", bson.D{
-				{"userId", oid},
+			{Key: "$match", Value: bson.D{
+				{Key: "userId", Value: oid},
 			}},
 		},
 		{
-			{"$lookup", bson.D{
-				{"from", "todos"},
-				{"localField", "_id"},
-				{"foreignField", "workspaceId"},
-				{"as", "todos"},
+			{Key: "$lookup", Value: bson.D{
+				{Key: "from", Value: "todos"},
+				{Key: "localField", Value: "_id"},
+				{Key: "foreignField", Value: "workspaceId"},
+				{Key: "as", Value: "todos"},
 			}},
 		},
 		{
-			{"$lookup", bson.D{
-				{"from", "goals"},
-				{"localField", "_id"},
-				{"foreignField", "workspaceId"},
-				{"as", "goals"},
+			{Key: "$lookup", Value: bson.D{
+				{Key: "from", Value: "goals"},
+				{Key: "localField", Value: "_id"},
+				{Key: "foreignField", Value: "workspaceId"},
+				{Key: "as", Value: "goals"},
 			}},
 		},
 		{
-			{"$sort", bson.D{
-				{"createdAt", 1},
+			{Key: "$sort", Value: bson.D{
+				{Key: "createdAt", Value: 1},
 			}},
 		},
+	}
+
+	// if plan free then limit workspaces to 2
+	if plan == "FREE" {
+		pipeline = append(pipeline, bson.D{{Key: "$limit", Value: 2}})
+	} else if plan == "PRO_MONTHLY" {
+		pipeline = append(pipeline, bson.D{{Key: "$limit", Value: 10}})
 	}
 
 	cursor, err := r.workspaceCollection.Aggregate(ctx, pipeline)

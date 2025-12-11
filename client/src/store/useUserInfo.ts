@@ -21,6 +21,8 @@ export interface PlanDetails {
   syncTime?: string;
   aiPlannerRequests: string;
   aiChatRequests: string;
+  aiPlanRequestsInDay?: number;
+  aiChatRequestsInDay?: number;
   features: string[];
 }
 

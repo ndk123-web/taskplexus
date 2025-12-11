@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import useUserStore from '../store/useUserInfo';
+import useUserStore, { type PlanType } from '../store/useUserInfo';
 import useWorkspaceStore , {type Workspace} from '../store/useWorkspaceStore';
 import TrelloLogo from '../components/ui/TrelloLogo';
 import pendingOps from '../hooks/useRunBackgroundOps';
@@ -41,6 +41,8 @@ const Dashboard = () => {
   // Wait for hydration from IndexedDB
   const [isHydrated, setIsHydrated] = useState(false);
   const [workspacesFetched, setWorkspacesFetched] = useState(false);
+
+  const userCurrentPlan: PlanType = userInfo?.plan || 'FREE';
   
   // AI Chat state
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -890,10 +892,17 @@ const Dashboard = () => {
   
   const handleAddWorkspace = (e: React.FormEvent) => {
     e.preventDefault();
-    if (workspaces.length >= 5) {
-      showToast('You can create maximum 5 workspaces. Premium coming soon for unlimited workspaces!', 'warning');
+
+    if (userCurrentPlan === "FREE" && workspaces.length >= 2) {
+      showToast('Free plan allows maximum 2 workspaces. Please upgrade to Premium for more!', 'warning');
       return;
     }
+
+    if (userCurrentPlan === "PRO_MONTHLY" && workspaces.length >= 10) {
+      showToast('Pro plan allows maximum 10 workspaces. Please contact support for more!', 'warning');
+      return;
+    }
+
     if(useWorkspaceStore.getState().workspaces.some(v => v.name === newWorkspaceName)) {
       showToast('You Can not create Duplicate Workspace!', 'warning');
       return 
@@ -1482,6 +1491,59 @@ const Dashboard = () => {
                   </div>
                 ))}
               </div>
+
+              {workspaces.length >= 2 && userCurrentPlan === "FREE" && (
+                <div className="upgrade-plan-card" style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  marginTop: '16px',
+                  color: 'white',
+                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '20px', marginRight: '8px' }}>🚀</span>
+                      <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Unlock Pro Features</h4>
+                    </div>
+                    <p style={{ margin: '0 0 12px 0', fontSize: '12px', opacity: 0.9, lineHeight: '1.4' }}>
+                      You've reached the free limit of 2 workspaces. Upgrade to create more!
+                    </p>
+                    <button
+                      onClick={() => navigate('/settings')}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        background: 'white',
+                        color: '#764ba2',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s',
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                      onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
+                      Upgrade Now
+                    </button>
+                  </div>
+                  {/* Decorative circle */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '-20px',
+                    right: '-20px',
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.1)'
+                  }} />
+                </div>
+              )}
             </div>
           )}
         </nav>
