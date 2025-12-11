@@ -216,7 +216,11 @@ type updateTodo struct {
 	ID   string `json:"id"`   // ID of the todo to update
 	Task string `json:"task"` // New task text
 	// WorkspaceId string `json:"workspaceId"`  // No Need of workspaceID because ID is already unique
-	Priority string `json:"priority"`
+	Priority      string     `json:"priority"`
+	Description   string     `json:"description,omitempty"`
+	Deadline      *time.Time `json:"deadline,omitempty"`
+	EstimatedTime *int       `json:"estimatedTime,omitempty"`
+	WorkspaceId   string     `json:"workspaceId"`
 }
 
 // UpdateTodo handles HTTP PUT requests to update an existing todo
@@ -229,7 +233,7 @@ func (h *todoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	todo, err2 := h.service.UpdateTodo(context.Background(), tobeUpdate.ID, tobeUpdate.Task, tobeUpdate.Priority)
+	todo, err2 := h.service.UpdateTodo(context.Background(), tobeUpdate.ID, tobeUpdate.Task, tobeUpdate.Priority, tobeUpdate.Description, tobeUpdate.Deadline, tobeUpdate.EstimatedTime)
 	if err2 != nil {
 		json.NewEncoder(w).Encode(map[string]string{"Error": err2.Error(), "success": "false"})
 		return

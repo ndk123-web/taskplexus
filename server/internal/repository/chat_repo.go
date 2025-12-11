@@ -61,8 +61,8 @@ func (r *chatRepository) HandleAiMessage(ctx context.Context, userPrompt string,
 
 	for i, t := range todos {
 		fmt.Fprintf(&builder,
-			"%d. Task: %s | Priority: %s | Done: %t\n",
-			i+1, t.Task, t.Priority, t.Done,
+			"%d. Task: %s | Priority: %s | Done: %t | Description: %s | Estimation (Minutes): %v | Deadline: %s\n",
+			i+1, t.Task, t.Priority, t.Done, t.Description, *t.EstimatedTime, t.Deadline,
 		)
 	}
 

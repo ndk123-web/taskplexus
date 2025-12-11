@@ -4,6 +4,10 @@ interface UpdateTaskReq {
   task: string;
   id: string;
   priority: string;
+  description?: string;
+  deadline?: Date;
+  estimatedTime?: number;
+  workspaceId: string;
 }
 
 const updateTaskApi = async (data: UpdateTaskReq) => {

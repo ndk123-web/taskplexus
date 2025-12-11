@@ -19,7 +19,8 @@ export interface PlanDetails {
   todosPerWorkspace: string;
   goalsPerWorkspace: string;
   syncTime?: string;
-  aiRequestsPerDay?: number;
+  aiPlannerRequests: string;
+  aiChatRequests: string;
   features: string[];
 }
 

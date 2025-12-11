@@ -2,15 +2,18 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useWorkspaceStore from '../store/useWorkspaceStore';
 import '../styles/pages/TaskDetails.css';
+import { useToast } from '../components/ui/ToastProvider';
 
 const TaskDetails = () => {
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const { currentWorkspace, updateTodo } = useWorkspaceStore();
   
   const [taskText, setTaskText] = useState('');
   const [description, setDescription] = useState('');
   const [deadline, setDeadline] = useState('');
+  const [estimatedTime, setEstimatedTime] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -25,6 +28,7 @@ const TaskDetails = () => {
             const d = new Date(todo.deadline);
             setDeadline(d.toISOString().split('T')[0]);
         }
+        setEstimatedTime(todo.estimatedTime ? todo.estimatedTime.toString() : '');
         setPriority(todo.priority);
         setIsLoading(false);
       } else {
@@ -37,14 +41,33 @@ const TaskDetails = () => {
   const handleSave = async () => {
     if (!currentWorkspace || !taskId) return;
     
+    // Validate deadline is not in the past
+    if (deadline) {
+      const selectedDate = new Date(deadline);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset time to start of day
+      
+      if (selectedDate < today) {
+        showToast('Deadline cannot be in the past', 'error');
+        return;
+      }
+    }
+    
     await updateTodo(currentWorkspace.id, taskId, {
       text: taskText,
       description,
       deadline: deadline ? new Date(deadline) : undefined,
-      priority
+      priority,
+      estimatedTime: estimatedTime ? parseInt(estimatedTime, 10) : undefined
     });
     
     navigate('/dashboard');
+  };
+
+  // Get today's date in YYYY-MM-DD format for min attribute
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
   };
 
   if (isLoading) return <div className="details-loading">Loading...</div>;
@@ -93,6 +116,19 @@ const TaskDetails = () => {
                 value={deadline} 
                 onChange={(e) => setDeadline(e.target.value)} 
                 className="details-input"
+                min={getTodayDate()}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Estimated Time (Minutes)</label>
+              <input 
+                type="number" 
+                value={estimatedTime} 
+                onChange={(e) => setEstimatedTime(e.target.value)} 
+                className="details-input"
+                placeholder="Enter time in minutes"
+                min="0"
               />
             </div>
 

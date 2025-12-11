@@ -12,6 +12,7 @@ export interface Todo {
   text?: string;
   description?: string;
   deadline?: Date;
+  estimatedTime?: number;
   completed?: boolean;
   priority: "low" | "medium" | "high";
   createdAt?: Date;
@@ -703,6 +704,8 @@ const useWorkspaceStore = create<WorkspaceState>()(
               priority,
               description: updates.description,
               deadline: updates.deadline,
+              estimatedTime: updates.estimatedTime,
+              workspaceId,
             },
             timestamp: Date.now(),
             retryCount: 0,

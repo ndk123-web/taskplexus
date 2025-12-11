@@ -136,7 +136,7 @@ const Home = () => {
               <div className="feature-icon">📂</div>
               <h3 className="feature-title">Multi-Workspace Management</h3>
               <p className="feature-description">
-                Create up to 5 workspaces. Each with isolated todos, goals, and flowcharts. Switch seamlessly between projects.
+                Create up to 2 workspaces on free plan, up to 10 on premium. Each with isolated todos, goals, and flowcharts. Switch seamlessly between projects.
               </p>
             </div>
 
@@ -144,7 +144,7 @@ const Home = () => {
               <div className="feature-icon">📋</div>
               <h3 className="feature-title">Smart Task Management</h3>
               <p className="feature-description">
-                Priority-based organization (Low, Medium, High). Up to 15 todos per workspace. Real-time status tracking.
+                Priority-based organization (Low, Medium, High). Unlimited todos per workspace. Real-time status tracking.
               </p>
             </div>
 
@@ -152,7 +152,15 @@ const Home = () => {
               <div className="feature-icon">🎯</div>
               <h3 className="feature-title">Goal Tracking</h3>
               <p className="feature-description">
-                Set and monitor long-term goals. Up to 5 goals per workspace. Progress visualization with completion metrics.
+                Set and monitor long-term goals. Unlimited goals per workspace. Progress visualization with completion metrics.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon">🤖</div>
+              <h3 className="feature-title">AI-Powered Features</h3>
+              <p className="feature-description">
+                AI Planner: 5 lifetime requests (free), 50/day (premium). AI Chat: 5 lifetime requests (free), 100/day (premium).
               </p>
             </div>
 
@@ -217,32 +225,36 @@ const Home = () => {
                 </p>
               </div>
               <ul className="plan-features">
-                <li>✓ 5 Workspaces</li>
-                <li>✓ 15 Todos per workspace</li>
-                <li>✓ 5 Goals per workspace</li>
+                <li>✓ 2 Workspaces</li>
+                <li>✓ Unlimited Todos per workspace</li>
+                <li>✓ Unlimited Goals per workspace</li>
                 <li>✓ Flowchart View</li>
                 <li>✓ Basic Analytics</li>
                 <li>✓ Offline Access</li>
+                <li>✓ AI Planner (5 lifetime)</li>
+                <li>✓ AI Chat (5 lifetime)</li>
               </ul>
               <Link to="/signup" className="plan-cta">Get Started</Link>
             </div>
 
             <div className="pricing-card premium-plan">
-              <div className="plan-badge">Coming Soon</div>
+              <div className="plan-badge">Premium</div>
               <div className="plan-header">
                 <h3 className="plan-name">Premium</h3>
                 <p className="plan-price">
-                  <span className="price-value">$4.99</span>
+                  <span className="price-value">₹99</span>
                   <span className="price-period">/month</span>
                 </p>
               </div>
               <ul className="plan-features">
-                <li>✓ Unlimited Workspaces</li>
+                <li>✓ 10 Workspaces</li>
                 <li>✓ Unlimited Todos</li>
                 <li>✓ Unlimited Goals</li>
                 <li>✓ Advanced Flowchart Features</li>
                 <li>✓ Detailed Analytics</li>
-                <li>✓ AI-Powered Suggestions</li>
+                <li>✓ Faster Sync</li>
+                <li>✓ AI Planner (50/day)</li>
+                <li>✓ AI Chat (100/day)</li>
                 <li>✓ Priority Support</li>
               </ul>
               <button 

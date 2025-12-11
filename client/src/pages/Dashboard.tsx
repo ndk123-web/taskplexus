@@ -127,14 +127,17 @@ const Dashboard = () => {
         isDefault: (ws.worskpaceName || ws.workspaceName) === "Default",
         createdAt: new Date(ws.createdAt || Date.now()),
         todos: (ws.todos || []).map((t: any) => ({
-          id: t._id,
-          text: t.task,
+          id: t._id || t.id,
+          text: t.task || t.text,
           completed: t.done,
           priority: t.priority || 'medium',
           status: t.done ? 'completed' : 'not-started',
           workspaceId: ws._id,
           createdAt: t.createdAt ? new Date(t.createdAt) : undefined,
-          updatedAt: t.updatedAt ? new Date(t.updatedAt) : undefined
+          updatedAt: t.updatedAt ? new Date(t.updatedAt) : undefined,
+          deadline: t.deadline ? new Date(t.deadline) : undefined,
+          description: t.description || '',
+          estimatedTime: t.estimatedTime !== undefined ? t.estimatedTime : undefined,
         })),
         // Normalize server goals to have 'id'
         goals: (ws.goals || []).map((g: any) => {

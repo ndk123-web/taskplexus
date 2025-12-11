@@ -21,7 +21,9 @@ const Settings = () => {
       workspaces: 2,
       todosPerWorkspace: 'Unlimited',
       goalsPerWorkspace: 'Unlimited',
-      features: ['2 Workspaces', 'Unlimited Todos', 'Unlimited Goals', 'Basic sync'],
+      aiPlannerRequests: '5 Lifetime',
+      aiChatRequests: '5 Lifetime',
+      features: ['2 Workspaces', 'Unlimited Todos', 'Unlimited Goals', 'Basic sync', 'AI Planner (5 lifetime)', 'AI Chat (5 lifetime)'],
     },
     PREMIUM: {
       type: 'PREMIUM',
@@ -29,13 +31,14 @@ const Settings = () => {
       todosPerWorkspace: 'Unlimited',
       goalsPerWorkspace: 'Unlimited',
       syncTime: 'Faster',
-      aiRequestsPerDay: 50,
-      features: ['10 Workspaces', 'Unlimited Todos', 'Unlimited Goals', 'Faster sync', 'AI Features (50 req/day)'],
+      aiPlannerRequests: '50/day',
+      aiChatRequests: '100/day',
+      features: ['10 Workspaces', 'Unlimited Todos', 'Unlimited Goals', 'Faster sync', 'AI Planner (50/day)', 'AI Chat (100/day)'],
     },
   };
 
   const currentPlan = userInfo?.plan || 'FREE';
-  const currentPlanDetails = planDetails[currentPlan];
+  const currentPlanDetails: any = planDetails[currentPlan];
   const otherPlan = currentPlan === 'FREE' ? 'PREMIUM' : 'FREE';
   const otherPlanDetails = planDetails[otherPlan];
   const [createOrderLoader , setCreateOrderLoader] = useState(false);
@@ -209,6 +212,14 @@ const Settings = () => {
                     <span className="feature-label">Goals per Workspace</span>
                     <span className="feature-value">{currentPlanDetails.goalsPerWorkspace}</span>
                   </div>
+                  <div className="feature-row">
+                    <span className="feature-label">AI Planner</span>
+                    <span className="feature-value">{currentPlanDetails.aiPlannerRequests}</span>
+                  </div>
+                  <div className="feature-row">
+                    <span className="feature-label">AI Chat</span>
+                    <span className="feature-value">{currentPlanDetails.aiChatRequests}</span>
+                  </div>
                   {currentPlan === 'PREMIUM' && (
                     <>
                       <div className="feature-row">
@@ -217,7 +228,7 @@ const Settings = () => {
                       </div>
                       <div className="feature-row">
                         <span className="feature-label">AI Requests/Day</span>
-                        <span className="feature-value">{currentPlanDetails.aiRequestsPerDay}</span>
+                        <span className="feature-value">{currentPlanDetails?.aiRequestsPerDay}</span>
                       </div>
                     </>
                   )}
@@ -274,8 +285,12 @@ const Settings = () => {
                         <span className="feature-value">⚡ Faster</span>
                       </div>
                       <div className="feature-row">
-                        <span className="feature-label">AI Requests/Day</span>
-                        <span className="feature-value">{otherPlanDetails.aiRequestsPerDay}</span>
+                        <span className="feature-label">AI Planner</span>
+                        <span className="feature-value">{otherPlanDetails.aiPlannerRequests}</span>
+                      </div>
+                      <div className="feature-row">
+                        <span className="feature-label">AI Chat</span>
+                        <span className="feature-value">{otherPlanDetails.aiChatRequests}</span>
                       </div>
                     </>
                   )}

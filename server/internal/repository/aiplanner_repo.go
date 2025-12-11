@@ -66,8 +66,8 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 
 	for i, t := range todos {
 		fmt.Fprintf(&builder,
-			"%d. Task: %s | Priority: %s | Done: %t\n",
-			i+1, t.Task, t.Priority, t.Done,
+			"%d. Task: %s | Priority: %s | Done: %t | Description: %s | Estimated Time (Minutes): %v | Deadline: %s \n",
+			i+1, t.Task, t.Priority, t.Done, t.Description, *t.EstimatedTime, t.Deadline,
 		)
 	}
 
