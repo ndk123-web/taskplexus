@@ -75,9 +75,24 @@ func (s *userService) SignUpWithGoogle(ctx context.Context, email string, fullNa
 		return nil, errors.New("Email/FullName is Missing in Service")
 	}
 
-	response, err := s.repo.SignUpWithGoogle(ctx, email, fullName)
+	// store the user in mongo first
+	response, err := s.repo.SignUpWithGoogleMongo(ctx, email, fullName)
 	if err != nil {
 		return nil, err
+	}
+
+	// store the user in postgres as well
+	_, err = s.repo.SignUpWithGooglePostgres(ctx, email, fullName, response.UserId)
+
+	// if Postgres fails, rollback Mongo
+	if err != nil {
+		// ROLLBACK: Postgres failed, delete from Mongo only (Postgres doesn't have user yet)
+		deleteErr := s.repo.DeleteUserByEmail(ctx, email)
+		if deleteErr != nil {
+			// Log this critical error - manual intervention needed
+			fmt.Printf("CRITICAL: Failed to rollback Mongo user after Postgres failure. Email: %s, Error: %v\n", email, deleteErr)
+		}
+		return nil, fmt.Errorf("postgres signup failed and mongo rolled back: %w", err)
 	}
 
 	accessString, refreshString, err := njwt.CreateAccessAndRefreshToken(email)

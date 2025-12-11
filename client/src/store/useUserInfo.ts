@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+export type PlanType = "FREE" | "PREMIUM";
+
 export interface User {
   fullName?: string;
   email: string;
@@ -8,6 +10,17 @@ export interface User {
   _accessToken: string;
   _refreshToken: string;
   auth?: boolean;
+  plan?: PlanType;
+}
+
+export interface PlanDetails {
+  type: PlanType;
+  workspaces: number;
+  todosPerWorkspace: string;
+  goalsPerWorkspace: string;
+  syncTime?: string;
+  aiRequestsPerDay?: number;
+  features: string[];
 }
 
 interface UserState {

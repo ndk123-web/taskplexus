@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import useUserStore, { type User } from '../store/useUserInfo';
+import useUserStore, { type User, type PlanDetails } from '../store/useUserInfo';
 import '../styles/pages/Settings.css';
 import updateUserNameApi from '../api/endpoints/updateUserNameApi';
 import { useToast } from '../components/ui/ToastProvider';
+import { dynamicRazorPayLoad , openRazorpayCheckout } from '../utils/razorpay';
+import '../styles/pages/Home.css'
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -11,6 +13,32 @@ const Settings = () => {
   const { userInfo, signOutUser, signinUser } = useUserStore();
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState(userInfo?.fullName || '');
+
+  // Plan details
+  const planDetails: Record<'FREE' | 'PREMIUM', PlanDetails> = {
+    FREE: {
+      type: 'FREE',
+      workspaces: 2,
+      todosPerWorkspace: 'Unlimited',
+      goalsPerWorkspace: 'Unlimited',
+      features: ['2 Workspaces', 'Unlimited Todos', 'Unlimited Goals', 'Basic sync'],
+    },
+    PREMIUM: {
+      type: 'PREMIUM',
+      workspaces: 10,
+      todosPerWorkspace: 'Unlimited',
+      goalsPerWorkspace: 'Unlimited',
+      syncTime: 'Faster',
+      aiRequestsPerDay: 50,
+      features: ['10 Workspaces', 'Unlimited Todos', 'Unlimited Goals', 'Faster sync', 'AI Features (50 req/day)'],
+    },
+  };
+
+  const currentPlan = userInfo?.plan || 'FREE';
+  const currentPlanDetails = planDetails[currentPlan];
+  const otherPlan = currentPlan === 'FREE' ? 'PREMIUM' : 'FREE';
+  const otherPlanDetails = planDetails[otherPlan];
+  const [createOrderLoader , setCreateOrderLoader] = useState(false);
 
   const handleSaveName = async () => {
     if (!userInfo) {
@@ -39,6 +67,7 @@ const Settings = () => {
           _refreshToken: userInfo._refreshToken,
           fullName: trimmed,
           auth: userInfo.auth ?? true,
+          plan: userInfo.plan,
         };
         signinUser(updatedUser);
         setIsEditingName(false);
@@ -50,6 +79,30 @@ const Settings = () => {
       showToast(e?.message || 'Unexpected error updating name', 'error');
     }
   };
+
+  // const handleUpgrade = () => {
+  //   showToast('Upgrade feature coming soon!', 'info');
+    
+  // };
+
+  
+    const handleUpgrade = async () => {
+      // lazy load razorpay script on button click
+      await dynamicRazorPayLoad()
+  
+      setCreateOrderLoader(true);
+      try {
+        const order = {
+          amount : import.meta.env.VITE_TASKPLEXUS_PREMIUM_MONEY, // amount in paise (100 INR)
+          currency : "INR",
+        }
+        await openRazorpayCheckout(order);
+      } catch (error) {
+        console.error("Payment error:", error);
+      } finally {
+        setCreateOrderLoader(false);
+      }
+    }
 
   const handleLogout = () => {
     signOutUser();
@@ -118,42 +171,134 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* Plan Card */}
+        {/* Plan Comparison Card */}
         <div className="card plan-card">
           <div className="card-header">
-            <h2>Plan</h2>
+            <h2>Subscription Plan</h2>
           </div>
           <div className="card-body">
-            <div className="plan-info">
-              <div className="plan-badge">
-                <span className="badge-text">FREE</span>
+            <div className="plan-comparison-container">
+              {/* Current Plan */}
+              <div className={`plan-box plan-box-${currentPlan.toLowerCase()}`}>
+                <div className="plan-badge-container">
+                  <span className={`plan-badge plan-badge-${currentPlan.toLowerCase()}`}>
+                    {currentPlan === 'PREMIUM' && '⭐ '}
+                    {currentPlan}
+                  </span>
+                  {currentPlan === 'FREE' && <span className="plan-status">Current Plan</span>}
+                  {currentPlan === 'PREMIUM' && <span className="plan-status premium">Active</span>}
+                </div>
+                
+                <div className="plan-content">
+                  <h3>{currentPlan === 'FREE' ? 'Free Plan' : 'Premium Plan'}</h3>
+                  <p className="plan-description">
+                    {currentPlan === 'FREE' ? 'Perfect for getting started' : 'For power users'}
+                  </p>
+                </div>
+
+                <div className="plan-features">
+                  <div className="feature-row">
+                    <span className="feature-label">Workspaces</span>
+                    <span className="feature-value">{currentPlanDetails.workspaces}</span>
+                  </div>
+                  <div className="feature-row">
+                    <span className="feature-label">Todos per Workspace</span>
+                    <span className="feature-value">{currentPlanDetails.todosPerWorkspace}</span>
+                  </div>
+                  <div className="feature-row">
+                    <span className="feature-label">Goals per Workspace</span>
+                    <span className="feature-value">{currentPlanDetails.goalsPerWorkspace}</span>
+                  </div>
+                  {currentPlan === 'PREMIUM' && (
+                    <>
+                      <div className="feature-row">
+                        <span className="feature-label">Sync Speed</span>
+                        <span className="feature-value">⚡ Faster</span>
+                      </div>
+                      <div className="feature-row">
+                        <span className="feature-label">AI Requests/Day</span>
+                        <span className="feature-value">{currentPlanDetails.aiRequestsPerDay}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="plan-action">
+                  {currentPlan === 'FREE' && (
+                    <button onClick={handleUpgrade} className="btn-upgrade">
+                      <span>Upgrade to Premium</span>
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M8 2L10.5 7H13L10.5 9L11.5 14L8 11L4.5 14L5.5 9L3 7H5.5L8 2Z" fill="currentColor"/>
+                      </svg>
+                    </button>
+                  )}
+                  {currentPlan === 'PREMIUM' && (
+                    <div className="plan-active-badge">✓ Currently Active</div>
+                  )}
+                </div>
               </div>
-              <div className="plan-details">
-                <h3>Free Plan</h3>
-                <p>Perfect for personal use</p>
+
+              {/* Other Plan Preview */}
+              <div className={`plan-box plan-box-preview plan-box-${otherPlan.toLowerCase()}-preview`}>
+                <div className="plan-badge-container">
+                  <span className={`plan-badge plan-badge-${otherPlan.toLowerCase()}`}>
+                    {otherPlan === 'PREMIUM' && '⭐ '}
+                    {otherPlan}
+                  </span>
+                </div>
+                
+                <div className="plan-content">
+                  <h3>{otherPlan === 'FREE' ? 'Free Plan' : 'Premium Plan'}</h3>
+                  <p className="plan-description">
+                    {otherPlan === 'FREE' ? 'Perfect for getting started' : 'For power users'}
+                  </p>
+                </div>
+
+                <div className="plan-features">
+                  <div className="feature-row">
+                    <span className="feature-label">Workspaces</span>
+                    <span className="feature-value">{otherPlanDetails.workspaces}</span>
+                  </div>
+                  <div className="feature-row">
+                    <span className="feature-label">Todos per Workspace</span>
+                    <span className="feature-value">{otherPlanDetails.todosPerWorkspace}</span>
+                  </div>
+                  <div className="feature-row">
+                    <span className="feature-label">Goals per Workspace</span>
+                    <span className="feature-value">{otherPlanDetails.goalsPerWorkspace}</span>
+                  </div>
+                  {otherPlan === 'PREMIUM' && (
+                    <>
+                      <div className="feature-row">
+                        <span className="feature-label">Sync Speed</span>
+                        <span className="feature-value">⚡ Faster</span>
+                      </div>
+                      <div className="feature-row">
+                        <span className="feature-label">AI Requests/Day</span>
+                        <span className="feature-value">{otherPlanDetails.aiRequestsPerDay}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="plan-action">
+                  {otherPlan === 'PREMIUM' && (
+                    <button onClick={handleUpgrade} className="btn-upgrade">
+                      {createOrderLoader ? (
+                        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                      <span className="spinner"></span>
+                      Processing...
+                      </span>
+                      ): (
+                       <span>Upgrade Now</span>
+                      )}
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M8 2L10.5 7H13L10.5 9L11.5 14L8 11L4.5 14L5.5 9L3 7H5.5L8 2Z" fill="currentColor"/>
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="plan-limits">
-              <div className="limit-item">
-                <span className="limit-number">5</span>
-                <span className="limit-label">Workspaces</span>
-              </div>
-              <div className="limit-item">
-                <span className="limit-number">15</span>
-                <span className="limit-label">Todos each</span>
-              </div>
-              <div className="limit-item">
-                <span className="limit-number">5</span>
-                <span className="limit-label">Goals each</span>
-              </div>
-            </div>
-            <div className="upgrade-section">
-              <button className="upgrade-btn">
-                <span>Premium Coming Soon</span>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 2L10.5 7H13L10.5 9L11.5 14L8 11L4.5 14L5.5 9L3 7H5.5L8 2Z" fill="currentColor"/>
-                </svg>
-              </button>
             </div>
           </div>
         </div>

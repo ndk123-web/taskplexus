@@ -29,7 +29,8 @@ type UserRepository interface {
 	SignInUser(ctx context.Context, email string, password string) (*SignUpResponse, error)
 	UpdateUserName(ctx context.Context, userId string, newName string) (bool, error)
 	SignInGoogleUser(ctx context.Context, email string, fullName string) (*SignUpResponse, error)
-	SignUpWithGoogle(ctx context.Context, email string, fullName string) (*SignUpResponse, error)
+	SignUpWithGoogleMongo(ctx context.Context, email string, fullName string) (*SignUpResponse, error)
+	SignUpWithGooglePostgres(ctx context.Context, email string, fullName string, userId string) (*SignUpResponse, error)
 	DeleteUserByEmail(ctx context.Context, email string) error
 	DeleteUserFromPostgres(ctx context.Context, email string) error
 }
@@ -149,7 +150,7 @@ func (r *userRepo) SignUpUserPostgres(ctx context.Context, email string, passwor
 	}, nil
 }
 
-func (r *userRepo) SignUpWithGoogle(ctx context.Context, email string, fullName string) (*SignUpResponse, error) {
+func (r *userRepo) SignUpWithGoogleMongo(ctx context.Context, email string, fullName string) (*SignUpResponse, error) {
 	if email == "" || fullName == "" {
 		return nil, errors.New("Email/FullName is Missing in Repo")
 	}
@@ -181,6 +182,42 @@ func (r *userRepo) SignUpWithGoogle(ctx context.Context, email string, fullName 
 	}
 	oid := inserted.InsertedID.(primitive.ObjectID)
 	return &SignUpResponse{Email: email, UserId: oid.Hex(), FullName: fullName}, nil
+}
+
+func (r *userRepo) SignUpWithGooglePostgres(ctx context.Context, email string, fullName string, userId string) (*SignUpResponse, error) {
+	if email == "" || fullName == "" {
+		return nil, errors.New("Email/FullName is Missing in Repo")
+	}
+
+	// Check if user already exists
+	var exists bool
+	checkQuery := `SELECT EXISTS(SELECT 1 FROM users WHERE email=$1)`
+	err := config.PostgresPool.QueryRow(ctx, checkQuery, email).Scan(&exists)
+	if err != nil {
+		return nil, err
+	}
+
+	if exists {
+		return nil, errors.New("User Already Exists")
+	}
+
+	// Insert new user with random password
+	insertQuery := `
+		INSERT INTO users (id, email, name, password, created_at, updated_at, plan_limit, is_premium)
+		VALUES ($1, $2, $3, $4, NOW(), NOW(), $5, $6)
+		RETURNING id
+	`
+	randPass := primitive.NewObjectID().Hex()
+	_, err = config.PostgresPool.Exec(ctx, insertQuery, userId, email, fullName, randPass, 10, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SignUpResponse{
+		Email:    email,
+		UserId:   userId,
+		FullName: fullName,
+	}, nil
 }
 
 type SignInUserRequest struct {
