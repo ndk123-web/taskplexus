@@ -43,13 +43,13 @@ const CustomTodoNode = ({ data }: { data: any }) => {
         className="handle handle-right"
       />
       <Handle
-        type="target"
+        type="source"
         position={Position.Bottom}
         id="bottom"
         className="handle handle-bottom"
       />
       <Handle
-        type="source"
+        type="target"
         position={Position.Left}
         id="left"
         className="handle handle-left"

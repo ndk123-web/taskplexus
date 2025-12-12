@@ -575,7 +575,7 @@ const Dashboard = () => {
 
     // Run once on mount, then interval
     checkPlanStatus();
-    const intervalId = setInterval(checkPlanStatus, 10000);
+    const intervalId = setInterval(checkPlanStatus, 100000);
 
     return () => clearInterval(intervalId);
   }, [userInfo?.userId, userInfo?.plan]);

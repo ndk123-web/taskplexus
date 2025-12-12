@@ -80,7 +80,7 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 			return nil, err
 		}
 
-		if planName == "FREE" && count >= 1 {
+		if planName == "FREE" && count >= 5 {
 			return nil, errors.New("Limit Reached")
 		}
 
@@ -99,7 +99,7 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 			return nil, err
 		}
 
-		if planName == "PRO_MONTHLY" && count >= 2 {
+		if planName == "PRO_MONTHLY" && count >= 10 {
 			return nil, errors.New("Limit Reached")
 		}
 

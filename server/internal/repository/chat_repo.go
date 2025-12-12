@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	// "github.com/ndk123-web/fast-todo/internal/middleware"
 	"strings"
@@ -62,18 +63,41 @@ func (r *chatRepository) HandleAiMessage(ctx context.Context, userPrompt string,
 		return nil, errors.New("Please Subscribe to a Plan to Use AI Features")
 	}
 
-	filter := bson.M{"userId": userOid, "workspaceId": workspaceOid}
+	// Check Usage Limits Based on Plan
+	var filter bson.M
 
-	// first count the chats to check the limit
-	count, err := r.chatCollection.CountDocuments(ctx, filter)
-	if err != nil {
-		return nil, err
+	switch plan_name {
+	case "FREE":
+		filter = bson.M{"userId": userOid, "workspaceId": workspaceOid}
+		// first count the chats to check the limit
+		count, err := r.chatCollection.CountDocuments(ctx, filter)
+		if err != nil {
+			return nil, err
+		}
+
+		if plan_name == "FREE" && count >= 5 {
+			return nil, errors.New("LIMIT REACHED")
+		}
+	case "PRO_MONTHLY":
+
+		// check today's count
+		today := time.Now().Format("2006-01-02")
+
+		filter = bson.M{"userId": userOid, "workspaceId": workspaceOid, "date": today}
+		// first count the chats to check the limit
+		count, err := r.chatCollection.CountDocuments(ctx, filter)
+		if err != nil {
+			return nil, err
+		}
+
+		if plan_name == "PRO_MONTHLY" && count >= 20 {
+			return nil, errors.New("LIMIT REACHED")
+		}
+	default:
+		return nil, errors.New("Unable to determine user subscription plan")
 	}
 
-	if plan_name == "FREE" && count >= 5 {
-		return nil, errors.New("LIMIT REACHED")
-	}
-
+	filter = bson.M{"userId": userOid, "workspaceId": workspaceOid}
 	cursor, err := r.todoCollection.Find(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -91,9 +115,13 @@ func (r *chatRepository) HandleAiMessage(ctx context.Context, userPrompt string,
 	var builder strings.Builder
 
 	for i, t := range todos {
+		var estimatedTime int
+		if t.EstimatedTime != nil {
+			estimatedTime = *t.EstimatedTime
+		}
 		fmt.Fprintf(&builder,
 			"%d. Task: %s | Priority: %s | Done: %t | Description: %s | Estimation (Minutes): %v | Deadline: %s\n",
-			i+1, t.Task, t.Priority, t.Done, t.Description, *t.EstimatedTime, t.Deadline,
+			i+1, t.Task, t.Priority, t.Done, t.Description, estimatedTime, t.Deadline,
 		)
 	}
 
@@ -138,6 +166,9 @@ func (r *chatRepository) HandleAiMessage(ctx context.Context, userPrompt string,
 		UserId:      userOid,
 		Prompt:      userPrompt,
 		Response:    response.Text(),
+		CreatedAt:   primitive.NewDateTimeFromTime(time.Now()),
+		UpdatedAt:   primitive.NewDateTimeFromTime(time.Now()),
+		Date:        time.Now().Format("2006-01-02"),
 	}
 
 	inserted, err := r.chatCollection.InsertOne(ctx, insert)
