@@ -1876,3 +1876,10 @@
     height: 95vh;
   }
 }
+
+/* Fix for mobile scrolling smoothness */
+@media (hover: none) and (pointer: coarse) {
+  .home-container {
+    background-attachment: scroll;
+  }
+}

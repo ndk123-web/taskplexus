@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
-	"github.com/ndk123-web/fast-todo/internal/config"
+	// "github.com/ndk123-web/fast-todo/internal/config"
 	"github.com/ndk123-web/fast-todo/internal/handler"
 	"github.com/ndk123-web/fast-todo/internal/repository"
 	"github.com/ndk123-web/fast-todo/internal/server"
@@ -17,16 +18,16 @@ import (
 )
 
 func Run() error {
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		return err
-	}
+	// cfg, err := config.LoadConfig()
+	// if err != nil {
+	// 	return err
+	// }
 
 	// MongoDB Atlas connection
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel() // prevent from memory leak
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.MongoUri))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGO_URI")))
 
 	if err != nil {
 		return fmt.Errorf("failed to connect to mongo: %v", err)
@@ -134,5 +135,5 @@ func Run() error {
 	aiPlannerHandler := handler.NewAiPlannerHandler(aiPlannerService)
 
 	srv := server.NewServer(todoHandler, userHandler, goalHandler, workspaceHandler, chatHandler, activityHandler, paymentHandler, aiPlannerHandler)
-	return srv.Start(cfg.Port)
+	return srv.Start(os.Getenv("DEVLOPMENT_PORT"))
 }

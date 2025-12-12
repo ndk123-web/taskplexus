@@ -28,6 +28,12 @@ body {
   min-width: 320px;
   min-height: 100vh;
   overflow-x: hidden;
+  background-color: var(--dark-bg); /* Fix for white line on scroll bounce */
+  color: white;
+}
+
+html {
+  background-color: var(--dark-bg); /* Ensure html also has the background */
 }
 
 a {
