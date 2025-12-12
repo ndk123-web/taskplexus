@@ -195,12 +195,15 @@ const Home = () => {
                 <div className="ai-icon">🤖</div>
                 <h3>AI Planner</h3>
               </div>
-              <div className="ai-demo-video">
-                <div className="video-placeholder">
-                  <div className="video-icon">▶️</div>
-                  <p>AI Planner Demo</p>
-                  <small>Generate tasks from natural language</small>
-                </div>
+              <div className="ai-demo-video" style={{ padding: 0 }}>
+                <video 
+                  src="/AIPLANNER.mp4" 
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
               </div>
               <div className="ai-demo-description">
                 <p><strong>What it does:</strong> Describe your project or goal, and our AI will automatically break it down into organized tasks with priorities and timelines.</p>
@@ -219,12 +222,15 @@ const Home = () => {
                 <div className="ai-icon">💬</div>
                 <h3>AI Chat</h3>
               </div>
-              <div className="ai-demo-video">
-                <div className="video-placeholder">
-                  <div className="video-icon">▶️</div>
-                  <p>AI Chat Demo</p>
-                  <small>Chat with AI for productivity tips</small>
-                </div>
+              <div className="ai-demo-video" style={{ padding: 0 }}>
+                <video 
+                  src="/AICHAT.mp4" 
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
               </div>
               <div className="ai-demo-description">
                 <p><strong>What it does:</strong> Chat with our AI assistant to get personalized productivity advice, task suggestions, and workflow optimization tips.</p>
