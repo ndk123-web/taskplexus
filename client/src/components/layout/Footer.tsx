@@ -29,8 +29,8 @@ const Footer = () => {
           <div className="footer-column">
             <h4 className="footer-column-title">Product</h4>
             <ul className="footer-links">
-              <li><a href="/#features">Features</a></li>
-              <li><a href="/#pricing">Pricing</a></li>
+              <li><Link to="/features">Features</Link></li>
+              <li><Link to="/pricing">Pricing</Link></li>
               <li><Link to="/signin">Sign In</Link></li>
               <li><Link to="/signup">Get Started</Link></li>
             </ul>
@@ -48,8 +48,8 @@ const Footer = () => {
           <div className="footer-column">
             <h4 className="footer-column-title">Support</h4>
             <ul className="footer-links">
+              <li><Link to="/contact">Contact Us</Link></li>
               <li><a href="mailto:support@taskplexus.com">Email Support</a></li>
-              <li><a href="https://taskplexus.com" target="_blank" rel="noopener noreferrer">Website</a></li>
               <li><a href="mailto:support@taskplexus.com">Report Bug</a></li>
             </ul>
           </div>
@@ -57,9 +57,9 @@ const Footer = () => {
           <div className="footer-column">
             <h4 className="footer-column-title">Company</h4>
             <ul className="footer-links">
+              <li><Link to="/about">About Us</Link></li>
               <li><span className="footer-info">Navnath</span></li>
               <li><span className="footer-info">Mumbai, India</span></li>
-              <li><a href="mailto:support@taskplexus.com">support@taskplexus.com</a></li>
             </ul>
           </div>
         </div>

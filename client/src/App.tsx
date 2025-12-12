@@ -13,6 +13,10 @@ import GoalDetails from './pages/GoalDetails'
 import TermsConditions from './pages/Legal/TermsConditions'
 import PrivacyPolicy from './pages/Legal/PrivacyPolicy'
 import RefundPolicy from './pages/Legal/RefundPolicy'
+import Features from './pages/Features'
+import Pricing from './pages/Pricing'
+import Contact from './pages/Contact'
+import About from './pages/About'
 import { Protected } from './components/layout'
 
 import './styles/App.css'
@@ -63,6 +67,10 @@ function App() {
         <Route path="/terms" element={<TermsConditions />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
+        <Route path="/features" element={<Features />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={<About />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
