@@ -128,6 +128,10 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 	var builder strings.Builder
 
 	for i, t := range todos {
+		if t.EstimatedTime == nil {
+			estimated := 30
+			t.EstimatedTime = &estimated
+		}
 		fmt.Fprintf(&builder,
 			"%d. Task: %s | Priority: %s | Done: %t | Description: %s | Estimated Time (Minutes): %v | Deadline: %s \n",
 			i+1, t.Task, t.Priority, t.Done, t.Description, *t.EstimatedTime, t.Deadline,
@@ -137,48 +141,48 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 	todoText := builder.String()
 
 	prompt := fmt.Sprintf(`
-		You are a Professional Time Management & Productivity Planner for TaskPlexus.
+			You are a Professional Time Management & Productivity Planner for TaskPlexus.
 
-		Your job:
-		Create a realistic, human-friendly timeline for TODAY based on the provided tasks, user context, and productivity principles.
+			Your job:
+			Create a realistic, human-friendly timeline for TODAY based on the provided tasks, user context, and productivity principles.
 
-		Tasks:
-		%s
+			Tasks:
+			%s
 
-		User Context:
-		%s
+			User Context:
+			%s
 
-		Rules:
-		1. Day starts at 09:00 unless user context says otherwise.
-		2. Include important natural breaks — short breaks, lunch, mental reset periods.
-		3. Consider human energy cycles:
-		- High focus tasks earlier in the day
-		- Lighter tasks later
-		4. Use task priority, estimated_minutes, and urgency to decide ordering.
-		5. Suggest improvements if the user can boost productivity.
-		6. Do NOT invent new tasks, but you *may* insert:
-		- "Break"
-		- "Lunch"
-		- "Stretch"
-		- "Planning / Review"
-		7. Always output valid JSON only. No explanations.
+			Rules:
+			1. Day starts at 09:00 unless user context says otherwise.
+			2. Include important natural breaks — short breaks, lunch, mental reset periods.
+			3. Consider human energy cycles:
+			- High focus tasks earlier in the day
+			- Lighter tasks later
+			4. Use task priority, estimated_minutes, and urgency to decide ordering.
+			5. Suggest improvements if the user can boost productivity.
+			6. Do NOT invent new tasks, but you *may* insert:
+			- "Break"
+			- "Lunch"
+			- "Stretch"
+			- "Planning / Review"
+			7. Always output valid JSON only. No explanations.
 
-		Return JSON ONLY in this exact format:
+			Return JSON ONLY in this exact format:
 
-		{
-		"date": "...",
-		"plan": [
 			{
-			"taskId": "...",
-			"title": "...",      // Break/Lunch allowed
-			"startTime": "HH:MM",
-			"endTime": "HH:MM",
-			"priority": "..."    // For break/lunch use "none"
+			"date": "...",
+			"plan": [
+				{
+				"taskId": "...",
+				"title": "...",      // Break/Lunch allowed
+				"startTime": "HH:MM",
+				"endTime": "HH:MM",
+				"priority": "..."    // For break/lunch use "none"
+				}
+			],
+			"summary": "..."
 			}
-		],
-		"summary": "..."
-		}
-	`, todoText, data.Context)
+		`, todoText, data.Context)
 
 	fmt.Println("Ai Planner Prompt: ", prompt)
 
