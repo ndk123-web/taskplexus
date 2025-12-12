@@ -136,7 +136,7 @@ const DemoFlowchart: React.FC<DemoFlowchartProps> = ({ onClose, isModal = false 
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [showHelp, setShowHelp] = useState(true);
+  const [showHelp, setShowHelp] = useState(false);
 
   // Delete node
   const deleteNode = useCallback((nodeId: string) => {
