@@ -8,6 +8,9 @@ func CorsMiddleware(next http.Handler) http.Handler {
 		AllowedOrigins := []string{
 			"http://localhost:5173",
 			"http://192.168.0.103:5173",
+			"https://taskplexus.app",
+			"https://www.taskplexus.app",
+			"https://taskplexus.vercel.app",
 		}
 
 		origins := r.Header.Get("origin")
