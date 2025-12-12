@@ -1,0 +1,339 @@
+/* ========================================
+   LEGAL PAGES - TERMS, PRIVACY, REFUND POLICY
+   ======================================== */
+
+.legal-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 40%, #16213e 100%);
+  background-attachment: fixed;
+  color: #e0e0e0;
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navigation Bar */
+.legal-navbar {
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(15, 15, 30, 0.5);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.legal-nav-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.legal-nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: white;
+  font-weight: 700;
+  font-size: 20px;
+  transition: all 0.3s ease;
+}
+
+.legal-nav-logo:hover {
+  opacity: 0.8;
+}
+
+.legal-nav-back {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
+}
+
+.legal-nav-back:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Main Container */
+.legal-container {
+  flex: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 24px;
+  width: 100%;
+}
+
+/* Header */
+.legal-header {
+  text-align: center;
+  margin-bottom: 50px;
+  padding-bottom: 40px;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.legal-header h1 {
+  font-size: 48px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -1px;
+}
+
+.legal-date {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Content */
+.legal-content {
+  line-height: 1.8;
+}
+
+.legal-section {
+  margin-bottom: 48px;
+}
+
+.legal-section h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 16px;
+  margin-top: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.legal-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.legal-subheading {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
+
+.legal-section p {
+  color: #d0d0d0;
+  margin-bottom: 16px;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.legal-section ol,
+.legal-section ul {
+  margin-left: 20px;
+  margin-bottom: 16px;
+}
+
+.legal-list {
+  list-style-position: outside;
+  padding-left: 24px;
+  color: #d0d0d0;
+}
+
+.legal-list li {
+  margin-bottom: 12px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #d0d0d0;
+}
+
+.legal-list li strong {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.legal-section a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+.legal-section a:hover {
+  color: #f093fb;
+  border-bottom-color: rgba(240, 147, 251, 0.5);
+}
+
+/* Contact Info Box */
+.legal-contact-info {
+  background: rgba(102, 126, 234, 0.08);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.legal-contact-info p {
+  margin-bottom: 8px;
+  color: #d0d0d0;
+  font-size: 15px;
+}
+
+.legal-contact-info strong {
+  color: white;
+}
+
+.legal-contact-info a {
+  color: #667eea;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.legal-contact-info a:hover {
+  color: #f093fb;
+}
+
+/* Footer Navigation */
+.legal-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 60px;
+  padding-top: 40px;
+  border-top: 2px solid rgba(102, 126, 234, 0.3);
+  gap: 20px;
+}
+
+.legal-footer-nav a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  white-space: nowrap;
+  flex: 1;
+  text-align: center;
+}
+
+.legal-footer-nav a:hover {
+  background: rgba(102, 126, 234, 0.15);
+  border-color: rgba(102, 126, 234, 0.6);
+  color: #f093fb;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .legal-container {
+    padding: 40px 16px;
+  }
+
+  .legal-header h1 {
+    font-size: 32px;
+  }
+
+  .legal-section h2 {
+    font-size: 20px;
+  }
+
+  .legal-section p,
+  .legal-list li {
+    font-size: 14px;
+  }
+
+  .legal-nav-content {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .legal-nav-logo {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .legal-nav-back {
+    width: 100%;
+    text-align: center;
+    font-size: 13px;
+  }
+
+  .legal-footer-nav {
+    flex-direction: column;
+    margin-top: 40px;
+  }
+
+  .legal-footer-nav a {
+    width: 100%;
+    flex: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .legal-container {
+    padding: 30px 12px;
+  }
+
+  .legal-header h1 {
+    font-size: 24px;
+  }
+
+  .legal-section h2 {
+    font-size: 18px;
+  }
+
+  .legal-section {
+    margin-bottom: 32px;
+  }
+
+  .legal-date {
+    font-size: 12px;
+  }
+
+  .legal-contact-info {
+    padding: 16px;
+  }
+
+  .legal-contact-info p {
+    font-size: 13px;
+  }
+}
+
+/* Scrollbar Styling for Legal Pages */
+.legal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.legal-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.legal-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+}
+
+.legal-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}

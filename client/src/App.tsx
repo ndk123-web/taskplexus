@@ -10,6 +10,9 @@ import AiPlanner from './pages/AiPlanner'
 // import ProfessionalDashboard from './components/features/ProfessionalDashboard'
 import TaskDetails from './pages/TaskDetails'
 import GoalDetails from './pages/GoalDetails'
+import TermsConditions from './pages/Legal/TermsConditions'
+import PrivacyPolicy from './pages/Legal/PrivacyPolicy'
+import RefundPolicy from './pages/Legal/RefundPolicy'
 import { Protected } from './components/layout'
 
 import './styles/App.css'
@@ -57,6 +60,9 @@ function App() {
             <AiPlanner />
         </Protected>
       } />
+        <Route path="/terms" element={<TermsConditions />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
