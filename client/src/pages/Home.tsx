@@ -1,11 +1,14 @@
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 // import { Navigate } from 'react-router-dom';
+import { useState } from 'react';
 import useUserStore from '../store/useUserInfo';
 import '../styles/pages/Home.css';
 import Footer from '../components/layout/Footer';
+import DemoFlowchart from '../components/features/DemoFlowchart';
 
 const Home = () => {
   let userInfo = useUserStore(state => state.userInfo);
+  const [showDemoFlowchart, setShowDemoFlowchart] = useState(false);
 
   const handlePayment = async () => {
     
@@ -122,6 +125,120 @@ const Home = () => {
           </div>
         </div>
       </main>
+
+      {/* Interactive Demo Section */}
+      <section className="demo-section">
+        <div className="demo-container">
+          <div className="section-header">
+            <h2 className="section-title">Try It Out!</h2>
+            <p className="section-subtitle">Experience our interactive flowchart editor</p>
+          </div>
+
+          <div className="demo-preview-card">
+            <div className="demo-preview-header">
+              <h3>Interactive Flowchart Demo</h3>
+              <p>Add nodes, create connections, and explore the full power of visual task management</p>
+            </div>
+            <div className="demo-preview-content">
+              <div className="demo-flowchart-preview">
+                <DemoFlowchart />
+              </div>
+              <div className="demo-preview-overlay">
+                <button 
+                  className="demo-expand-btn"
+                  onClick={() => setShowDemoFlowchart(true)}
+                  title="Expand to fullscreen"
+                >
+                  🔲 Fullscreen
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="demo-features-grid">
+            <div className="demo-feature">
+              <div className="demo-feature-icon">🎯</div>
+              <h4>Drag & Drop</h4>
+              <p>Easily position your tasks anywhere on the canvas</p>
+            </div>
+            <div className="demo-feature">
+              <div className="demo-feature-icon">🔗</div>
+              <h4>Visual Connections</h4>
+              <p>Create relationships between tasks visually</p>
+            </div>
+            <div className="demo-feature">
+              <div className="demo-feature-icon">➕</div>
+              <h4>Add & Manage</h4>
+              <p>Add new tasks on the fly and manage everything easily</p>
+            </div>
+            <div className="demo-feature">
+              <div className="demo-feature-icon">🎨</div>
+              <h4>Priority Colors</h4>
+              <p>Color-coded priorities for quick visual scanning</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Features Demo Section */}
+      <section className="ai-demo-section">
+        <div className="ai-demo-container">
+          <div className="section-header">
+            <h2 className="section-title">AI-Powered Features</h2>
+            <p className="section-subtitle">Watch how AI can transform your productivity</p>
+          </div>
+
+          <div className="ai-demos-grid">
+            {/* AI Planner Demo */}
+            <div className="ai-demo-card">
+              <div className="ai-demo-header">
+                <div className="ai-icon">🤖</div>
+                <h3>AI Planner</h3>
+              </div>
+              <div className="ai-demo-video">
+                <div className="video-placeholder">
+                  <div className="video-icon">▶️</div>
+                  <p>AI Planner Demo</p>
+                  <small>Generate tasks from natural language</small>
+                </div>
+              </div>
+              <div className="ai-demo-description">
+                <p><strong>What it does:</strong> Describe your project or goal, and our AI will automatically break it down into organized tasks with priorities and timelines.</p>
+                <ul>
+                  <li>✓ Convert ideas into actionable tasks</li>
+                  <li>✓ Auto-assign priorities</li>
+                  <li>✓ Suggest task sequences</li>
+                  <li>✓ 5 free requests, 50/day with premium</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* AI Chat Demo */}
+            <div className="ai-demo-card">
+              <div className="ai-demo-header">
+                <div className="ai-icon">💬</div>
+                <h3>AI Chat</h3>
+              </div>
+              <div className="ai-demo-video">
+                <div className="video-placeholder">
+                  <div className="video-icon">▶️</div>
+                  <p>AI Chat Demo</p>
+                  <small>Chat with AI for productivity tips</small>
+                </div>
+              </div>
+              <div className="ai-demo-description">
+                <p><strong>What it does:</strong> Chat with our AI assistant to get personalized productivity advice, task suggestions, and workflow optimization tips.</p>
+                <ul>
+                  <li>✓ Get productivity insights</li>
+                  <li>✓ Ask for task recommendations</li>
+                  <li>✓ Optimize your workflow</li>
+                  <li>✓ 5 free requests, 100/day with premium</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Features Section */}
       <section className="features-section">
@@ -269,6 +386,13 @@ const Home = () => {
       </section>
 
       {/* Terms & Conditions & Privacy Policy - Modal Style */}
+      
+      {/* Fullscreen Demo Modal */}
+      {showDemoFlowchart && (
+        <div className="demo-modal-overlay">
+          <DemoFlowchart isModal={true} onClose={() => setShowDemoFlowchart(false)} />
+        </div>
+      )}
       
       {/* Footer */}
       <Footer />

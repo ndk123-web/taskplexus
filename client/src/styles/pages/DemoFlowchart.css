@@ -1,0 +1,451 @@
+/* Demo Flowchart Styles */
+
+.demo-flowchart-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: linear-gradient(135deg, rgba(15, 15, 30, 0.95), rgba(25, 25, 45, 0.95));
+}
+
+.demo-flowchart-container.modal-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+}
+
+.demo-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.9);
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.demo-close-btn:hover {
+  background: rgba(239, 68, 68, 1);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.demo-flowchart-wrapper {
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+/* Demo Node Styles */
+.demo-todo-node {
+  min-width: 160px;
+  max-width: 200px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(30, 30, 50, 0.9);
+  border: 2px solid rgba(102, 126, 234, 0.5);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: grab;
+  user-select: none;
+  transition: all 0.2s ease;
+  color: #fff;
+}
+
+.demo-todo-node:hover {
+  border-color: rgba(102, 126, 234, 0.8);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+  background: rgba(30, 30, 50, 1);
+}
+
+.demo-todo-node.priority-high {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: rgba(30, 20, 20, 0.9);
+}
+
+.demo-todo-node.priority-high:hover {
+  border-color: rgba(239, 68, 68, 0.9);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
+}
+
+.demo-todo-node.priority-medium {
+  border-color: rgba(245, 158, 11, 0.6);
+  background: rgba(30, 25, 15, 0.9);
+}
+
+.demo-todo-node.priority-medium:hover {
+  border-color: rgba(245, 158, 11, 0.9);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+}
+
+.demo-todo-node.priority-low {
+  border-color: rgba(34, 197, 94, 0.6);
+  background: rgba(15, 30, 15, 0.9);
+}
+
+.demo-todo-node.priority-low:hover {
+  border-color: rgba(34, 197, 94, 0.9);
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.3);
+}
+
+.demo-node-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.demo-priority-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(102, 126, 234, 0.2);
+  color: #667eea;
+}
+
+.demo-priority-badge.priority-high {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.demo-priority-badge.priority-medium {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.demo-priority-badge.priority-low {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.demo-delete-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.demo-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ff5555;
+}
+
+.demo-node-content {
+  font-size: 12px;
+  word-break: break-word;
+  line-height: 1.3;
+  color: #d1d5db;
+}
+
+/* Handle Styles */
+.demo-handle {
+  background: #667eea;
+  border: 2px solid rgba(15, 15, 30, 0.95);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.demo-handle:hover {
+  background: #5568d3;
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.8);
+  transform: scale(1.2);
+}
+
+.demo-handle-top {
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.demo-handle-right {
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.demo-handle-bottom {
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.demo-handle-left {
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Control Panels */
+.demo-controls {
+  display: flex;
+  gap: 10px;
+  background: rgba(15, 15, 30, 0.9);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.demo-control-btn {
+  padding: 8px 14px;
+  border: 1px solid rgba(102, 126, 234, 0.4);
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.demo-control-btn:hover {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.6);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.demo-control-btn.clear-btn {
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.demo-control-btn.clear-btn:hover {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+/* Help Panel */
+.demo-help-panel {
+  background: rgba(15, 15, 30, 0.95);
+  border: 1px solid rgba(102, 126, 234, 0.4);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  max-width: 300px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.demo-help-panel h3 {
+  margin: 0 0 12px 0;
+  color: #667eea;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.demo-help-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demo-help-panel li {
+  font-size: 12px;
+  color: #d1d5db;
+  line-height: 1.4;
+}
+
+.demo-help-panel li strong {
+  color: #667eea;
+}
+
+.demo-help-toggle {
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.4);
+  color: #667eea;
+  border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-help-toggle:hover {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.6);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Stats Panel */
+.demo-stats-panel {
+  display: flex;
+  gap: 16px;
+  background: rgba(15, 15, 30, 0.9);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.demo-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.demo-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.demo-stat-label {
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Info Banner */
+.demo-info-banner {
+  background: rgba(102, 126, 234, 0.1);
+  border-top: 1px solid rgba(102, 126, 234, 0.3);
+  padding: 12px 16px;
+  text-align: center;
+  font-size: 12px;
+  color: #d1d5db;
+  margin-top: auto;
+}
+
+.demo-info-banner p {
+  margin: 0;
+}
+
+.demo-info-banner strong {
+  color: #667eea;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .demo-todo-node {
+    min-width: 140px;
+    max-width: 180px;
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  .demo-help-panel {
+    max-width: 250px;
+    padding: 12px;
+  }
+
+  .demo-help-panel h3 {
+    font-size: 13px;
+  }
+
+  .demo-help-panel li {
+    font-size: 11px;
+  }
+
+  .demo-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .demo-control-btn {
+    width: 100%;
+  }
+
+  .demo-stats-panel {
+    flex-direction: row;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .demo-todo-node {
+    min-width: 120px;
+    max-width: 150px;
+    padding: 8px;
+    font-size: 11px;
+  }
+
+  .demo-help-panel {
+    max-width: 90vw;
+    padding: 10px;
+  }
+
+  .demo-help-panel h3 {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .demo-help-panel li {
+    font-size: 10px;
+  }
+
+  .demo-controls {
+    gap: 6px;
+  }
+
+  .demo-control-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .demo-stats-panel {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .demo-stat-value {
+    font-size: 16px;
+  }
+
+  .demo-stat-label {
+    font-size: 10px;
+  }
+}
