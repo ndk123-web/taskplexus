@@ -1032,10 +1032,12 @@ const Dashboard = () => {
             <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
+        <Link to = "/">
         <div className="mobile-logo">
           <img src="/TaskPlexus.png" alt="TaskPlexus" width={32} />
           <span>TaskPlexus</span>
         </div>
+        </Link>
         <div className="mobile-user">
           {/* <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userInfo?.email}`} alt="Profile" className="mobile-user-avatar" /> */}
           ✨
