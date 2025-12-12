@@ -2,11 +2,18 @@ import { api } from "./globalApi";
 
 interface DeleteTaskReq {
   id: string;
+  workspaceId?: string;
+  userId?: string;
 }
 
 const deleteTaskApi = async (data: DeleteTaskReq) => {
   try {
-    const response: any = await api.delete(`/todos/delete-todo/${data.id}`);
+    const response: any = await api.delete(`/todos/delete-todo/${data.id}`, {
+      params: {
+        workspaceId: data.workspaceId,
+        userId: data.userId,
+      },
+    });
 
     console.log("deleteTaskApi response:", response);
 

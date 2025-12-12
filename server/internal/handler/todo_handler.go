@@ -248,6 +248,11 @@ func (h *todoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 func (h *todoHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 
 	todoId := r.PathValue("todoId")
+
+	// take userId and workspaceId from query params for redis cache removal
+	userId := r.URL.Query().Get("userId")
+	workspaceId := r.URL.Query().Get("workspaceId")
+
 	if todoId == "" {
 		json.NewEncoder(w).Encode(map[string]any{"success": "false", "Error": "todoId in params is empty"})
 		return
@@ -260,6 +265,20 @@ func (h *todoHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 
 	if !ok {
 		json.NewEncoder(w).Encode(map[string]string{"error": "Delete False", "success": "false"})
+	}
+
+	// if all good then we need to remove the key from redis cache for analytics
+	rdb := config.RedisClient
+	if rdb == nil {
+		fmt.Println("Redis client is not initialized")
+	} else {
+		// assuming we have userId and workspaceId in query params for simplicity
+		redisKey := fmt.Sprintf("analytics:%s:%s:%s", userId, "2025", workspaceId) // assuming current year is 2025
+		err := rdb.Del(context.Background(), redisKey).Err()
+		if err != nil {
+			fmt.Printf("Redis DELETE error for key %s: %v\n", redisKey, err)
+		}
+		fmt.Printf("DeleteTodo: Deleted cache key %s\n", redisKey)
 	}
 
 	json.NewEncoder(w).Encode(map[string]string{"success": "true"})

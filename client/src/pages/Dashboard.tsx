@@ -1600,12 +1600,48 @@ const Dashboard = () => {
         )}
         
         <div className="sidebar-footer">
-          <div className="user-profile">
-            <div className="user-profile-avatar">✨</div>
+          <div className="user-profile" style={{ 
+            background: userInfo?.plan === 'PRO_MONTHLY' ? 'rgba(255, 215, 0, 0.05)' : 'rgba(255, 255, 255, 0.03)',
+            border: userInfo?.plan === 'PRO_MONTHLY' ? '1px solid rgba(255, 215, 0, 0.2)' : '1px solid transparent',
+            transition: 'all 0.3s ease'
+          }}>
+            <div className="user-profile-avatar" style={{
+              background: userInfo?.plan === 'PRO_MONTHLY' 
+                ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)' 
+                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: userInfo?.plan === 'PRO_MONTHLY' ? '#000' : '#fff',
+              boxShadow: userInfo?.plan === 'PRO_MONTHLY' ? '0 0 15px rgba(255, 215, 0, 0.4)' : 'none',
+              fontWeight: '800',
+              fontSize: userInfo?.plan === 'PRO_MONTHLY' ? '12px' : '14px',
+              border: userInfo?.plan === 'PRO_MONTHLY' ? '2px solid rgba(255,255,255,0.5)' : 'none'
+            }}>
+              {userInfo?.plan === 'PRO_MONTHLY' ? 'PRO' : (userInfo?.fullName?.charAt(0).toUpperCase() || 'U')}
+            </div>
             {!sidebarCollapsed && (
               <div className="user-profile-info">
-                <div className="user-profile-name">{userInfo?.fullName}</div>
+                <div className="user-profile-name" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {userInfo?.fullName}
+                  {userInfo?.plan === 'PRO_MONTHLY' && (
+                    <span title="Pro Member" style={{ fontSize: '14px', filter: 'drop-shadow(0 0 5px rgba(255, 215, 0, 0.5))' }}>👑</span>
+                  )}
+                </div>
                 <div className="user-profile-email">{userInfo?.email}</div>
+                <div style={{ 
+                    fontSize: '10px', 
+                    marginTop: '4px',
+                    padding: '2px 8px', 
+                    borderRadius: '12px', 
+                    background: userInfo?.plan === 'PRO_MONTHLY' ? 'rgba(255, 215, 0, 0.2)' : 'rgba(255, 255, 255, 0.1)', 
+                    color: userInfo?.plan === 'PRO_MONTHLY' ? '#FFD700' : 'rgba(255, 255, 255, 0.5)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontWeight: '600',
+                    width: 'fit-content',
+                    border: userInfo?.plan === 'PRO_MONTHLY' ? '1px solid rgba(255, 215, 0, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)'
+                  }}>
+                    {userInfo?.plan === 'PRO_MONTHLY' ? '✨ PRO PLAN' : 'FREE PLAN'}
+                  </div>
               </div>
             )}
           </div>

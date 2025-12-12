@@ -770,6 +770,8 @@ const useWorkspaceStore = create<WorkspaceState>()(
             status: "PENDING",
             payload: {
               id: todoId,
+              workspaceId,
+              userId: useUserStore.getState().userInfo?.userId,
             },
             timestamp: Date.now(),
             retryCount: 0,
