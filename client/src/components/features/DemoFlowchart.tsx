@@ -253,7 +253,7 @@ const DemoFlowchart: React.FC<DemoFlowchartProps> = ({ onClose, isModal = false 
             }}
           />
 
-          <Panel position="bottom-left">
+          <Panel position="bottom-right">
             <div className="demo-controls">
               <button className="demo-control-btn add-btn" onClick={addNode} title="Add new task">
                 ➕ Add Task
