@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/ndk123-web/fast-todo/internal/handler"
@@ -48,6 +49,9 @@ func (s *Server) Start(port string) error {
 	mux.Handle("POST /api/v1/users/toggle-todo", middleware.AuthMiddleware(http.HandlerFunc(s.todoHandler.ToogleTodo)))
 	mux.Handle("POST /api/v1/analytics/{userId}/year/{year}", middleware.AuthMiddleware(http.HandlerFunc(s.todoHandler.AnalyticsOfTodos)))
 	mux.Handle("GET /api/v1/users/check-plan/{userId}", middleware.AuthMiddleware(http.HandlerFunc(s.userHandler.CheckUserPremium)))
+	mux.Handle("GET /api/v1/test", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]string{"Hello": "world"})
+	}))
 
 	// No Need Of Middleware (Signin and Signup)
 	mux.HandleFunc("POST /api/v1/users/signup", s.userHandler.SignUpUser)
