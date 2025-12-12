@@ -37,6 +37,10 @@ func (h *aiPlannerHandler) HandleAiPlanner(w http.ResponseWriter, r *http.Reques
 
 	result, err := h.service.HandleAiPlanner(context.Background(), reqBody)
 	if err != nil {
+		if err.Error() == "Limit Reached" {
+			json.NewEncoder(w).Encode(map[string]string{"Error": "Limit Reached", "success": "false", "LimitReached": "true"})
+			return
+		}
 		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
 		return
 	}

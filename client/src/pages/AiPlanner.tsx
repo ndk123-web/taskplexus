@@ -87,7 +87,7 @@ const AiPlanner: React.FC = () => {
     setIsGeneratingPlan(true);
 
     try {
-      const response = await sendAiPlannerApi({
+      const response : any= await sendAiPlannerApi({
         context: context,
         userId: userId || '',
         workspaceId: currentWorkspace?.id || '',
@@ -102,7 +102,12 @@ const AiPlanner: React.FC = () => {
         // Add new plan to sidebar
         addNewPlanToSidebar(newPlan);
         setIsInGenerationMode(false);
-      } else {
+      } 
+      else if (response?.LimitReached === 'true') {
+        // toast notification for limit reached
+        alert('You have reached your AI plan generation limit. Please upgrade your subscription to generate more plans.');
+      }
+      else {
         console.error('Failed to generate AI plan:', response);
       }
     } catch (error) {

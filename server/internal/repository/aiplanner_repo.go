@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/ndk123-web/fast-todo/internal/config"
 	"github.com/ndk123-web/fast-todo/internal/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -35,13 +37,74 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 		return nil, errors.New("UserId/WorkspaceId Can't Be Empty")
 	}
 
+	// need to check whether user has subscription or not
+	query := "SELECT plan_name FROM subscriptions WHERE user_id = $1 AND is_active = $2"
+	var planName string
+	err := config.PostgresPool.QueryRow(ctx, query, data.UserId, true).Scan(&planName)
+
+	if err != nil {
+		// if no active subscription, set planName to FREE
+		if errors.Is(err, pgx.ErrNoRows) {
+			planName = "FREE"
+		} else {
+			return nil, err
+		}
+	}
+
+	if planName == "" {
+		return nil, errors.New("Unable to determine user subscription plan")
+	}
+
+	// convert userId and workspaceId to ObjectID
 	userOid, err := primitive.ObjectIDFromHex(data.UserId)
 	if err != nil {
 		return nil, err
 	}
+
 	workspaceOid, err := primitive.ObjectIDFromHex(data.WorkspaceId)
 	if err != nil {
 		return nil, err
+	}
+
+	// count based on plan type
+	switch planName {
+	case "FREE":
+
+		// check lifetime count of ai planners created
+		countFilter := bson.M{"userId": userOid, "workspace": workspaceOid}
+		count, err := r.aiPlannerCollection.CountDocuments(ctx, countFilter)
+		fmt.Println("Total Ai Planner Count: ", count)
+		fmt.Println("Plan Name: ", planName)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if planName == "FREE" && count >= 1 {
+			return nil, errors.New("Limit Reached")
+		}
+
+	case "PRO_MONTHLY":
+
+		// check count of ai planners created today from mongodb
+		today := time.Now().Format("2006-01-02")
+
+		// check daily count of ai planners created
+		countFilter := bson.M{"userId": userOid, "workspace": workspaceOid, "date": today}
+		count, err := r.aiPlannerCollection.CountDocuments(ctx, countFilter)
+		fmt.Println("Total Ai Planner Count: ", count)
+		fmt.Println("Plan Name: ", planName)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if planName == "PRO_MONTHLY" && count >= 2 {
+			return nil, errors.New("Limit Reached")
+		}
+
+	default:
+		return nil, errors.New("Unknown subscription plan")
 	}
 
 	// Query Mongo using ObjectIDs to match stored document types
