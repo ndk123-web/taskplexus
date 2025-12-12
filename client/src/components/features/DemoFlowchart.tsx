@@ -86,7 +86,7 @@ const DemoFlowchart: React.FC<DemoFlowchartProps> = ({ onClose, isModal = false 
         label: 'Project Kickoff',
         priority: 'high',
         id: '1',
-        onDelete: () => {},
+        onDelete: (_id: string) => {},
       },
     },
     {
@@ -97,7 +97,7 @@ const DemoFlowchart: React.FC<DemoFlowchartProps> = ({ onClose, isModal = false 
         label: 'Research & Planning',
         priority: 'high',
         id: '2',
-        onDelete: () => {},
+        onDelete: (_id: string) => {},
       },
     },
     {
@@ -108,7 +108,7 @@ const DemoFlowchart: React.FC<DemoFlowchartProps> = ({ onClose, isModal = false 
         label: 'Design Phase',
         priority: 'medium',
         id: '3',
-        onDelete: () => {},
+        onDelete: (_id: string) => {},
       },
     },
   ];
@@ -175,6 +175,7 @@ const DemoFlowchart: React.FC<DemoFlowchartProps> = ({ onClose, isModal = false 
     };
 
     setNodes((nds) => [...nds, newNode]);
+
   }, [nodeCounter, setNodes, deleteNode]);
 
   // Clear all
