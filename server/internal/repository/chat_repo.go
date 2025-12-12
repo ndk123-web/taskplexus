@@ -8,6 +8,8 @@ import (
 	// "github.com/ndk123-web/fast-todo/internal/middleware"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/ndk123-web/fast-todo/internal/config"
 	"github.com/ndk123-web/fast-todo/internal/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -42,7 +44,36 @@ func (r *chatRepository) HandleAiMessage(ctx context.Context, userPrompt string,
 		return nil, err
 	}
 
+	// Check Is User Has Subscription
+	query := "SELECT plan_name, is_active FROM subscriptions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1"
+	var plan_name string
+	var is_active bool
+	err = config.PostgresPool.QueryRow(ctx, query, userId).Scan(&plan_name, &is_active)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// do not do anything it means user has no subscription
+			plan_name = "FREE"
+		} else {
+			return nil, err
+		}
+	}
+
+	if plan_name == "" {
+		return nil, errors.New("Please Subscribe to a Plan to Use AI Features")
+	}
+
 	filter := bson.M{"userId": userOid, "workspaceId": workspaceOid}
+
+	// first count the chats to check the limit
+	count, err := r.chatCollection.CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	if plan_name == "FREE" && count >= 5 {
+		return nil, errors.New("LIMIT REACHED")
+	}
+
 	cursor, err := r.todoCollection.Find(ctx, filter)
 	if err != nil {
 		return nil, err

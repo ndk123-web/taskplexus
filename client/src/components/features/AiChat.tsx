@@ -184,7 +184,17 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
         } catch (saveError) {
           console.error('❌ Error saving message to IndexedDB:', saveError);
         }
-      } else {
+      }
+      else if(data?.LimitReached === "true"){
+        const aiMessage: Message = {
+          id: `ai_${Date.now()}`,
+          text: 'You Have Reached Your Monthly Limit. Please Upgrade Your Plan.',
+          sender: 'ai',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, aiMessage]);
+      } 
+      else {
         throw new Error(data.Error || 'Failed to get AI response');
       }
     } catch (error) {

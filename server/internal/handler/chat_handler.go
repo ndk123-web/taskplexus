@@ -38,6 +38,12 @@ func (h *chatHandler) HandleAiMessage(w http.ResponseWriter, r *http.Request) {
 
 	response, err := h.service.HandleAiMessage(context.Background(), reqBody.Prompt, reqBody.WorkspaceId, reqBody.UserId)
 	if err != nil {
+
+		if err.Error() == "LIMIT REACHED" {
+			json.NewEncoder(w).Encode(map[string]string{"success": "false", "Error": "You Have Reached Your Monthly Limit. Please Upgrade Your Plan.", "LimitReached": "true"})
+			return
+		}
+
 		json.NewEncoder(w).Encode(map[string]string{"success": "false", "Error": err.Error()})
 		return
 	}
