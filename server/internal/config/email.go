@@ -143,7 +143,7 @@ func SendEmailViaBrevo(recipientEmail string, subject string, htmlContent string
 		if len(args) < 1 {
 			return fmt.Errorf("insufficient arguments for PasswordReset email type")
 		}
-		htmlContent = strings.ReplaceAll(htmlContent, "{{LINK}}", fmt.Sprintf("https://taskplexus.onrender.com/api/v1/forget-password?token=%v", args[0]))
+		htmlContent = strings.ReplaceAll(htmlContent, "{{Link}}", fmt.Sprintf("%v", args[0]))
 
 	case "SignIn":
 		subject = "New sign-in to TaskPlexus detected 🛡️"

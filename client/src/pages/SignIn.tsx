@@ -179,7 +179,7 @@ const SignIn = () => {
                     <input type="checkbox" />
                     <span>Remember me</span>
                   </label>
-                  <a href="#" className="signin-forgot">Forgot password?</a>
+                  <Link to="/forget-password" className="signin-forgot">Forgot password?</Link>
                 </div>
 
                 <button type="submit" className="signin-submit-btn">

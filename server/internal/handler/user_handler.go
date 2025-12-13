@@ -28,6 +28,8 @@ type UserHandler interface {
 	SignInUser(w http.ResponseWriter, r *http.Request)
 	UpdateUserName(w http.ResponseWriter, r *http.Request)
 	CheckUserPremium(w http.ResponseWriter, r *http.Request)
+	ForgetPasswordSetToken(w http.ResponseWriter, r *http.Request)
+	ResetPassword(w http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {
@@ -135,7 +137,7 @@ func (h *userHandler) SignUpUser(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Can not able to send email to %v because error %v", bodyResponse.Email, err.Error())
 		}
 	}()
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{"response": result})
 }
@@ -325,6 +327,49 @@ func (h *userHandler) CheckUserPremium(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(map[string]any{"response": response, "success": "true"})
+}
+
+func (h *userHandler) ForgetPasswordSetToken(w http.ResponseWriter, r *http.Request) {
+	var reqBody model.ForgetPasswordRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
+		return
+	}
+
+	if reqBody.Email == "" || reqBody.UserId == "" {
+		json.NewEncoder(w).Encode(map[string]string{"Error": "Email/UserId Empty", "success": "false"})
+		return
+	}
+
+	// call service to set the token and send email
+	err := h.service.ForgetPasswordSetToken(context.Background(), reqBody.Email, reqBody.UserId)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"response": "Success Send Forget Password Email", "success": "true"})
+}
+
+func (h *userHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
+	var reqBody model.ResetPasswordRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
+		return
+	}
+
+	if reqBody.Email == "" || reqBody.Token == "" || reqBody.NewPassword == "" {
+		json.NewEncoder(w).Encode(map[string]string{"Error": "Email/Token/NewPassword Empty", "success": "false"})
+		return
+	}
+
+	// call service to reset the password
+	if err := h.service.ResetPassword(context.Background(), reqBody.Email, reqBody.Token, reqBody.NewPassword); err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"response": "Success Reset Password", "success": "true"})
 }
 
 func NewUserHandler(service service.UserService) UserHandler {

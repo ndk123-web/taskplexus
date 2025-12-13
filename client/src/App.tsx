@@ -17,6 +17,8 @@ import Features from './pages/Features'
 import Pricing from './pages/Pricing'
 import Contact from './pages/Contact'
 import About from './pages/About'
+import ForgetPassword from './pages/ForgetPassword'
+import ResetPassword from './pages/ResetPassword'
 import { Protected } from './components/layout'
 
 import './styles/App.css'
@@ -29,6 +31,8 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/forget-password" element={<ForgetPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={
           <Protected>
             <Dashboard />

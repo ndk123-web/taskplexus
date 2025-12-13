@@ -2,16 +2,22 @@ package service
 
 import (
 	"context"
+	// "crypto/sha1"
 	"errors"
 	"fmt"
 	"log"
+	"time"
+
 	// "net/http"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/ndk123-web/fast-todo/internal/config"
 	"github.com/ndk123-web/fast-todo/internal/model"
 	"github.com/ndk123-web/fast-todo/internal/repository"
 	"github.com/ndk123-web/fast-todo/pkg/njwt"
+
+	// "github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -25,6 +31,8 @@ type UserService interface {
 	SignInGoogleUser(ctx context.Context, email string, fullName string) (*repository.SignUpResponse, error)
 	SignUpWithGoogle(ctx context.Context, email string, fullName string) (*repository.SignUpResponse, error)
 	CheckUserPremium(ctx context.Context, userId string) (*model.CheckUserPremiumResponse, error)
+	ForgetPasswordSetToken(ctx context.Context, email string, userId string) error // to be implemented
+	ResetPassword(ctx context.Context, email string, token string, newPassword string) error
 }
 
 type userService struct {
@@ -186,6 +194,88 @@ func (s *userService) CheckUserPremium(ctx context.Context, userId string) (*mod
 	}
 
 	return s.repo.CheckUserPremium(ctx, userId)
+}
+
+func (s *userService) ForgetPasswordSetToken(ctx context.Context, email string, userId string) error {
+	// plan to implement
+	// 1. verify email exists from repo using mongo with email
+	// 2. if exist then generate unique token with expiry 1 hour
+	// 3. store the token in redis with email:token as a key
+	// 4. send email to user with the token link to reset password
+	// 5. client will clikc the link and frontend will call /reset-password?token=xxxx
+	// 6. backend will verify the token from redis with email:token key stores userId
+	// 7. now user will enter new password and we will update the password in mongo and postgres
+
+	ok, err := s.repo.CheckUserExistsWithEmail(ctx, email)
+	if !ok || err != nil {
+		return fmt.Errorf("email does not exist")
+	}
+
+	// create random token
+	uuidToken, err := uuid.NewRandom()
+	if err != nil {
+		return fmt.Errorf("failed to generate token")
+	}
+	if uuidToken.String() == "" {
+		return fmt.Errorf("failed to generate token")
+	}
+
+	// store the token in redis with email:token -> userId as key value
+	rdb := config.RedisClient
+	key := fmt.Sprintf("%v:%v", email, uuidToken.String())
+
+	if userId == "" {
+		userId = "SomeData" // just to avoid empty userId in redis
+	}
+
+	err = rdb.Set(ctx, key, []byte(userId), 10*time.Minute).Err() // 10 minutes expiry
+
+	if err != nil {
+		return fmt.Errorf("failed to store token in redis")
+	}
+
+	// send email to user with the token link to reset password
+	resetLink := fmt.Sprintf("https://www.taskplexus.app/reset-password?token=%v&email=%v", uuidToken.String(), email)
+	if resetLink == "" {
+		return fmt.Errorf("failed to generate reset link")
+	}
+
+	if err := config.SendEmailViaBrevo(email, "", "", "PasswordReset", resetLink); err != nil {
+		return fmt.Errorf("failed to send reset email: %v", err)
+	}
+
+	return nil
+}
+
+func (s *userService) ResetPassword(ctx context.Context, email string, token string, newPassword string) error {
+	// verify token from redis
+	rdb := config.RedisClient
+	key := fmt.Sprintf("%v:%v", email, token)
+
+	userId, err := rdb.Get(ctx, key).Result()
+	if err != nil {
+		return fmt.Errorf("invalid or expired token")
+	}
+
+	// save new password to mongo and postgres
+	hashedPassword, err := BcryptForPassword(newPassword)
+	if err != nil {
+		return fmt.Errorf("failed to hash new password")
+	}
+
+	// update password in repo
+	if err := s.repo.ResetPassword(ctx, email, hashedPassword, userId); err != nil {
+		return fmt.Errorf("failed to reset password: %v", err)
+	}
+
+	// after reset delete the token from redis
+	err = rdb.Del(ctx, key).Err()
+	if err != nil {
+		log.Printf("Warning: failed to delete used token from redis for email %v: %v", email, err)
+	}
+	fmt.Println("Redis Key Deleted After Sending email and resetting password:", key)
+
+	return nil
 }
 
 func NewUserService(repo repository.UserRepository) UserService {

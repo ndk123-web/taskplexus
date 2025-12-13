@@ -53,6 +53,10 @@ func (s *Server) Start(port string) error {
 		json.NewEncoder(w).Encode(map[string]string{"Hello": "world"})
 	}))
 
+	// Password Reset Routes
+	mux.Handle("POST /api/v1/users/send-forget-password-email", http.HandlerFunc(s.userHandler.ForgetPasswordSetToken))
+	mux.Handle("POST /api/v1/users/reset-password", http.HandlerFunc(s.userHandler.ResetPassword))
+
 	// No Need Of Middleware (Signin and Signup)
 	mux.HandleFunc("POST /api/v1/users/signup", s.userHandler.SignUpUser)
 	mux.HandleFunc("POST /api/v1/users/signin", s.userHandler.SignInUser)

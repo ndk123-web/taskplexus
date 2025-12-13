@@ -35,6 +35,8 @@ type UserRepository interface {
 	DeleteUserByEmail(ctx context.Context, email string) error
 	DeleteUserFromPostgres(ctx context.Context, email string) error
 	CheckUserPremium(ctx context.Context, userId string) (*model.CheckUserPremiumResponse, error)
+	CheckUserExistsWithEmail(ctx context.Context, email string) (bool, error)
+	ResetPassword(ctx context.Context, email string, hashedPassword string, userId string) error
 }
 
 type userRepo struct {
@@ -393,6 +395,66 @@ func (r *userRepo) DeleteUserFromPostgres(ctx context.Context, email string) err
 		return errors.New("user not found in PostgreSQL")
 	}
 
+	return nil
+}
+
+func (s *userRepo) CheckUserExistsWithEmail(ctx context.Context, email string) (bool, error) {
+	if email == "" {
+		return false, errors.New("email is empty")
+	}
+
+	filter := bson.M{"email": email}
+	count, err := s.userColletion.CountDocuments(ctx, filter)
+
+	if err != nil {
+		return false, err
+	}
+
+	if count <= 0 {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (s *userRepo) ResetPassword(ctx context.Context, email string, hashedPassword string, userId string) error {
+	if email == "" || hashedPassword == "" {
+		return errors.New("email or hashedPassword is empty")
+	}
+
+	// first edit the user in mongo
+	filter := bson.M{"email": email}
+
+	// first get the previous password
+	var previousMongoDoc model.User
+	if err := s.userColletion.FindOne(ctx, filter).Decode(&previousMongoDoc); err != nil {
+		return err
+	}
+
+	// now update the password first in mongo
+	update := bson.M{"$set": bson.M{"password": hashedPassword, "updatedAt": time.Now()}}
+	updated, err := s.userColletion.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+	if updated.ModifiedCount == 0 {
+		return errors.New("no document updated in MongoDB")
+	}
+
+	// now update in postgres
+	updateQuery := `UPDATE users SET password=$1, updated_at=NOW() WHERE email=$2`
+	result, err := config.PostgresPool.Exec(ctx, updateQuery, hashedPassword, email)
+	if err != nil {
+		// rollback mongo password
+		_, _ = s.userColletion.UpdateOne(ctx, filter, bson.M{"$set": bson.M{"password": previousMongoDoc.Password, "updatedAt": time.Now()}})
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		// rollback mongo password
+		_, _ = s.userColletion.UpdateOne(ctx, filter, bson.M{"$set": bson.M{"password": previousMongoDoc.Password, "updatedAt": time.Now()}})
+		return errors.New("no row updated in PostgreSQL")
+	}
 	return nil
 }
 
