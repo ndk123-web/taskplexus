@@ -40,22 +40,21 @@ func (s *userService) SignUpUser(ctx context.Context, email string, password str
 		return nil, err
 	}
 
-	// store the user in postgres first
-	_, err = s.repo.SignUpUserPostgres(ctx, email, hashedPassword, fullName)
-	if err != nil {
-		return nil, err
-	}
-
 	// store the user in mongo as well
 	mongoResponse, err := s.repo.SignUpUserMongo(ctx, email, hashedPassword, fullName)
 	if err != nil {
-		// ROLLBACK: Mongo failed, delete from Postgres only (Mongo doesn't have user yet)
-		deleteErr := s.repo.DeleteUserFromPostgres(ctx, email)
+		return nil, fmt.Errorf("mongo signup failed", err)
+	}
+
+	_, err = s.repo.SignUpUserPostgres(ctx, email, hashedPassword, fullName, mongoResponse.UserId)
+	if err != nil {
+		// ROLLBACK: Mongo because Postgres failed
+		deleteErr := s.repo.DeleteUserByEmail(ctx, email)
 		if deleteErr != nil {
 			// Log this critical error - manual intervention needed
-			fmt.Printf("CRITICAL: Failed to rollback Postgres user after Mongo failure. Email: %s, Error: %v\n", email, deleteErr)
+			fmt.Printf("CRITICAL: Failed to rollback Mongo user after Postgres failure. Email: %s, Error: %v\n", email, deleteErr)
 		}
-		return nil, fmt.Errorf("mongo signup failed and postgres rolled back: %w", err)
+		return nil, fmt.Errorf("postgres signup failed and mongo rolled back: %w", err)
 	}
 
 	// create access token and refresh token for the user based on email

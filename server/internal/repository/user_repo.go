@@ -26,7 +26,7 @@ type UserStruct struct {
 type UserRepository interface {
 	GetUserTodos(ctx context.Context, userId string) ([]model.Todo, error)
 	SignUpUserMongo(ctx context.Context, email string, password string, fullName string) (*SignUpResponse, error)
-	SignUpUserPostgres(ctx context.Context, email string, password string, fullName string) (*SignUpResponse, error)
+	SignUpUserPostgres(ctx context.Context, email string, password string, fullName string, userId string) (*SignUpResponse, error)
 	SignInUser(ctx context.Context, email string, password string) (*SignUpResponse, error)
 	UpdateUserName(ctx context.Context, userId string, newName string) (bool, error)
 	SignInGoogleUser(ctx context.Context, email string, fullName string) (*SignUpResponse, error)
@@ -123,7 +123,7 @@ func (r *userRepo) SignUpUserMongo(ctx context.Context, email string, password s
 	}, nil
 }
 
-func (r *userRepo) SignUpUserPostgres(ctx context.Context, email string, password string, fullName string) (*SignUpResponse, error) {
+func (r *userRepo) SignUpUserPostgres(ctx context.Context, email string, password string, fullName string, userId string) (*SignUpResponse, error) {
 	// Check if user already exists
 	var exists bool
 	checkQuery := `SELECT EXISTS(SELECT 1 FROM users WHERE email=$1)`
@@ -140,7 +140,7 @@ func (r *userRepo) SignUpUserPostgres(ctx context.Context, email string, passwor
 		VALUES ($1, $2, $3, $4, NOW(), NOW(), $5, $6)
 		RETURNING id
 	`
-	userId := primitive.NewObjectID().Hex()
+
 	_, err = config.PostgresPool.Exec(ctx, insertQuery, userId, email, fullName, password, 10, false)
 	if err != nil {
 		return nil, err
