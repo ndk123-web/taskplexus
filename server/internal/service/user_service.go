@@ -4,8 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	// "net/http"
 	"os"
 
+	"github.com/ndk123-web/fast-todo/internal/config"
 	"github.com/ndk123-web/fast-todo/internal/model"
 	"github.com/ndk123-web/fast-todo/internal/repository"
 	"github.com/ndk123-web/fast-todo/pkg/njwt"
@@ -54,6 +57,14 @@ func (s *userService) SignUpUser(ctx context.Context, email string, password str
 			// Log this critical error - manual intervention needed
 			fmt.Printf("CRITICAL: Failed to rollback Mongo user after Postgres failure. Email: %s, Error: %v\n", email, deleteErr)
 		}
+
+		// run function that sends email
+		go func() {
+			if err := config.SendEmailViaBrevo(email, "", "", "Welcome"); err != nil {
+				log.Printf("Cant send Email to %v because Error %v", email, err.Error())
+			}
+		}()
+
 		return nil, fmt.Errorf("postgres signup failed and mongo rolled back: %w", err)
 	}
 
@@ -92,6 +103,14 @@ func (s *userService) SignUpWithGoogle(ctx context.Context, email string, fullNa
 			// Log this critical error - manual intervention needed
 			fmt.Printf("CRITICAL: Failed to rollback Mongo user after Postgres failure. Email: %s, Error: %v\n", email, deleteErr)
 		}
+
+		// run function that sends email
+		go func() {
+			if err := config.SendEmailViaBrevo(email, "", "", "Welcome"); err != nil {
+				log.Printf("Cant send Email to %v because Error %v", email, err.Error())
+			}
+		}()
+
 		return nil, fmt.Errorf("postgres signup failed and mongo rolled back: %w", err)
 	}
 

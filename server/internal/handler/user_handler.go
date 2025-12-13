@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -103,6 +104,13 @@ func (h *userHandler) SignUpUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// it means all good now send the email
+		go func() {
+			if err := config.SendEmailViaBrevo(bodyResponse.Email, "", "", "Welcome"); err != nil {
+				log.Printf("Can not able to send email to %v because error %v", bodyResponse.Email, err.Error())
+			}
+		}()
+
 		json.NewEncoder(w).Encode(map[string]any{"response": result, "success": "true"})
 		return
 	}
@@ -121,6 +129,13 @@ func (h *userHandler) SignUpUser(w http.ResponseWriter, r *http.Request) {
 	// why .(string) because compiler doesn't know that inside UserEmailKey is string so that we are
 	// telling the compilet that inside .UserEmailKey is data which is of type string
 
+	// it means all good now send the email
+	go func() {
+		if err := config.SendEmailViaBrevo(bodyResponse.Email, "", "", "Welcome"); err != nil {
+			log.Printf("Can not able to send email to %v because error %v", bodyResponse.Email, err.Error())
+		}
+	}()
+	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{"response": result})
 }
@@ -209,6 +224,16 @@ func (h *userHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
 			return
 		}
+
+		// it means all good now send the email
+		go func(userAgent string, remoteAddr string) {
+
+			if err := config.SendEmailViaBrevo(body.Email, "", "", "SignIn", userAgent, remoteAddr); err != nil {
+				log.Printf("Can not able to send email to %v because error %v", body.Email, err.Error())
+			}
+
+		}(r.UserAgent(), r.RemoteAddr)
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]any{"response": resp, "success": "true"})
 		return
@@ -224,6 +249,15 @@ func (h *userHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
 		return
 	}
+
+	// it means all good now send the email
+	go func(userAgent string, remoteAddr string) {
+
+		if err := config.SendEmailViaBrevo(body.Email, "", "", "SignIn", userAgent, remoteAddr); err != nil {
+			log.Printf("Can not able to send email to %v because error %v", body.Email, err.Error())
+		}
+
+	}(r.UserAgent(), r.RemoteAddr)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{"response": resp, "success": "true"})
 }

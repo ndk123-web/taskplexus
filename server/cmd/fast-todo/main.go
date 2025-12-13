@@ -37,6 +37,10 @@ func main() {
 	config.InitRazorPay()
 	config.ConnectPostgresDB()
 
+	// if err := config.SendEmailViaBrevo("navnathkadam284@gmail.com", "Thanku For Sign Up", "<h1>Testing Email</h1>", "Welcome"); err != nil {
+	// 	log.Fatal("Email Brevo Error Here")
+	// }
+
 	if err := app.Run(); err != nil {
 		log.Fatal("Error In Running the App")
 	}
