@@ -4,6 +4,10 @@ import '../../styles/components/Footer.css';
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
+  const handleLinkClick = () => {
+    window.scrollTo(0, 0);
+  };
+
   return (
     <footer className="footer-container">
       <div className="footer-wrapper">
@@ -29,26 +33,26 @@ const Footer = () => {
           <div className="footer-column">
             <h4 className="footer-column-title">Product</h4>
             <ul className="footer-links">
-              <li><Link to="/features">Features</Link></li>
-              <li><Link to="/pricing">Pricing</Link></li>
-              <li><Link to="/signin">Sign In</Link></li>
-              <li><Link to="/signup">Get Started</Link></li>
+              <li><Link to="/features" onClick={handleLinkClick}>Features</Link></li>
+              <li><Link to="/pricing" onClick={handleLinkClick}>Pricing</Link></li>
+              <li><Link to="/signin" onClick={handleLinkClick}>Sign In</Link></li>
+              <li><Link to="/signup" onClick={handleLinkClick}>Get Started</Link></li>
             </ul>
           </div>
 
           <div className="footer-column">
             <h4 className="footer-column-title">Legal</h4>
             <ul className="footer-links">
-              <li><Link to="/terms">Terms & Conditions</Link></li>
-              <li><Link to="/privacy">Privacy Policy</Link></li>
-              <li><Link to="/refund-policy">Refund Policy</Link></li>
+              <li><Link to="/terms" onClick={handleLinkClick}>Terms & Conditions</Link></li>
+              <li><Link to="/privacy" onClick={handleLinkClick}>Privacy Policy</Link></li>
+              <li><Link to="/refund-policy" onClick={handleLinkClick}>Refund Policy</Link></li>
             </ul>
           </div>
 
           <div className="footer-column">
             <h4 className="footer-column-title">Support</h4>
             <ul className="footer-links">
-              <li><Link to="/contact">Contact Us</Link></li>
+              <li><Link to="/contact" onClick={handleLinkClick}>Contact Us</Link></li>
               <li><a href="mailto:support@taskplexus.com">Email Support</a></li>
               <li><a href="mailto:support@taskplexus.com">Report Bug</a></li>
             </ul>
@@ -57,7 +61,7 @@ const Footer = () => {
           <div className="footer-column">
             <h4 className="footer-column-title">Company</h4>
             <ul className="footer-links">
-              <li><Link to="/about">About Us</Link></li>
+              <li><Link to="/about" onClick={handleLinkClick}>About Us</Link></li>
               <li><span className="footer-info">Navnath</span></li>
               <li><span className="footer-info">Mumbai, India</span></li>
             </ul>
