@@ -17,7 +17,7 @@ const Protected: React.FC<ProtectedProps> = ({ children }) => {
         const timer = setTimeout(() => {
             setIsChecking(false)
             
-            if (!isAuthenticated) {
+            if (!isAuthenticated.userInfo || isAuthenticated.userInfo.auth === false) {
                 // Redirect to sign in after a brief moment
                 const redirectTimer = setTimeout(() => {
                     navigate("/signin", { replace: true })
@@ -46,7 +46,7 @@ const Protected: React.FC<ProtectedProps> = ({ children }) => {
     }
 
     // Show unauthorized message
-    if (!isAuthenticated) {
+    if (!isAuthenticated.userInfo || isAuthenticated.userInfo.auth === false) {
         return (
             <div className="protected-loader-container">
                 <div className="unauthorized-card">
