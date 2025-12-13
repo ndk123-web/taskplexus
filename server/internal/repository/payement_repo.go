@@ -26,7 +26,7 @@ type payementRepository struct {
 
 func (p *payementRepository) CreateOrder(amount float64, currency string, userId string, razorPayId string) (string, error) {
 	// implement the method to create payment in the database
-
+	
 	id := uuid.New().String()
 	// Default plan name for now, you might want to pass this as an argument
 	planName := "PRO_MONTHLY"
