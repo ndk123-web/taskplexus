@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import Footer from '../components/layout/Footer';
 import '../styles/pages/Legal.css';
 import '../styles/pages/Home.css';
+import useUserStore from '../store/useUserInfo';
+// import { use } from 'react';
 
 const Pricing = () => {
   return (
@@ -64,7 +66,10 @@ const Pricing = () => {
               <li>✓ AI Chat (100/day)</li>
               <li>✓ Priority Support</li>
             </ul>
-            <Link to="/signin" className="plan-cta">Upgrade Now</Link>
+            <div className="plan-cta">{useUserStore?.getState().userInfo?.plan == "PRO_MONTHLY" ?
+            "Already Active" : 
+            useUserStore?.getState().userInfo == null ? <Link to={"/signup"}>Sign Up First</Link> :
+            <Link to={"/settings"}>Buy Now</Link>}</div>
           </div>
         </div>
 
