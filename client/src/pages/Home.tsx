@@ -5,6 +5,7 @@ import useUserStore from '../store/useUserInfo';
 import '../styles/pages/Home.css';
 import Footer from '../components/layout/Footer';
 import DemoFlowchart from '../components/features/DemoFlowchart';
+import SEO from '../components/SEO';
 
 const Home = () => {
   let userInfo = useUserStore(state => state.userInfo);
@@ -35,6 +36,11 @@ const Home = () => {
 
   return (
     <div className="home-container">
+      <SEO 
+        title="Home" 
+        description="TaskPlexus - A minimalist todo app designed to help you focus on what matters most. Organize your life, one task at a time."
+        keywords="todo list, task management, productivity, goals, ai planner, flowchart"
+      />
       <nav className="navbar">
         <div className="nav-content">
           <h1 className="nav-logo">

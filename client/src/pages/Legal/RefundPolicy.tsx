@@ -1,10 +1,15 @@
 import { Link } from 'react-router-dom';
 import Footer from '../../components/layout/Footer';
 import '../../styles/pages/Legal.css';
+import SEO from '../../components/SEO';
 
 const RefundPolicy = () => {
   return (
     <div className="legal-page">
+      <SEO 
+        title="Refund Policy" 
+        description="Understand TaskPlexus's refund and cancellation policy for Premium subscriptions."
+      />
       <nav className="legal-navbar">
         <div className="legal-nav-content">
           <Link to="/" className="legal-nav-logo">

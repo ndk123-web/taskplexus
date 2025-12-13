@@ -6,6 +6,7 @@ import updateUserNameApi from '../api/endpoints/updateUserNameApi';
 import { useToast } from '../components/ui/ToastProvider';
 import { dynamicRazorPayLoad , openRazorpayCheckout } from '../utils/razorpay';
 import '../styles/pages/Home.css'
+import SEO from '../components/SEO';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -126,6 +127,10 @@ const Settings = () => {
 
   return (
     <div className="settings-container">
+      <SEO 
+        title="Settings" 
+        description="Manage your account settings, profile, and subscription plan."
+      />
       {/* Header */}
       <div className="settings-header">
         <Link to="/dashboard" className="back-link">

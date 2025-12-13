@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useWorkspaceStore from '../store/useWorkspaceStore';
 import '../styles/pages/TaskDetails.css'; // Reusing the same styles for consistency
+import SEO from '../components/SEO';
 
 const GoalDetails = () => {
   const { goalId } = useParams<{ goalId: string }>();
@@ -61,6 +62,10 @@ const GoalDetails = () => {
 
   return (
     <div className="details-page-container">
+      <SEO 
+        title="Edit Goal" 
+        description="Edit goal details, update targets, and track progress."
+      />
       <div className="details-card">
         <div className="details-header">
           <button onClick={() => navigate('/dashboard')} className="back-btn">

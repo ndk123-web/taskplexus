@@ -1,5 +1,5 @@
 // Application constants
-export const APP_NAME = 'Fast Todo';
+export const APP_NAME = 'TaskPlexus';
 export const VERSION = '1.0.0';
 
 // API Constants

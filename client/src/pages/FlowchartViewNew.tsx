@@ -22,6 +22,7 @@ import updateWorkspaceLayoutApi from '../api/endpoints/updateWorkspaceLayoutApi'
 // import { addPendingOperation } from '../store/indexDB/pendingOps/usePendingOps';
 // import useRunBackgroundOps from '../hooks/useRunBackgroundOps';
 import pendingOps from '../hooks/useRunBackgroundOps';
+import SEO from '../components/SEO';
 
 // Custom Node Component with better styling
 const CustomTodoNode = ({ data }: { data: any }) => {
@@ -458,6 +459,10 @@ const FlowchartViewNew: React.FC = () => {
 
   return (
     <div className="flowchart-container">
+      <SEO 
+        title="Flowchart View" 
+        description="Visualize your tasks and dependencies in an interactive flowchart view."
+      />
       {/* Header */}
       <header className="flowchart-header">
         <div className="flowchart-header-content">

@@ -3,11 +3,16 @@ import Footer from '../components/layout/Footer';
 import '../styles/pages/Legal.css';
 import '../styles/pages/Home.css';
 import useUserStore from '../store/useUserInfo';
+import SEO from '../components/SEO';
 // import { use } from 'react';
 
 const Pricing = () => {
   return (
     <div className="legal-page">
+      <SEO 
+        title="Pricing" 
+        description="Simple and transparent pricing for TaskPlexus. Choose the plan that fits your productivity needs."
+      />
       <nav className="legal-navbar">
         <div className="legal-nav-content">
           <Link to="/" className="legal-nav-logo">

@@ -1,10 +1,15 @@
 import { Link } from 'react-router-dom';
 import Footer from '../../components/layout/Footer';
 import '../../styles/pages/Legal.css';
+import SEO from '../../components/SEO';
 
 const PrivacyPolicy = () => {
   return (
     <div className="legal-page">
+      <SEO 
+        title="Privacy Policy" 
+        description="Learn how TaskPlexus collects, uses, and protects your personal information. Your privacy is our priority."
+      />
       <nav className="legal-navbar">
         <div className="legal-nav-content">
           <Link to="/" className="legal-nav-logo">

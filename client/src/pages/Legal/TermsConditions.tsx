@@ -1,10 +1,15 @@
 import { Link } from 'react-router-dom';
 import Footer from '../../components/layout/Footer';
 import '../../styles/pages/Legal.css';
+import SEO from '../../components/SEO';
 
 const TermsConditions = () => {
   return (
     <div className="legal-page">
+      <SEO 
+        title="Terms & Conditions" 
+        description="Read the Terms & Conditions for using TaskPlexus. Understand your rights and responsibilities."
+      />
       <nav className="legal-navbar">
         <div className="legal-nav-content">
           <Link to="/" className="legal-nav-logo">

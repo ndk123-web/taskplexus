@@ -6,6 +6,7 @@ import '../styles/pages/SignUp.css';
 import { useToast } from '../components/ui/ToastProvider';
 import { auth } from '../config/firebase';
 import { signInWithPopup , GoogleAuthProvider } from 'firebase/auth';
+import SEO from '../components/SEO';
 
 const SignUp = () => {
   const [name, setName] = useState('');
@@ -91,6 +92,10 @@ const SignUp = () => {
 
   return (
     <div className="signup-container">
+      <SEO 
+        title="Sign Up" 
+        description="Create a free account on TaskPlexus. Start organizing your life with our powerful todo list, goals, and AI features."
+      />
       {/* Navigation */}
       <nav className="signup-navbar">
         <div className="signup-nav-content">

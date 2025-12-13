@@ -1,10 +1,15 @@
 import { Link } from 'react-router-dom';
 import Footer from '../components/layout/Footer';
 import '../styles/pages/Legal.css';
+import SEO from '../components/SEO';
 
 const Contact = () => {
   return (
     <div className="legal-page">
+      <SEO 
+        title="Contact Us" 
+        description="Get in touch with the TaskPlexus team. We're here to help with support, feedback, and inquiries."
+      />
       <nav className="legal-navbar">
         <div className="legal-nav-content">
           <Link to="/" className="legal-nav-logo">

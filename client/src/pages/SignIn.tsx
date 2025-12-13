@@ -7,6 +7,7 @@ import '../styles/pages/SignIn.css';
 import { useToast } from '../components/ui/ToastProvider';
 import { auth } from "../config/firebase";
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import SEO from '../components/SEO';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
@@ -88,6 +89,10 @@ const SignIn = () => {
 
   return (
     <div className="signin-container">
+      <SEO 
+        title="Sign In" 
+        description="Sign in to TaskPlexus to access your tasks, goals, and AI planner. Continue your productivity journey."
+      />
       {/* Navigation */}
       <nav className="signin-navbar">
         <div className="signin-nav-content">

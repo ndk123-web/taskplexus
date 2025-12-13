@@ -1,10 +1,15 @@
 import { Link } from 'react-router-dom';
 import Footer from '../components/layout/Footer';
 import '../styles/pages/Legal.css';
+import SEO from '../components/SEO';
 
 const About = () => {
   return (
     <div className="legal-page">
+      <SEO 
+        title="About Us" 
+        description="Learn about TaskPlexus, our mission, and the story behind the minimalist todo app designed for productivity."
+      />
       <nav className="legal-navbar">
         <div className="legal-nav-content">
           <Link to="/" className="legal-nav-logo">

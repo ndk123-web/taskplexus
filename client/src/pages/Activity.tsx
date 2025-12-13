@@ -4,6 +4,7 @@ import useWorkspaceStore from '../store/useWorkspaceStore';
 import { useToast } from '../components/ui/ToastProvider';
 import '../styles/pages/Activity.css';
 import { getActivitiesApi } from '../api/activity';
+import SEO from '../components/SEO';
 
 interface Activity {
   id: string;
@@ -198,6 +199,10 @@ const Activity = () => {
 
   return (
     <div className="activity-container">
+      <SEO 
+        title="Activity Feed" 
+        description="Track recent activities in your workspace. See task completions, goal updates, and more."
+      />
       {/* Header */}
       <header className="activity-header">
         <button className="activity-back-btn" onClick={() => navigate('/dashboard')}>

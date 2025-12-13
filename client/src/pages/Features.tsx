@@ -2,10 +2,15 @@ import { Link } from 'react-router-dom';
 import Footer from '../components/layout/Footer';
 import '../styles/pages/Legal.css'; // Reusing the base layout styles
 import '../styles/pages/Home.css'; // Reusing feature card styles
+import SEO from '../components/SEO';
 
 const Features = () => {
   return (
     <div className="legal-page">
+      <SEO 
+        title="Features" 
+        description="Explore the powerful features of TaskPlexus: AI Planner, Flowcharts, Goal Tracking, and more."
+      />
       <nav className="legal-navbar">
         <div className="legal-nav-content">
           <Link to="/" className="legal-nav-logo">

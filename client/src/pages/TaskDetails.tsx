@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import useWorkspaceStore from '../store/useWorkspaceStore';
 import '../styles/pages/TaskDetails.css';
 import { useToast } from '../components/ui/ToastProvider';
+import SEO from '../components/SEO';
 
 const TaskDetails = () => {
   const { taskId } = useParams<{ taskId: string }>();
@@ -74,6 +75,10 @@ const TaskDetails = () => {
 
   return (
     <div className="details-page-container">
+      <SEO 
+        title="Edit Task" 
+        description="Edit task details, set deadlines, and manage priorities."
+      />
       <div className="details-card">
         <div className="details-header">
           <button onClick={() => navigate('/dashboard')} className="back-btn">

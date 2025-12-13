@@ -15,6 +15,7 @@ import { addPendingOperation, clearPendingOperations, getPendingOperations } fro
 import { useToast } from '../components/ui/ToastProvider';
 import AiChat from '../components/features/AiChat';
 import { checkUserPlanApi } from '../api/payment';
+import SEO from '../components/SEO';
 // import { time } from 'console';
 
 // Goal interface - defines structure for goal items
@@ -1040,6 +1041,10 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
+      <SEO 
+        title="Dashboard" 
+        description="Manage your tasks, goals, and projects in one place. Track your progress and stay organized with TaskPlexus."
+      />
       {/* Mobile Header */}
       <header className="mobile-header">
         <button 

@@ -11,6 +11,7 @@ import '../styles/pages/AiPlanner.css';
 import useWorkspaceStore from '../store/useWorkspaceStore';
 import useUserStore from '../store/useUserInfo';
 import getAiPlannerById from '../api/endpoints/getAiPlannerByIdApi';
+import SEO from '../components/SEO';
 
 const AiPlanner: React.FC = () => {
   const navigate = useNavigate();
@@ -123,6 +124,10 @@ const AiPlanner: React.FC = () => {
 
   return (
     <div className="ai-planner-page">
+      <SEO 
+        title="AI Planner" 
+        description="Use AI to plan your projects and goals. Generate actionable tasks and timelines automatically."
+      />
       <AiPlannerHeader
         selectedDate={planData?.date}
         workspaceName={workspaceName}
