@@ -244,7 +244,7 @@ const useWorkspaceStore = create<WorkspaceState>()(
           goals: [],
           initialNodes: [],
           initialEdges: [],
-          status: "PENDING",
+          status: "SUCCESS",
         };
 
         // Optimistic update - UI instantly updates
@@ -286,10 +286,10 @@ const useWorkspaceStore = create<WorkspaceState>()(
 
         const oldWorkspaceName = workspaceToEdit.name;
 
-        // Optimistic update with PENDING status
+        // Optimistic update with SUCCESS status
         set({
           workspaces: oldWorkspaces.map((ws) =>
-            ws.id === id ? { ...ws, name, status: "PENDING" } : ws
+            ws.id === id ? { ...ws, name, status: "SUCCESS" } : ws
           ),
         });
 
@@ -298,7 +298,7 @@ const useWorkspaceStore = create<WorkspaceState>()(
             currentWorkspace: {
               ...get().currentWorkspace!,
               name,
-              status: "PENDING",
+              status: "SUCCESS",
             },
           });
         }
@@ -457,7 +457,7 @@ const useWorkspaceStore = create<WorkspaceState>()(
             goals: [],
             initialNodes: [],
             initialEdges: [],
-            status: "PENDING",
+            status: "SUCCESS",
           };
           set({
             workspaces: [defaultWorkspace],
