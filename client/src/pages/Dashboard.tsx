@@ -15,6 +15,7 @@ import { addPendingOperation, clearPendingOperations, getPendingOperations } fro
 import { useToast } from '../components/ui/ToastProvider';
 import AiChat from '../components/features/AiChat';
 import { checkUserPlanApi } from '../api/payment';
+import { time } from 'console';
 
 // Goal interface - defines structure for goal items
 // Align Goal interface with store (id not _id)
@@ -522,8 +523,17 @@ const Dashboard = () => {
       console.log("Running pending operations...");
     }
 
-    // this will run every 10 seconds
-    const id = setInterval(runPendingOps,10000)
+    // this will run based on user plan
+
+    let id: NodeJS.Timeout; 
+
+    if (useUserStore.getState().userInfo?.plan === "PRO_MONTHLY") {
+      id = setInterval(runPendingOps, 30 * 1000)
+      console.log("User on PRO plan, running pending ops every 30 seconds");
+    } else {
+      console.log("User on FREE plan, running pending ops every 40 seconds");
+      id = setInterval(runPendingOps, 40 * 1000)
+    }
 
     // this will run when the app comes online
     window.addEventListener("online",runPendingOps)
@@ -550,6 +560,14 @@ const Dashboard = () => {
         const response = await checkUserPlanApi(userInfo.userId);
         
         if (response?.success === "true" && response?.response) {
+
+          if (typeof response === "string") {
+            JSON.parse(response)
+            console.log("Parsed string response to object",response);
+          }
+
+          console.log("Plan status response:", response.response);
+
           const { planName, isActive, endDate } = response.response;
           const isExpired = new Date(endDate) < new Date();
           
@@ -575,7 +593,7 @@ const Dashboard = () => {
 
     // Run once on mount, then interval
     checkPlanStatus();
-    const intervalId = setInterval(checkPlanStatus, 100000);
+    const intervalId = setInterval(checkPlanStatus, 5 * 60 * 1000); // every 5 minutes
 
     return () => clearInterval(intervalId);
   }, [userInfo?.userId, userInfo?.plan]);

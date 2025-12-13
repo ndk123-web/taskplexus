@@ -18,7 +18,12 @@ func InitFirebase() {
 	credPath := os.Getenv("FIREBASE_CREDENTIALS_PATH")
 	if credPath == "" {
 		// Attempt common filename in current folder.
-		credPath = filepath.Join("./", "taskplexus-firebase-adminsdk-fbsvc-69245eb849.json")
+
+		// for development
+		// credPath = filepath.Join("./internal/config", "taskplexus-firebase-adminsdk-fbsvc-69245eb849.json")
+
+		// for production deployment
+		credPath = filepath.Join("./internal/config", "taskplexus-firebase-adminsdk-fbsvc-69245eb849.json")
 	}
 	opt := option.WithCredentialsFile(credPath)
 

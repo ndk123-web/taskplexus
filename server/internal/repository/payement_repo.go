@@ -2,10 +2,14 @@ package repository
 
 import (
 	"context"
+	// "encoding/json"
+	// "fmt"
+	// "time"
 
 	"github.com/google/uuid"
 	"github.com/ndk123-web/fast-todo/internal/config"
 	"github.com/ndk123-web/fast-todo/internal/model"
+	// "github.com/redis/go-redis/v9"
 )
 
 type PayementRepository interface {
@@ -94,6 +98,11 @@ func (p *payementRepository) CreatePayment(ctx context.Context, orderId string, 
 	if err != nil {
 		return "", err
 	}
+
+	// Invalidate the cache so the next read fetches fresh data from DB
+	rdb := config.RedisClient
+	cacheKey := "user:plan:" + userId
+	rdb.Del(context.Background(), cacheKey)
 
 	return "payment_record_created_successfully", nil
 }

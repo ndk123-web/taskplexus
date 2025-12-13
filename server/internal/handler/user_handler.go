@@ -9,8 +9,13 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	// "github.com/redis/go-redis/v9"
+
 	// "github.com/ndk123-web/fast-todo/internal/config"
+	"github.com/ndk123-web/fast-todo/internal/config"
 	cfg "github.com/ndk123-web/fast-todo/internal/config"
+	"github.com/ndk123-web/fast-todo/internal/model"
+
 	// "github.com/ndk123-web/fast-todo/internal/repository"
 	"github.com/ndk123-web/fast-todo/internal/service"
 )
@@ -256,10 +261,33 @@ func (h *userHandler) CheckUserPremium(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Best Practice: Use a specific namespace for the key
+	cacheKey := "user:plan:" + userId
+	rdb := config.RedisClient
+
+	// 1. Try to get from Cache
+	val, err := rdb.Get(context.Background(), cacheKey).Result()
+	if err == nil {
+		var data model.CheckUserPremiumResponse
+		if errUnmarshal := json.Unmarshal([]byte(val), &data); errUnmarshal == nil {
+			fmt.Println("Cache Hit For Check Plan Status")
+			json.NewEncoder(w).Encode(map[string]any{"response": data, "success": "true"})
+			return
+		}
+	}
+
+	// 2. If Cache Miss, fetch from Service (DB)
 	response, err := h.service.CheckUserPremium(context.Background(), userId)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
 		return
+	}
+
+	// 3. Set Cache (Best Effort)
+	// We can cache for a longer time (e.g., 24h) because we will invalidate (delete) this key
+	// whenever the user's plan changes (in CreatePayment/Webhook).
+	if jsonBytes, errMarshal := json.Marshal(response); errMarshal == nil {
+		rdb.Set(context.Background(), cacheKey, jsonBytes, 24*time.Hour)
 	}
 
 	json.NewEncoder(w).Encode(map[string]any{"response": response, "success": "true"})
