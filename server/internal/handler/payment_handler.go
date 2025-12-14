@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -104,19 +105,38 @@ func (p *payementHandler) HandlerCancelPayment(w http.ResponseWriter, r *http.Re
 }
 
 func (p *payementHandler) HandleRazorPayWebhook(w http.ResponseWriter, r *http.Request) {
-	var payload model.RazorPayWebhookPayload
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	err := p.service.HandleRazorPayWebhook(context.Background(), payload)
+	// Read raw body once for signature verification and payload parsing
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	// Acknowledging the webhook
+	receivedSignature := r.Header.Get("X-Razorpay-Signature")
+	if receivedSignature == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Verify signature against raw request body
+	if ok := service.VerifyRazorpayWebhookSignature(body, receivedSignature); !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Decode payload after signature verification
+	var payload model.RazorPayWebhookPayload
+	if err := json.Unmarshal(body, &payload); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if err := p.service.HandleRazorPayWebhook(context.Background(), payload); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Acknowledge the webhook
 	w.WriteHeader(http.StatusOK)
 }
 

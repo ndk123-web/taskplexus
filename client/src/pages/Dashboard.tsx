@@ -1047,14 +1047,24 @@ const Dashboard = () => {
       />
       {/* Mobile Header */}
       <header className="mobile-header">
+        <Link 
+          to="/settings"
+          className="mobile-settings-link"
+          title="Settings"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </Link>
         <button 
           className="mobile-menu-toggle"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
+
         <Link to = "/">
         <div className="mobile-logo">
           <img src="/TaskPlexus.png" alt="TaskPlexus" width={32} />

@@ -3261,6 +3261,29 @@
   color: white;
 }
 
+.mobile-settings-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: #667eea;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.mobile-settings-link:hover {
+  background: rgba(102, 126, 234, 0.15);
+  color: #f093fb;
+  transform: scale(1.05);
+}
+
+.mobile-settings-link:active {
+  transform: scale(0.95);
+}
+
 .mobile-logo {
   display: flex;
   align-items: center;
@@ -5504,20 +5527,24 @@
 }
 
 .typewriter-heading {
-  overflow: hidden;
-  white-space: nowrap;
-  width: 0;
-  animation: slow-typing 3s steps(14) ease-in-out infinite;
   letter-spacing: 0.5px;
   background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  font-weight: 600;
+  animation: slideDown 0.6s ease-out;
 }
 
-@keyframes slow-typing {
-  0% { width: 0; }
-  100% { width: 12ch; }
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes textGlow {
@@ -5532,12 +5559,23 @@
 .typewriter-cursor {
   color: #667eea; 
   font-weight: 300;
-  animation: cursor-blink 0.8s infinite;
+  animation: cursor-blink 0.8s infinite, cursorGlow 2s ease-in-out infinite;
+  display: inline-block;
+  margin-left: 4px;
 }
 
 @keyframes cursor-blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
+}
+
+@keyframes cursorGlow {
+  0%, 100% {
+    color: #667eea;
+  }
+  50% {
+    color: #f093fb;
+  }
 }
 
 /* Form - horizontal input + button */

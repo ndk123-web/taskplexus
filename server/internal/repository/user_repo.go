@@ -358,7 +358,7 @@ func (r *userRepo) CheckUserPremium(ctx context.Context, userId string) (*model.
 
 	query := `SELECT is_active, started_at, expires_at, plan_name
 				FROM subscriptions
-				WHERE user_id = $1 AND is_active = true
+				WHERE user_id = $1
 				ORDER BY created_at DESC
 				LIMIT 1`
 	var resp model.CheckUserPremiumResponse

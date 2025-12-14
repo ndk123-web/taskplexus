@@ -82,7 +82,8 @@ func (p *payementService) VerifyPayement(ctx context.Context, data model.VerifyP
 	}
 
 	// create payment record in the database
-	_, err := p.repo.CreatePayment(ctx, data.OrderId, data.PaymentId, data.Signature)
+	_, err := p.repo.CreatePayment(ctx, data.OrderId, data.PaymentId, data.Signature, "payment.pending")
+
 	if err != nil {
 		// marked as failed in future
 		if err := p.repo.CancelPayment(ctx, data.PaymentId); err != nil {
@@ -113,10 +114,10 @@ func (p *payementService) CancelPayment(ctx context.Context, paymentId string) e
 }
 
 func VerifyWebhookSignature(body []byte, signature, secret string) bool {
-	computed := hmac.New(sha256.New, []byte(secret))
-	computed.Write(body)
-	expected := hex.EncodeToString(computed.Sum(nil))
-	return expected == signature
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write(body)
+	expected := hex.EncodeToString(mac.Sum(nil))
+	return hmac.Equal([]byte(expected), []byte(signature))
 }
 
 func (p *payementService) HandleRazorPayWebhook(ctx context.Context, payload model.RazorPayWebhookPayload) error {
@@ -140,9 +141,17 @@ func (p *payementService) HandleRazorPayWebhook(ctx context.Context, payload mod
 
 	if err := p.repo.RazorPayWebhook(ctx, payload); err != nil {
 		return fmt.Errorf("failed to process webhook in repo: %v", err)
-	}
+	}	
 
 	return nil
+}
+
+func VerifyRazorpayWebhookSignature(body []byte, receivedSignature string) bool {
+	secret := os.Getenv("RAZORPAY_WEBHOOK_SECRET")
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write(body)
+	expectedSignature := hex.EncodeToString(mac.Sum(nil))
+	return hmac.Equal([]byte(expectedSignature), []byte(receivedSignature))
 }
 
 func NewPaymentService(repo repository.PayementRepository) PaymentService {

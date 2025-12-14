@@ -15,7 +15,7 @@ import (
 func TestGenerateFlowChartAiRepositotory(t *testing.T) {
 
 	err := godotenv.Load("../../.env")
-	
+
 	if err != nil {
 		t.Fatalf("Error loading .env file")
 	}
@@ -39,7 +39,7 @@ func TestGenerateFlowChartAiRepositotory(t *testing.T) {
 
 	workspaceId := "693c7af449c0e83196a1710f"
 	userId := "693c7a7149c0e83196a17106"
-	prompt := "Hello this is test prompt to generate flowchart"
+	prompt := "I want to create a flowchart for DSA Dynamic Programming topics. I want 5 nodes with easy to hard level questions and edges representing the progression."
 
 	_, _, err = obj.GenertateFlowChart(context.Background(), workspaceId, userId, prompt)
 	if err != nil {
