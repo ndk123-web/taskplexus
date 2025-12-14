@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import useUserStore, { type PlanType } from '../store/useUserInfo';
 import useWorkspaceStore , {type Workspace} from '../store/useWorkspaceStore';
