@@ -5507,7 +5507,7 @@
   overflow: hidden;
   white-space: nowrap;
   width: 0;
-  animation: slow-typing 3s steps(14) forwards, textGlow 2s ease-in-out infinite;
+  animation: slow-typing 3s steps(14) ease-in-out infinite;
   letter-spacing: 0.5px;
   background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
   -webkit-background-clip: text;
@@ -5521,10 +5521,10 @@
 }
 
 @keyframes textGlow {
-  0%, 30% {
+  0%, 0% {
     filter: drop-shadow(0 0 2px rgba(102, 126, 234, 0.5));
   }
-  39% {
+  0% {
     filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.8)) drop-shadow(0 0 12px rgba(240, 147, 251, 0.6));
   }
 }

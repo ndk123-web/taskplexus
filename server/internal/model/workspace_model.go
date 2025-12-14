@@ -24,7 +24,7 @@ type FlowEdge struct {
 
 type Workspace struct {
 	ID            primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	UserId        primitive.ObjectID `bson:"userId,omitEmpty" json:"userId,omitempty"`
+	UserId        primitive.ObjectID `bson:"userId,omitempty" json:"userId,omitempty"`
 	WorkspaceName string             `bson:"workspaceName" json:"worskpaceName"`
 	CreatedAt     time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt     time.Time          `bson:"updatedAt" json:"updatedAt"`
