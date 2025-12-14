@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import useUserStore, { type PlanType } from '../store/useUserInfo';
 import useWorkspaceStore , {type Workspace} from '../store/useWorkspaceStore';
@@ -1060,9 +1060,9 @@ const Dashboard = () => {
           className="mobile-menu-toggle"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          {/* <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          </svg> */}
         </button>
 
         <Link to = "/">
@@ -1071,7 +1071,7 @@ const Dashboard = () => {
           <span>TaskPlexus</span>
         </div>
         </Link>
-        <div className="mobile-user">
+        <div className="mobile-user" onClick={() => navigate("/settings")}>
           {/* <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userInfo?.email}`} alt="Profile" className="mobile-user-avatar" /> */}
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" fill="currentColor"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M8.39 2.3a2 2 0 013.22 0l.77 1.05c.18.24.46.4.77.43l1.28.14a2 2 0 012.28 2.28l-.14 1.28a1.2 1.2 0 00.43.77l1.05.77a2 2 0 010 3.22l-1.05.77c-.24.18-.4.46-.43.77l-.14 1.28a2 2 0 01-2.28 2.28l-1.28-.14a1.2 1.2 0 00-.77.43l-.77 1.05a2 2 0 01-3.22 0l-.77-1.05a1.2 1.2 0 00-.77-.43l-1.28.14a2 2 0 01-2.28-2.28l.14-1.28a1.2 1.2 0 00-.43-.77L2.3 11.61a2 2 0 010-3.22l1.05-.77c.24-.18.4-.46.43-.77L3.92 5.57a2 2 0 012.28-2.28l1.28.14c.31.03.59-.19.77-.43L8.39 2.3zM10 14a4 4 0 100-8 4 4 0 000 8z" fill="currentColor"></path></svg>
         </div>

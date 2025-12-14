@@ -3231,7 +3231,7 @@
 /* ============================================ */
 
 .mobile-header {
-  display: none;
+  display: flex;
   position: fixed;
   top: 0;
   left: 0;
@@ -3242,7 +3242,7 @@
   padding: 8px 16px;
   z-index: 1001;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   height: 54px;
 }
 
@@ -3262,6 +3262,8 @@
 }
 
 .mobile-settings-link {
+  position: absolute;
+  left: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3272,6 +3274,10 @@
   transition: all 0.3s ease;
   border-radius: 8px;
   cursor: pointer;
+  pointer-events: auto;
+  padding: 8px;
+  background: transparent;
+  border: none;
 }
 
 .mobile-settings-link:hover {
@@ -3295,11 +3301,34 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  justify-content: center;
+  text-decoration: none;
+  color: inherit;
+  flex: 1;
+  margin: 0 auto;
 }
 
 .mobile-user {
+  position: absolute;
+  right: 16px;
   display: flex;
   align-items: center;
+  color: #667eea;
+  cursor: pointer;
+  padding: 8px;
+  pointer-events: auto;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.mobile-user:hover {
+  background: rgba(102, 126, 234, 0.15);
+  color: #f093fb;
+  transform: scale(1.05);
+}
+
+.mobile-user:active {
+  transform: scale(0.95);
 }
 
 .mobile-user-avatar {
