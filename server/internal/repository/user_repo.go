@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"time"
-
+	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/ndk123-web/fast-todo/internal/config"
 	"github.com/ndk123-web/fast-todo/internal/model"
@@ -37,6 +37,7 @@ type UserRepository interface {
 	CheckUserPremium(ctx context.Context, userId string) (*model.CheckUserPremiumResponse, error)
 	CheckUserExistsWithEmail(ctx context.Context, email string) (bool, error)
 	ResetPassword(ctx context.Context, email string, hashedPassword string, userId string) error
+	CheckPaymentStatus(ctx context.Context, paymentId string) (*model.CheckPaymentStatusResponse, error)
 }
 
 type userRepo struct {
@@ -361,6 +362,7 @@ func (r *userRepo) CheckUserPremium(ctx context.Context, userId string) (*model.
 				WHERE user_id = $1
 				ORDER BY created_at DESC
 				LIMIT 1`
+
 	var resp model.CheckUserPremiumResponse
 
 	err := config.PostgresPool.QueryRow(ctx, query, userId).Scan(&resp.IsActive, &resp.StartDate, &resp.EndDate, &resp.PlanName)
@@ -456,6 +458,27 @@ func (s *userRepo) ResetPassword(ctx context.Context, email string, hashedPasswo
 		return errors.New("no row updated in PostgreSQL")
 	}
 	return nil
+}
+
+func (s *userRepo) CheckPaymentStatus(ctx context.Context, paymentId string) (*model.CheckPaymentStatusResponse, error) {
+	if paymentId == "" {
+		return nil, errors.New("Payment Id is Empty")
+	}
+
+	query := `SELECT status, amount, currency 
+			  FROM payments
+		      WHERE razorpay_payment_id = $1  
+			 `
+
+	var response model.CheckPaymentStatusResponse
+
+	if err := config.PostgresPool.QueryRow(ctx, query, paymentId).Scan(&response.Status, &response.Amount, &response.Currency); err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Check Payment Status Response: ", response)
+
+	return &response, nil
 }
 
 func NewUserRepository(todoCol *mongo.Collection, userCol *mongo.Collection) UserRepository {

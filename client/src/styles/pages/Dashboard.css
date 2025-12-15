@@ -258,12 +258,12 @@
 
 /* Dashboard Top Header */
 .dashboard-top-header {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(15, 15, 30, 0.80);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 15px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px 20px;
   display: flex;
-  justify-content: space-between;
+  justify-content:flex-end ;
   align-items: center;
   position: sticky;
   top: 0;
@@ -271,15 +271,14 @@
 }
 
 .dashboard-top-header-left {
-  display: flex;
-  align-items: center;
-  gap: 32px;
+  display: none;
 }
 
 .dashboard-top-logo {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin: 0 auto;
 }
 
 .dashboard-top-logo-icon {
@@ -289,7 +288,7 @@
 
 .dashboard-top-logo-text {
   font-family: 'Space Grotesk', 'Inter', sans-serif;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
   -webkit-background-clip: text;
@@ -323,6 +322,7 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  justify-content: space-evenly;
 }
 
 .user-info-header {
@@ -829,6 +829,21 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .dashboard-top-header {
+    justify-content: space-between;
+    padding: 10px 12px;
+  }
+
+  .dashboard-top-header-left,
+  .dashboard-top-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .dashboard-top-logo {
+    margin: 0;
+  }
   .npm-analytics-chart {
     padding: 16px;
     margin-top: 20px;
@@ -2652,6 +2667,7 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  justify-content: space-evenly;
 }
 
 .current-workspace-display {
@@ -3231,7 +3247,7 @@
 /* ============================================ */
 
 .mobile-header {
-  display: flex;
+  display: none;
   position: fixed;
   top: 0;
   left: 0;

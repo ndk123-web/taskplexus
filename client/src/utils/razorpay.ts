@@ -3,7 +3,9 @@ import {
   createOrderApi,
   verifyPaymentApi,
   cancelOrderApi,
+  checkPaymentStatusApi,
 } from "../api/payment";
+import useUserStore from "../store/useUserInfo";
 
 export function dynamicRazorPayLoad() {
   return new Promise<boolean>((resolve) => {
@@ -89,6 +91,44 @@ export async function openRazorpayCheckout(order: any) {
   }
 }
 
+const checkPaymentStatus = async (paymentId: string) => {
+  const pollId = setInterval(async () => {
+    try {
+      const response = await checkPaymentStatusApi({ paymentId: paymentId });
+      console.log("Payment status response:", response);
+
+      if (response?.success !== "true") {
+        throw new Error(response?.Error || "Failed to check payment status");
+      }
+
+      if (
+        response?.success === "true" &&
+        response?.status === "payment.failed"
+      ) {
+        console.error("payment failed users needs to be notified");
+        clearInterval(pollId);
+      }
+
+      if (
+        response?.success === "true" &&
+        response?.status === "payment.captured"
+      ) {
+        useUserStore.getState().signinUser({
+          ...useUserStore.getState().userInfo!,
+          plan: "PRO_MONTHLY",
+        });
+        console.log("payment captured successfully");
+        clearInterval(pollId);
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error checking payment status:", error);
+      return false;
+    }
+  }, 5 * 1000);
+};
+
 const verifyPayment = async (data: any) => {
   try {
     const response = await verifyPaymentApi(data);
@@ -100,6 +140,10 @@ const verifyPayment = async (data: any) => {
     }
 
     console.log("Payment verified successfully:", response);
+
+    // poll 5 seconds to check payment status after verification
+    await checkPaymentStatus(data.razorpay_payment_id);
+
     return response;
   } catch (error) {
     console.error("Error verifying payment:", error);

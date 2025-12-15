@@ -30,6 +30,7 @@ type UserHandler interface {
 	CheckUserPremium(w http.ResponseWriter, r *http.Request)
 	ForgetPasswordSetToken(w http.ResponseWriter, r *http.Request)
 	ResetPassword(w http.ResponseWriter, r *http.Request)
+	CheckPaymentStatus(w http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {
@@ -370,6 +371,22 @@ func (h *userHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(map[string]string{"response": "Success Reset Password", "success": "true"})
+}
+
+func (h *userHandler) CheckPaymentStatus(w http.ResponseWriter, r *http.Request) {
+	paymentId := r.PathValue("paymentId")
+	if paymentId == "" {
+		json.NewEncoder(w).Encode(map[string]string{"Error": "Payment Id is Empty In Handler", "success": "false"})
+		return
+	}
+
+	response, err := h.service.CheckPaymentStatus(context.Background(), paymentId)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error(), "success": "false"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]any{"response": response, "success": "true"})
 }
 
 func NewUserHandler(service service.UserService) UserHandler {

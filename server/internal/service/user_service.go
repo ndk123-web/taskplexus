@@ -33,6 +33,7 @@ type UserService interface {
 	CheckUserPremium(ctx context.Context, userId string) (*model.CheckUserPremiumResponse, error)
 	ForgetPasswordSetToken(ctx context.Context, email string, userId string) error // to be implemented
 	ResetPassword(ctx context.Context, email string, token string, newPassword string) error
+	CheckPaymentStatus(ctx context.Context, paymentId string) (*model.CheckPaymentStatusResponse, error)
 }
 
 type userService struct {
@@ -276,6 +277,14 @@ func (s *userService) ResetPassword(ctx context.Context, email string, token str
 	fmt.Println("Redis Key Deleted After Sending email and resetting password:", key)
 
 	return nil
+}
+
+func (s *userService) CheckPaymentStatus(ctx context.Context, paymentId string) (*model.CheckPaymentStatusResponse, error) {
+	if paymentId == "" {
+		return nil, errors.New("Payment Id is Empty")
+	}
+
+	return s.repo.CheckPaymentStatus(ctx, paymentId)
 }
 
 func NewUserService(repo repository.UserRepository) UserService {

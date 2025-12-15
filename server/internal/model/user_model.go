@@ -32,3 +32,9 @@ type ResetPasswordRequestBody struct {
 	Token       string `json:"token"`
 	NewPassword string `json:"newPassword"`
 }
+
+type CheckPaymentStatusResponse struct {
+	Status   string `json:"status" db:"status"`
+	Currency string `json:"currency" db:"currency"`
+	Amount   int64  `json:"amount" db:"amount"`
+}

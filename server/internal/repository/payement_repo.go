@@ -112,7 +112,7 @@ func (p *payementRepository) CreatePayment(ctx context.Context, orderId string, 
 func (p *payementRepository) CancelPayment(ctx context.Context, paymentId string) error {
 	// implement the method to cancel payment record in the database
 	query := "UPDATE payments SET status = $1 WHERE razorpay_payment_id = $2"
-	_, err := config.PostgresPool.Exec(ctx, query, "cancelled", paymentId)
+	_, err := config.PostgresPool.Exec(ctx, query, "payment.failed", paymentId)
 	if err != nil {
 		return err
 	}

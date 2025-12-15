@@ -93,6 +93,7 @@ func (s *Server) Start(port string) error {
 	mux.Handle("POST /api/v1/payment/cancel-order", middleware.AuthMiddleware(http.HandlerFunc(s.paymentHandler.HandlerCancelOrder)))
 	mux.Handle("POST /api/v1/payment/cancel-payment", middleware.AuthMiddleware(http.HandlerFunc(s.paymentHandler.HandlerCancelPayment)))
 	mux.Handle("POST /api/v1/payment/webhook/razorpay", http.HandlerFunc(s.paymentHandler.HandleRazorPayWebhook))
+	mux.Handle("GET /api/v1/payment/check-payment-status/{paymentId}", middleware.AuthMiddleware(http.HandlerFunc(s.userHandler.CheckPaymentStatus)))
 
 	// AI Planner Handler
 	mux.Handle("POST /api/v1/aiplanner/handle-planner", middleware.AuthMiddleware(http.HandlerFunc(s.aiPlannerCollection.HandleAiPlanner)))

@@ -594,6 +594,7 @@ const Dashboard = () => {
 
     // Run once on mount, then interval
     checkPlanStatus();
+    
     const intervalId = setInterval(checkPlanStatus, 5 * 60 * 1000); // every 5 minutes
 
     return () => clearInterval(intervalId);

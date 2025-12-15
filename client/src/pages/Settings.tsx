@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useUserStore, { type User, type PlanDetails, type PlanType } from '../store/useUserInfo';
 import '../styles/pages/Settings.css';
@@ -47,6 +47,7 @@ const Settings = () => {
   const otherPlan = currentPlan === 'FREE' ? 'PRO_MONTHLY' : 'FREE';
   const otherPlanDetails = planDetails[otherPlan];
   const [createOrderLoader , setCreateOrderLoader] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSaveName = async () => {
     if (!userInfo) {
@@ -97,7 +98,7 @@ const Settings = () => {
     const handleUpgrade = async () => {
       // lazy load razorpay script on button click
       await dynamicRazorPayLoad()
-  
+
       setCreateOrderLoader(true);
       try {
         const order = {
@@ -106,18 +107,28 @@ const Settings = () => {
         }
         const data: any = await openRazorpayCheckout(order);
         if (data) {
-          showToast('Payment successful! Enjoy Premium features.', 'success');
-          signinUser({ ...userInfo!, plan: 'PRO_MONTHLY' });
-          navigate('/dashboard', { replace: true });
+          // Do NOT upgrade immediately. Webhook will update payments status; frontend polls.
+          setIsProcessing(true);
+          showToast('Payment verified. Finalizing…', 'info');
         } else {
-          showToast('Payment verification failed. Please contact support.', 'error');
+          showToast('Payment failed. If charged, it will be refunded.', 'error');
         }
       } catch (error) {
         console.error("Payment error:", error);
+        showToast('Unexpected payment error', 'error');
       } finally {
         setCreateOrderLoader(false);
       }
     }
+
+  // Auto-redirect when plan becomes PRO via webhook + polling
+  useEffect(() => {
+    if (userInfo?.plan === 'PRO_MONTHLY' && isProcessing) {
+      showToast('Premium activated! Enjoy PRO features.', 'success');
+      setIsProcessing(false);
+      navigate('/dashboard', { replace: true });
+    }
+  }, [userInfo?.plan, isProcessing, navigate]);
 
   const handleLogout = () => {
     signOutUser();
