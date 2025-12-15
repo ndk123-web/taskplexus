@@ -7,6 +7,8 @@ import { useToast } from '../components/ui/ToastProvider';
 import { dynamicRazorPayLoad , openRazorpayCheckout } from '../utils/razorpay';
 import '../styles/pages/Home.css'
 import SEO from '../components/SEO';
+import useWorkspaceStore from '../store/useWorkspaceStore';
+import { clearPendingOperations } from '../store/indexDB/pendingOps/usePendingOps';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -130,10 +132,33 @@ const Settings = () => {
     }
   }, [userInfo?.plan, isProcessing, navigate]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const store = useWorkspaceStore.getState();
+    // Clear in-memory state first
+    store.clearWorkspace();
+    // Sign out & navigate quickly to unmount Dashboard (closes active IndexedDB usage)
     signOutUser();
-    showToast('Signed out', 'info');
     navigate('/');
+
+    // Defer heavy cleanup to next tick to avoid race with component effects
+    setTimeout(async () => {
+      try {
+        await useWorkspaceStore.persist.clearStorage();
+        console.log('✅ Persist storage cleared');
+      } catch (e) {
+        console.warn('⚠️ Failed clearing persist storage', e);
+      }
+      try {
+        const req = indexedDB.deleteDatabase('workspaceDB');
+        req.onsuccess = () => console.log('✅ workspaceDB deleted');
+        req.onerror = (ev) => console.warn('⚠️ workspaceDB delete error', ev);
+        req.onblocked = () => console.warn('⚠️ workspaceDB delete blocked (another open connection)');
+      } catch (e) {
+        console.warn('⚠️ deleteDatabase threw synchronously', e);
+      }
+      await clearPendingOperations();
+      console.log('✅ Pending operations cleared');
+    }, 1000);
   };
 
   return (
