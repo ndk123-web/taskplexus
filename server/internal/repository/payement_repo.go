@@ -68,7 +68,7 @@ func (p *payementRepository) CreatePayment(ctx context.Context, orderId string, 
 		orderId,
 	).Scan(&orderDbId, &amount, &currency)
 
-	query := "INSERT INTO payments (id, razorpay_order_id, razorpay_payment_id, razorpay_signature, amount, currency, status, order_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+	query := "INSERT INTO payments (id, razorpay_order_id, razorpay_payment_id, razorpay_signature, amount, currency, status, order_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (razorpay_payment_id) DO UPDATE SET razorpay_signature = EXCLUDED.razorpay_signature WHERE payments.razorpay_signature = 'webhook'"
 	cmd, err := config.PostgresPool.Exec(ctx, query, id, orderId, paymentId, signature, amount, currency, event, orderDbId)
 	if err != nil {
 		return "", err
