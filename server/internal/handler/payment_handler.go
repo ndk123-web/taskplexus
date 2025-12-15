@@ -3,12 +3,12 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/ndk123-web/fast-todo/internal/model"
+	"github.com/ndk123-web/fast-todo/internal/service"
 	"io"
 	"net/http"
 	"strconv"
-
-	"github.com/ndk123-web/fast-todo/internal/model"
-	"github.com/ndk123-web/fast-todo/internal/service"
 )
 
 type PayementHandler interface {
@@ -112,6 +112,8 @@ func (p *payementHandler) HandleRazorPayWebhook(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	fmt.Println("Webhook Data: ", string(body))
+
 	receivedSignature := r.Header.Get("X-Razorpay-Signature")
 	if receivedSignature == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -130,6 +132,8 @@ func (p *payementHandler) HandleRazorPayWebhook(w http.ResponseWriter, r *http.R
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	fmt.Println("Webhook Payload: ", payload)
 
 	if err := p.service.HandleRazorPayWebhook(context.Background(), payload); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
