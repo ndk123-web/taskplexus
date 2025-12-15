@@ -143,7 +143,7 @@ const Settings = () => {
     // Defer heavy cleanup to next tick to avoid race with component effects
     setTimeout(async () => {
       try {
-        await useWorkspaceStore.persist.clearStorage();
+        useWorkspaceStore.persist.clearStorage();
         console.log('✅ Persist storage cleared');
       } catch (e) {
         console.warn('⚠️ Failed clearing persist storage', e);
@@ -158,7 +158,7 @@ const Settings = () => {
       }
       await clearPendingOperations();
       console.log('✅ Pending operations cleared');
-    }, 1000);
+    }, 2000);
   };
 
   return (

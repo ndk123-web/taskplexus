@@ -349,7 +349,7 @@ const Home = () => {
               <div className="plan-header">
                 <h3 className="plan-name">Free</h3>
                 <p className="plan-price">
-                  <span className="price-value">$0</span>
+                  <span className="price-value">₹0</span>
                   <span className="price-period">Forever</span>
                 </p>
               </div>
@@ -371,7 +371,7 @@ const Home = () => {
               <div className="plan-header">
                 <h3 className="plan-name">Premium</h3>
                 <p className="plan-price">
-                  <span className="price-value">₹99</span>
+                  <span className="price-value">₹49</span>
                   <span className="price-period">/month</span>
                 </p>
               </div>

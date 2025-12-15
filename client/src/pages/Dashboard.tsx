@@ -1173,16 +1173,7 @@ const Dashboard = () => {
                 </svg>
                 <span>AI Planner</span>
               </button>
-              <button 
-                className={`mobile-nav-item ${activeSection === 'analytics' ? 'active' : ''}`}
-                onClick={() => { setActiveSection('analytics'); setMobileMenuOpen(false); }}
-              >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M2.5 15.5L6.5 11.5L9.5 14.5L17.5 6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M13.5 6.5H17.5V10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span>Analytics</span>
-              </button>
+ 
               <button 
                 className="mobile-nav-item"
                 onClick={() => {
@@ -1276,6 +1267,58 @@ const Dashboard = () => {
                     </div>
                   ))}
                 </div>
+                {/* Upgrade card for mobile when hitting workspace limit */}
+                {workspaces.length >= 2 && userCurrentPlan === "FREE" && (
+                  <div className="upgrade-plan-card" style={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    marginTop: '16px',
+                    color: 'white',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{ position: 'relative', zIndex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '20px', marginRight: '8px' }}>🚀</span>
+                        <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Unlock Pro Features</h4>
+                      </div>
+                      <p style={{ margin: '0 0 12px 0', fontSize: '12px', opacity: 0.9, lineHeight: '1.4' }}>
+                        You've reached the free limit of 2 workspaces. Upgrade to create more!
+                      </p>
+                      <button
+                        onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          background: 'white',
+                          color: '#764ba2',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s',
+                          boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                        onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        Upgrade Now
+                      </button>
+                    </div>
+                    <div style={{
+                      position: 'absolute',
+                      top: '-20px',
+                      right: '-20px',
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '50%',
+                      background: 'rgba(255,255,255,0.1)'
+                    }} />
+                  </div>
+                )}
                 {!showAddWorkspace && (
                   <button
                     className="mobile-workspace-add"
@@ -1294,8 +1337,40 @@ const Dashboard = () => {
                 <div>
                   <div className="mobile-username">{userInfo?.fullName || 'User'}</div>
                   <div className="mobile-user-email">{userInfo?.email}</div>
+                  <div style={{ marginTop: '8px', fontSize: '12px', padding: '6px 10px', background: userCurrentPlan === 'PRO_MONTHLY' ? 'rgba(102, 126, 234, 0.15)' : 'rgba(200, 200, 200, 0.15)', borderRadius: '4px', display: 'inline-block', color: userCurrentPlan === 'PRO_MONTHLY' ? '#667eea' : '#666' }}>
+                    {userCurrentPlan === 'PRO_MONTHLY' ? '⭐ PRO' : 'FREE'}
+                  </div>
                 </div>
               </div>
+              <button
+                onClick={() => { signOutUser(); setMobileMenuOpen(false); navigate('/'); }}
+                style={{
+                  width: '100%',
+                  marginTop: '12px',
+                  padding: '10px 12px',
+                  background: '#f5f5f5',
+                  color: '#333',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  transition: 'background 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.background = '#efefef'}
+                onMouseOut={(e) => e.currentTarget.style.background = '#f5f5f5'}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M6 14H3C2.73478 14 2.48043 13.8946 2.29289 13.7071C2.10536 13.5196 2 13.2652 2 13V3C2 2.73478 2.10536 2.48043 2.29289 2.29289C2.48043 2.10536 2.73478 2 3 2H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M11 11L14 8L11 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Sign Out
+              </button>
             </div>
           </nav>
         </div>
