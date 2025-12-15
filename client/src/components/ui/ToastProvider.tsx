@@ -30,7 +30,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const showToast = useCallback((message: string, type: ToastType = 'info', durationMs: number = 4000) => {
+  const showToast = useCallback((message: string, type: ToastType = 'info', durationMs: number = 6000) => {
     // Generate a robust ID that works on older mobile browsers (no crypto.randomUUID)
     let id: string;
     try {
