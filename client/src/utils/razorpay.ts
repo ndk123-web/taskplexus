@@ -97,21 +97,21 @@ const checkPaymentStatus = async (paymentId: string) => {
       const response = await checkPaymentStatusApi({ paymentId: paymentId });
       console.log("Payment status response:", response);
 
-      if (response?.success !== "true") {
+      if (response?.response?.success !== "true") {
         throw new Error(response?.Error || "Failed to check payment status");
       }
 
       if (
-        response?.success === "true" &&
-        response?.status === "payment.failed"
+        response?.response?.success === "true" &&
+        response?.response?.status === "payment.failed"
       ) {
         console.error("payment failed users needs to be notified");
         clearInterval(pollId);
       }
 
       if (
-        response?.success === "true" &&
-        response?.status === "payment.captured"
+        response?.response?.success === "true" &&
+        response?.response?.status === "payment.captured"
       ) {
         useUserStore.getState().signinUser({
           ...useUserStore.getState().userInfo!,
