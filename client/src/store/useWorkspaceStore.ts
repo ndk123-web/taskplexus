@@ -244,7 +244,7 @@ const useWorkspaceStore = create<WorkspaceState>()(
           goals: [],
           initialNodes: [],
           initialEdges: [],
-          status: "SUCCESS",
+          status: "PENDING",
         };
 
         // Optimistic update - UI instantly updates
