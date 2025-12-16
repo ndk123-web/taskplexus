@@ -128,16 +128,21 @@ func (r *chatRepository) HandleAiMessage(ctx context.Context, userPrompt string,
 	todosText := builder.String()
 
 	prompt := fmt.Sprintf(`
-		You are an advisor for the TaskPlexus application.
-		Your job is to respond to the user's prompt and give direct, practical suggestions.
+		You are a productivity advisor for TaskPlexus.
 
-		User Prompt:
+		Answer the user's question using ONLY the information provided.
+		Be direct, practical, and concise.
+		Do not add generic advice.
+		Do not invent tasks.
+
+		User Question:
 		%s
 
 		User Todos:
 		%s
 
-		Provide clear, structured, and actionable guidance based only on the information above.
+		Respond in clear bullet points.
+		Keep the response short.
 		`, userPrompt, todosText)
 
 	fmt.Println(prompt)

@@ -492,7 +492,18 @@ const FlowchartViewNew: React.FC = () => {
             </button>
 
             <div className="user-info">
-              <div className="user-avatar">✨</div>
+                          <div className="user-profile-avatar" style={{
+              background: useUserStore.getState().userInfo?.plan === 'PRO_MONTHLY' 
+                ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)' 
+                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: useUserStore.getState().userInfo?.plan === 'PRO_MONTHLY' ? '#000' : '#fff',
+              boxShadow: useUserStore.getState().userInfo?.plan === 'PRO_MONTHLY' ? '0 0 15px rgba(255, 215, 0, 0.4)' : 'none',
+              fontWeight: '800',
+              fontSize: useUserStore.getState().userInfo?.plan === 'PRO_MONTHLY' ? '12px' : '14px',
+              border: useUserStore.getState().userInfo?.plan === 'PRO_MONTHLY' ? '2px solid rgba(255,255,255,0.5)' : 'none'
+            }}>
+              {useUserStore.getState().userInfo?.plan === 'PRO_MONTHLY' ? 'PRO' : (useUserStore.getState().userInfo?.fullName?.charAt(0).toUpperCase() || 'U')}
+            </div>
               <span className="user-name">{useUserStore.getState().userInfo?.fullName}</span>
             </div>
 

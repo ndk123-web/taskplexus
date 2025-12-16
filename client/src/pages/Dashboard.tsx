@@ -927,6 +927,7 @@ const Dashboard = () => {
       showToast('You Can not create Duplicate Workspace!', 'warning');
       return 
     }
+    
     console.log("Workspace NAme: ",newWorkspaceName)
     if (newWorkspaceName.trim()) {
       addWorkspace(newWorkspaceName.trim());

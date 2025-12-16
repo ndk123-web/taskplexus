@@ -5,6 +5,7 @@ import useUserStore from '../../store/useUserInfo';
 import { getChat, addChat, deleteWorkspaceChat } from '../../store/indexDB/chats/chatMethods';
 import {sendAiMessageApi} from '../../api/';
 import { formatAiResponsePlain } from '../../utils/aiResponseFormatter';
+import {  useToast } from '../ui';
 
 interface Message {
   id: string;
@@ -27,6 +28,8 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const { showToast } = useToast();
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -185,16 +188,18 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
           console.error('❌ Error saving message to IndexedDB:', saveError);
         }
       }
-      else if(data?.LimitReached === "true"){
+      else if(data?.LimitReached === "true" ){
         const aiMessage: Message = {
           id: `ai_${Date.now()}`,
           text: 'You Have Reached Your Monthly Limit. Please Upgrade Your Plan.',
           sender: 'ai',
           timestamp: new Date()
         };
+        showToast('You Have Reached Your Monthly Limit. Please Upgrade Your Plan.', 'error');
         setMessages(prev => [...prev, aiMessage]);
       } 
       else {
+        showToast(data.Error || 'Failed to get AI response', 'error');
         throw new Error(data.Error || 'Failed to get AI response');
       }
     } catch (error : any) {

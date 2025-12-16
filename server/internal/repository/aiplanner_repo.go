@@ -140,11 +140,12 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 
 	todoText := builder.String()
 
-	prompt := fmt.Sprintf(`
-			You are a Professional Time Management & Productivity Planner for TaskPlexus.
+	currentTime := time.Now()
+	fmt.Println("Current Time: ", currentTime)
 
-			Your job:
-			Create a realistic, human-friendly timeline for TODAY based on the provided tasks, user context, and productivity principles.
+	prompt := fmt.Sprintf(`
+			You are a daily planner for TaskPlexus.
+			Create a realistic plan ONLY for TODAY using the tasks below.
 
 			Tasks:
 			%s
@@ -153,19 +154,14 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 			%s
 
 			Rules:
-			1. Day starts at 09:00 unless user context says otherwise.
-			2. Include important natural breaks — short breaks, lunch, mental reset periods.
-			3. Consider human energy cycles:
-			- High focus tasks earlier in the day
-			- Lighter tasks later
-			4. Use task priority, estimated_minutes, and urgency to decide ordering.
-			5. Suggest improvements if the user can boost productivity.
-			6. Do NOT invent new tasks, but you *may* insert:
-			- "Break"
-			- "Lunch"
-			- "Stretch"
-			- "Planning / Review"
-			7. Always output valid JSON only. No explanations.
+			- Day starts at 09:00 unless context says otherwise.
+			- Current time is %s
+			- High-focus tasks first.
+			- Include short breaks and lunch.
+			- Do NOT invent new tasks.
+			- You may add: Break, Lunch, Review.
+			- Use priority and estimated_minutes for ordering.
+
 
 			Return JSON ONLY in this exact format:
 
@@ -182,7 +178,7 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 			],
 			"summary": "..."
 			}
-		`, todoText, data.Context)
+		`, todoText, data.Context, currentTime.Format("15:04")) // 15:04 is the format for HH:MM in 24-hour time
 
 	fmt.Println("Ai Planner Prompt: ", prompt)
 
