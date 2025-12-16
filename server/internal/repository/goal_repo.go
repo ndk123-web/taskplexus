@@ -50,6 +50,8 @@ func (r *goalRepository) GetUserGoals(ctx context.Context, userId string, worksp
 		return nil, err
 	}
 
+	defer cursor.Close(ctx)
+
 	var goalsDocs []model.Goals
 	for cursor.Next(ctx) {
 		var goal model.Goals

@@ -103,6 +103,8 @@ func (r *chatRepository) HandleAiMessage(ctx context.Context, userPrompt string,
 		return nil, err
 	}
 
+	defer cursor.Close(ctx)
+
 	var todos []model.Todo
 	for cursor.Next(ctx) {
 		var todo model.Todo
@@ -205,6 +207,8 @@ func (r *chatRepository) GetUserAiMessage(ctx context.Context, userId string, wo
 
 	filter := bson.M{"userId": userOid, "workspaceId": workspaceOid}
 	cursor, err := r.chatCollection.Find(ctx, filter)
+
+	defer cursor.Close(ctx)
 
 	if err != nil {
 		return nil, err

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"sort"
 	"strconv"
 	"time"
 
@@ -31,6 +32,16 @@ type aiPlannerRepository struct {
 	todoCollection      *mongo.Collection
 	goalCollection      *mongo.Collection
 }
+
+type AiTodo struct {
+	ID       string `json:"id"`
+	Title    string `json:"title"`
+	Priority string `json:"priority"`
+	Minutes  int    `json:"minutes"`
+}
+
+const MAX_DAY_MINUTES = 720 // 12 hours in minutes
+const MAX_TODOS = 25
 
 func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.AiPlannerReqBody) (*model.AiPlanner, error) {
 	if data.UserId == "" || data.WorkspaceId == "" {
@@ -109,7 +120,7 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 
 	// Query Mongo using ObjectIDs to match stored document types
 	filter := bson.M{"userId": userOid, "workspaceId": workspaceOid}
-	var todos []model.Todo
+	var todos []AiTodo
 
 	cursor, err := r.todoCollection.Find(ctx, filter)
 	if err != nil {
@@ -118,27 +129,65 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 
 	for cursor.Next(ctx) {
 		var todo model.Todo
+
 		if err := cursor.Decode(&todo); err != nil {
 			return nil, err
 		}
-		todos = append(todos, todo)
+
+		aiTodo := AiTodo{
+			ID:       todo.ID.Hex(),
+			Title:    todo.Task,
+			Priority: todo.Priority,
+		}
+
+		if todo.EstimatedTime != nil {
+			aiTodo.Minutes = *todo.EstimatedTime
+		} else {
+			aiTodo.Minutes = 45 // default to 30 minutes if not set
+		}
+
+		todos = append(todos, aiTodo)
 	}
+
+	sort.Slice(todos, func(i, j int) bool {
+		pi := PriorityWeight(todos[i].Priority)
+		pj := PriorityWeight(todos[j].Priority)
+
+		if pi == pj {
+			return todos[i].Minutes < todos[j].Minutes
+		}
+
+		return pi < pj
+	})
+
+	defer cursor.Close(ctx)
 
 	// Build Prompt
 	var builder strings.Builder
 
 	for i, t := range todos {
-		if t.EstimatedTime == nil {
+		if t.Minutes <= 0 {
 			estimated := 30
-			t.EstimatedTime = &estimated
+			t.Minutes = estimated
 		}
 		fmt.Fprintf(&builder,
-			"%d. Task: %s | Priority: %s | Done: %t | Description: %s | Estimated Time (Minutes): %v | Deadline: %s \n",
-			i+1, t.Task, t.Priority, t.Done, t.Description, *t.EstimatedTime, t.Deadline,
+			"%d. Task: %s | Priority: %s | Estimated Time (Minutes): %v  \n",
+			i+1, t.Title, t.Priority, t.Minutes,
 		)
 	}
 
-	todoText := builder.String()
+	var filteredTodos []AiTodo
+	total := 0
+
+	for _, t := range todos {
+		if total+t.Minutes > MAX_DAY_MINUTES || len(filteredTodos) >= MAX_TODOS {
+			break
+		}
+		filteredTodos = append(filteredTodos, t)
+		total += t.Minutes
+	}
+
+	taskJson, err := json.Marshal(filteredTodos)
 
 	currentTime := time.Now()
 	fmt.Println("Current Time: ", currentTime)
@@ -177,7 +226,7 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 			],
 			"summary": "..."
 			}
-		`, todoText, data.Context) // 15:04 is the format for HH:MM in 24-hour time
+		`, string(taskJson), data.Context)
 
 	fmt.Println("Ai Planner Prompt: ", prompt)
 
@@ -236,6 +285,19 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 	}
 
 	return &insert, nil
+}
+
+func PriorityWeight(p string) int {
+	switch strings.ToLower(p) {
+	case "high":
+		return 1
+	case "medium":
+		return 2
+	case "low":
+		return 3
+	default:
+		return 4
+	}
 }
 
 func (r *aiPlannerRepository) GetAiPlannerById(ctx context.Context, id string) (*model.AiPlanner, error) {
@@ -302,6 +364,8 @@ func (r *aiPlannerRepository) GetAllAiPlanners(ctx context.Context, userId strin
 	if err != nil {
 		return nil, err, 0
 	}
+
+	defer cursor.Close(ctx)
 
 	for cursor.Next(ctx) {
 		var aiPlanner model.GetAllAiPlannerResponse

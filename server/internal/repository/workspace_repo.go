@@ -99,6 +99,8 @@ func (r *workspaceRepository) GetAllUserWorkspace(ctx context.Context, userId st
 		return nil, err
 	}
 
+	defer cursor.Close(ctx)
+
 	var result []model.Workspace
 	for cursor.Next(ctx) {
 		var part model.Workspace

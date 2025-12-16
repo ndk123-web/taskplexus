@@ -99,6 +99,8 @@ func (r *activityRepository) GetActivities(ctx context.Context, data model.GetAc
 		SetLimit(data.Limit).
 		SetSort(bson.M{"timestamp": -1}))
 
+	defer cursor.Close(ctx)
+
 	if err != nil {
 		return nil, err, 0
 	}
