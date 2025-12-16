@@ -155,7 +155,6 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 
 			Rules:
 			- Day starts at 09:00 unless context says otherwise.
-			- Current time is %s
 			- High-focus tasks first.
 			- Include short breaks and lunch.
 			- Do NOT invent new tasks.
@@ -178,7 +177,7 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 			],
 			"summary": "..."
 			}
-		`, todoText, data.Context, currentTime.Format("15:04")) // 15:04 is the format for HH:MM in 24-hour time
+		`, todoText, data.Context) // 15:04 is the format for HH:MM in 24-hour time
 
 	fmt.Println("Ai Planner Prompt: ", prompt)
 

@@ -195,10 +195,12 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
           sender: 'ai',
           timestamp: new Date()
         };
+        console.log('📢 Toast: Monthly limit reached');
         showToast('You Have Reached Your Monthly Limit. Please Upgrade Your Plan.', 'error');
         setMessages(prev => [...prev, aiMessage]);
       } 
       else {
+        console.log('📢 Toast: Failed to get AI response', data.Error);
         showToast(data.Error || 'Failed to get AI response', 'error');
         throw new Error(data.Error || 'Failed to get AI response');
       }
@@ -207,10 +209,15 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
       // Remove loading message
       setMessages(prev => prev.filter(m => m.id !== loadingId));
 
-      // Add error message
+      // Show error toast
+      const errorMsg = error?.message || 'Sorry, I encountered an error. Please try again.';
+      console.log('📢 Toast: Error in catch block', errorMsg);
+      showToast(errorMsg, 'error');
+
+      // Add error message to chat
       const errorMessage: Message = {
         id: `error_${Date.now()}`,
-        text: error?.message  || 'Sorry, I encountered an error. Please try again.',
+        text: errorMsg,
         sender: 'ai',
         timestamp: new Date()
       };
