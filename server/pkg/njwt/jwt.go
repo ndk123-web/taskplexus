@@ -25,7 +25,7 @@ func CreateAccessAndRefreshToken(email string) (string, string, error) {
 	accessClaims := jwt.MapClaims{
 		"email": email,
 		"type":  "access",
-		"exp":   time.Now().Add(48 * time.Hour).Unix(), // 7 days
+		"exp":   time.Now().Add(24 * time.Hour).Unix(), 
 	}
 
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
