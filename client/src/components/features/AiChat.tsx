@@ -197,15 +197,15 @@ const AiChat: React.FC<AiChatProps> = ({ isOpen, onClose }) => {
       else {
         throw new Error(data.Error || 'Failed to get AI response');
       }
-    } catch (error) {
+    } catch (error : any) {
       console.error('Error sending message:', error);
       // Remove loading message
       setMessages(prev => prev.filter(m => m.id !== loadingId));
-      
+
       // Add error message
       const errorMessage: Message = {
         id: `error_${Date.now()}`,
-        text: 'Sorry, I encountered an error. Please try again.',
+        text: error?.message  || 'Sorry, I encountered an error. Please try again.',
         sender: 'ai',
         timestamp: new Date()
       };

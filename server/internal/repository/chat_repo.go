@@ -90,7 +90,7 @@ func (r *chatRepository) HandleAiMessage(ctx context.Context, userPrompt string,
 			return nil, err
 		}
 
-		if plan_name == "PRO_MONTHLY" && count >= 20 {
+		if plan_name == "PRO_MONTHLY" && count >= 100 {
 			return nil, errors.New("LIMIT REACHED")
 		}
 	default:
