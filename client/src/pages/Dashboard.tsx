@@ -750,10 +750,10 @@ const Dashboard = () => {
     e.preventDefault();
     if (!currentWorkspace) return;
     
-    if (currentWorkspace.todos.length >= 15) {
-      showToast('You can create maximum 15 todos per workspace. Premium coming soon for unlimited todos!', 'warning');
-      return;
-    }
+    // if (currentWorkspace.todos.length >= 15) {
+    //   showToast('You can create maximum 15 todos per workspace. Premium coming soon for unlimited todos!', 'warning');
+    //   return;
+    // }
     
     if (newTodo.trim()) {
       let newtask: CreateTaskReq = {
@@ -777,10 +777,10 @@ const Dashboard = () => {
     e.preventDefault();
     if (!currentWorkspace) return;
     
-    if (currentWorkspace.goals.length >= 15) {
-      showToast('You can create maximum 15 goals per workspace. Premium coming soon for unlimited goals!', 'warning');
-      return;
-    }
+    // if (currentWorkspace.goals.length >= 15) {
+    //   showToast('You can create maximum 15 goals per workspace. Premium coming soon for unlimited goals!', 'warning');
+    //   return;
+    // }
     
     if (newGoal.title.trim() && newGoal.target && newGoal.category.trim()) {
       // Delegate to store (store now normalizes targetDays/currentTarget)
