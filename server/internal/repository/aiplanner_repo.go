@@ -203,12 +203,12 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 			%s
 
 			Rules:
-			- Day starts at 09:00 unless context says otherwise.
-			- High-focus tasks first.
-			- Include short breaks and lunch.
-			- Do NOT invent new tasks.
-			- You may add: Break, Lunch, Review.
-			- Use priority and estimated_minutes for ordering.
+			- AvailableTimeMinutes: 180
+			- StartTime: 09:00 AM unless specified in context 
+			- High priority first
+			- Add short breaks
+			- Do NOT invent tasks
+			- Skip Lunch if time is insufficient
 
 
 			Return JSON ONLY in this exact format:
@@ -218,10 +218,10 @@ func (r *aiPlannerRepository) HandleAiPlanner(ctx context.Context, data model.Ai
 			"plan": [
 				{
 				"taskId": "...",
-				"title": "...",      // Break/Lunch allowed
+				"title": "...",      
 				"startTime": "HH:MM",
 				"endTime": "HH:MM",
-				"priority": "..."    // For break/lunch use "none"
+				"priority": "..."   
 				}
 			],
 			"summary": "..."
