@@ -5,7 +5,7 @@ import useUserStore from '../../store/useUserInfo';
 import { getChat, addChat, deleteWorkspaceChat } from '../../store/indexDB/chats/chatMethods';
 import {sendAiMessageApi} from '../../api/';
 import { formatAiResponsePlain } from '../../utils/aiResponseFormatter';
-import {  useToast } from '../ui';
+import { useToast } from '../ui/ToastProvider';
 
 interface Message {
   id: string;
