@@ -1,5 +1,21 @@
 # TaskPlexus - Technical Documentation
 
+<p align="center">
+	<img src="public/Home.png" alt="TaskPlexus Home" width="800" />
+</p>
+<p align="center">
+	<img src="public/Dashboard.png" alt="TaskPlexus Dashboard" width="800" />
+</p>
+<p align="center">
+	<img src="public/FlowChart.png" alt="TaskPlexus Flow Chart" width="800" />
+</p>
+<p align="center">
+	<img src="public/Ai-Planner.png" alt="TaskPlexus AI Planner" width="800" />
+</p>
+<p align="center">
+	<img src="public/Ai-Chat.png" alt="TaskPlexus AI Chat" width="800" />
+</p>
+
 A full-stack task and goal management system with AI-powered planning, real-time synchronization, and professional payment processing. Built with Go backend and React frontend.
 
 ## Overview
