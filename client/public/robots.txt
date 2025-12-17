@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://taskplexus.com/sitemap.xml
+Sitemap: https://taskplexus.app/sitemap.xml

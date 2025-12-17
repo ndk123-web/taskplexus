@@ -1,61 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://taskplexus.com/</loc>
+    <loc>https://taskplexus.app/</loc>
     <lastmod>2025-12-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://taskplexus.com/features</loc>
+    <loc>https://taskplexus.app/features</loc>
     <lastmod>2025-12-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://taskplexus.com/pricing</loc>
+    <loc>https://taskplexus.app/pricing</loc>
     <lastmod>2025-12-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://taskplexus.com/about</loc>
+    <loc>https://taskplexus.app/about</loc>
     <lastmod>2025-12-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://taskplexus.com/contact</loc>
+    <loc>https://taskplexus.app/contact</loc>
     <lastmod>2025-12-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://taskplexus.com/signin</loc>
+    <loc>https://taskplexus.app/signin</loc>
     <lastmod>2025-12-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://taskplexus.com/signup</loc>
+    <loc>https://taskplexus.app/signup</loc>
     <lastmod>2025-12-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://taskplexus.com/terms</loc>
+    <loc>https://taskplexus.app/terms</loc>
     <lastmod>2025-12-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://taskplexus.com/privacy</loc>
+    <loc>https://taskplexus.app/privacy</loc>
     <lastmod>2025-12-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://taskplexus.com/refund-policy</loc>
+    <loc>https://taskplexus.app/refund-policy</loc>
     <lastmod>2025-12-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
