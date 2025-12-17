@@ -37,7 +37,7 @@ const Contact = () => {
                 <div style={{ fontSize: '40px', marginBottom: '16px' }}>📧</div>
                 <h3>Email Support</h3>
                 <p>For general inquiries and support:</p>
-                <a href="mailto:support@taskplexus.com" style={{ fontSize: '18px', fontWeight: 'bold' }}>support@taskplexus.com</a>
+                <a href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL}`} style={{ fontSize: '18px', fontWeight: 'bold' }}>support@taskplexus.com</a>
               </div>
 
               <div style={{ textAlign: 'center', marginTop: '20px' }}>
